@@ -1,4 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚴 BikeFit AI - Real-time Posture Analysis
+
+BikeFit AI es una aplicación web desarrollada con **Next.js + TypeScript** que permite a ciclistas y triatletas analizar su postura en tiempo real mientras pedalean.
+
+Utilizando la cámara del dispositivo y modelos de visión por computadora, la app detecta los puntos clave del cuerpo (muñeca, codo, hombro, cadera, rodilla, tobillo, punta del pie y talón), calcula ángulos de referencia y los muestra en pantalla para ayudar a optimizar la posición.
+
+---
+
+## ✨ Funcionalidades
+- Detección en tiempo real de puntos clave del cuerpo
+- Cálculo de ángulos de rodilla, cadera y hombro
+- Visualización en pantalla con overlay del esqueleto
+- UI limpia con **Tailwind**, **shadcn/ui** y **lucide-react**
+- Historial de sesiones (pendiente de implementar)
+
+---
+
+## 🛠️ Tecnologías principales
+- [Next.js](https://nextjs.org/) (App Router)
+- [TypeScript](https://www.typescriptlang.org/)
+- [TailwindCSS](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [lucide-react](https://lucide.dev/)
+- [TensorFlow.js](https://www.tensorflow.org/js) o [MediaPipe Pose](https://developers.google.com/mediapipe/solutions/vision/pose) para detección de poses
+
 
 ## Getting Started
 
