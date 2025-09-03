@@ -1,7 +1,7 @@
 import { Smartphone, Monitor, Tv } from 'lucide-react'
 
 // Video recording constants
-export const FIXED_FPS = 30
+export const FIXED_FPS = 60
 
 // Resolution configurations
 export const RESOLUTIONS = [

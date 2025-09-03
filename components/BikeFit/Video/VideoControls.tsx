@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Camera, Settings, Check, Video } from 'lucide-react'
+import { Slider } from '@/components/ui/slider'
+import { Camera, Proportions, Check, Video, Bike, Image, Play, Pause, FlipHorizontal, Palette } from 'lucide-react'
 import type { CameraDevice } from './hooks'
+import type { BikeType, VisualSettings } from '../types'
 import { RESOLUTIONS } from './constants'
 
 interface VideoControlsProps {
@@ -11,8 +13,14 @@ interface VideoControlsProps {
   selectedResolution: string
   isActive: boolean
   error: string | null
+  bikeType: BikeType
+  isFlipped: boolean
+  visualSettings: VisualSettings
   onDeviceChange: (deviceId: string | null) => void
   onResolutionChange: (resolution: string) => void
+  onBikeTypeChange: (type: BikeType) => void
+  onFlipToggle: () => void
+  onVisualSettingsChange: (settings: VisualSettings) => void
   onStartCamera: () => void
   onStopCamera: () => void
   isRecording: boolean
@@ -27,8 +35,14 @@ export default function VideoControls({
   selectedResolution,
   isActive,
   error,
+  bikeType,
+  isFlipped,
+  visualSettings,
   onDeviceChange,
   onResolutionChange,
+  onBikeTypeChange,
+  onFlipToggle,
+  onVisualSettingsChange,
   onStartCamera,
   onStopCamera,
   isRecording,
@@ -37,6 +51,28 @@ export default function VideoControls({
   onCaptureScreenshot
 }: VideoControlsProps) {
   const [recordingTime, setRecordingTime] = useState(0)
+
+  // Predefined color palette
+  const colorPalette = [
+    '#3B82F6', // Blue
+    '#EF4444', // Red
+    '#10B981', // Green
+    '#F59E0B', // Yellow
+    '#8B5CF6', // Purple
+    '#F97316', // Orange
+    '#06B6D4', // Cyan
+    '#EC4899'  // Pink
+  ]
+
+  const updateVisualSetting = <K extends keyof VisualSettings>(
+    key: K,
+    value: VisualSettings[K]
+  ) => {
+    onVisualSettingsChange({
+      ...visualSettings,
+      [key]: value
+    })
+  }
 
   // Timer for recording
   useEffect(() => {
@@ -71,7 +107,7 @@ export default function VideoControls({
               size="icon"
               className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl"
             >
-              <Video className="w-5 h-5" />
+              <Video className="w-6 h-6" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200">
@@ -112,6 +148,45 @@ export default function VideoControls({
           </PopoverContent>
         </Popover>
 
+        {/* Bike type selector */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl"
+            >
+              <Bike className="w-6 h-6" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200">
+            <div className="space-y-1">
+              {['road', 'triathlon'].map((type) => {
+                const isSelected = bikeType === type
+                const displayName = type === 'road' ? 'Bicicleta de Ruta' : 'Bicicleta de Triatlón'
+
+                return (
+                  <button
+                    key={type}
+                    onClick={() => onBikeTypeChange(type as BikeType)}
+                    className={`w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3 ${
+                      isSelected
+                        ? 'bg-blue-50 text-blue-900'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Bike className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <span className="text-sm font-medium">
+                      {displayName}
+                    </span>
+                    {isSelected && <Check className="w-4 h-4 text-blue-600 ml-auto" />}
+                  </button>
+                )
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
+
         {/* Recording button with integrated timer container */}
         <div className="flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-1 gap-1 transition-all duration-300 shadow-lg">
           <Button
@@ -127,7 +202,7 @@ export default function VideoControls({
             {isRecording ? (
               <div className="w-4 h-4 bg-white rounded transition-all duration-200"></div>
             ) : (
-              <div className="w-5 h-5 bg-white rounded-full transition-all duration-200"></div>
+              <div className="w-6 h-6 bg-white rounded-full transition-all duration-200"></div>
             )}
           </Button>
 
@@ -143,8 +218,113 @@ export default function VideoControls({
           size="icon"
           className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Camera className="w-5 h-5 transition-all duration-200" />
+          <Image className="w-6 h-6 transition-all duration-200" />
         </Button>
+
+        {/* Flip Horizontal button */}
+        <Button
+          onClick={onFlipToggle}
+          size="icon"
+          className={`w-12 h-12 rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl ${
+            isFlipped
+              ? 'bg-blue-500 hover:bg-blue-400 focus:bg-blue-300 border-blue-400 hover:border-blue-300 focus:border-blue-200 text-white focus:ring-blue-400'
+              : 'bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 focus:ring-slate-400/50'
+          }`}
+        >
+          <FlipHorizontal className="w-6 h-6 transition-all duration-200" />
+        </Button>
+
+        {/* Visual Customization button */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl"
+            >
+              <Palette className="w-6 h-6 transition-all duration-200" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200">
+            <div className="space-y-4">
+              {/* Line Colors */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <div className="w-3 h-0.5 bg-gray-400 rounded"></div>
+                  <span>Líneas</span>
+                </div>
+                <div className="flex">
+                  {colorPalette.map((color, index) => (
+                    <button
+                      key={color}
+                      onClick={() => updateVisualSetting('lineColor', color)}
+                      className={`w-8 h-8 transition-all duration-200 hover:scale-105 ${
+                        index === 0 ? 'rounded-l-full' : ''
+                      } ${
+                        index === colorPalette.length - 1 ? 'rounded-r-full' : ''
+                      } ${
+                        visualSettings.lineColor === color
+                          ? 'ring-2 ring-gray-900 ring-offset-1 z-10 relative'
+                          : ''
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 mt-3">
+                  <span className="text-xs text-gray-500 font-medium">Ancho</span>
+                  <Slider
+                    value={[visualSettings.lineWidth]}
+                    min={1}
+                    max={12}
+                    step={1}
+                    onValueChange={(value) => updateVisualSetting('lineWidth', value[0])}
+                    className="flex-1"
+                  />
+                  <span className="text-xs text-gray-500 font-mono min-w-[25px]">{visualSettings.lineWidth}</span>
+                </div>
+              </div>
+
+              {/* Point Colors */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                  <span>Puntos</span>
+                </div>
+                <div className="flex">
+                  {colorPalette.map((color, index) => (
+                    <button
+                      key={color}
+                      onClick={() => updateVisualSetting('pointColor', color)}
+                      className={`w-8 h-8 transition-all duration-200 hover:scale-105 ${
+                        index === 0 ? 'rounded-l-full' : ''
+                      } ${
+                        index === colorPalette.length - 1 ? 'rounded-r-full' : ''
+                      } ${
+                        visualSettings.pointColor === color
+                          ? 'ring-2 ring-gray-900 ring-offset-1 z-10 relative'
+                          : ''
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 mt-3">
+                  <span className="text-xs text-gray-500 font-medium">Tamaño</span>
+                  <Slider
+                    value={[visualSettings.pointRadius]}
+                    min={1}
+                    max={20}
+                    step={1}
+                    onValueChange={(value) => updateVisualSetting('pointRadius', value[0])}
+                    className="flex-1"
+                  />
+                  <span className="text-xs text-gray-500 font-mono min-w-[25px]">{visualSettings.pointRadius}</span>
+                </div>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
 
         {/* Play/Pause video button */}
         <Button
@@ -154,13 +334,9 @@ export default function VideoControls({
           className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isActive ? (
-            <svg className="w-5 h-5 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-            </svg>
+            <Pause className="w-6 h-6 transition-all duration-200" />
           ) : (
-            <svg className="w-5 h-5 transition-all duration-200" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
+            <Play className="w-6 h-6 transition-all duration-200" />
           )}
         </Button>
 
@@ -172,7 +348,7 @@ export default function VideoControls({
               size="icon"
               className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl"
             >
-              <Settings className="w-5 h-5 transition-all duration-200" />
+              <Proportions className="w-6 h-6 transition-all duration-200" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200">

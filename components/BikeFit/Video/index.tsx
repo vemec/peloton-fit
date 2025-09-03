@@ -5,17 +5,60 @@ import VideoControls from './VideoControls'
 import { useCameraDevices } from './hooks'
 import { useVideoStream } from './useVideoStream'
 import { useVideoRecording } from './useVideoRecording'
+import { usePoseDetectionRealTime } from '../Analysis/usePoseDetectionRealTime'
+import { usePoseVisualization } from './usePoseVisualization'
 import { FIXED_FPS, generateScreenshotFilename } from './constants'
 import { captureVideoFrame, downloadFile } from './utils'
+import { BikeType, DetectedSide, VisualSettings, Keypoint } from '../types'
 
-export default function VideoPlayer() {
+interface VideoPlayerProps {
+  bikeType: BikeType
+  detectedSide: DetectedSide
+  onDetectedSideChange: (side: DetectedSide) => void
+  onBikeTypeChange: (type: BikeType) => void
+  visualSettings: VisualSettings
+  onVisualSettingsChange: (settings: VisualSettings) => void
+}
+
+export default function VideoPlayer({
+  bikeType,
+  detectedSide,
+  onDetectedSideChange,
+  onBikeTypeChange,
+  visualSettings,
+  onVisualSettingsChange
+}: VideoPlayerProps) {
   const [selectedResolution, setSelectedResolution] = useState('1280x720')
+  const [isFlipped, setIsFlipped] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // Custom hooks
   const { devices, selectedDeviceId, setSelectedDeviceId, refreshDevices } = useCameraDevices()
   const { videoRef, isActive, error, startCamera, stopCamera } = useVideoStream()
   const { isRecording, startRecording, stopRecording } = useVideoRecording()
+
+  // Pose detection hook - Real-time MediaPipe processing
+  const { keypoints, detectedSide: poseDetectedSide, isProcessing, confidence } = usePoseDetectionRealTime(
+    videoRef.current,
+    isActive
+  )
+
+  // Pose visualization hook
+  usePoseVisualization({
+    canvas: canvasRef.current,
+    video: videoRef.current,
+    keypoints,
+    detectedSide,
+    visualSettings,
+    isActive
+  })
+
+  // Update detected side when pose detection changes
+  useEffect(() => {
+    if (poseDetectedSide !== detectedSide) {
+      onDetectedSideChange(poseDetectedSide)
+    }
+  }, [poseDetectedSide, detectedSide, onDetectedSideChange])
 
   // Load devices on mount
   useEffect(() => {
@@ -34,8 +77,8 @@ export default function VideoPlayer() {
     }
   }
 
-  const handleCaptureScreenshot = async () => {
-    if (!videoRef.current || !isActive) {
+    const handleCaptureScreenshot = async () => {
+    if (!isActive || !videoRef.current) {
       console.warn('Video not active or ref not available')
       return
     }
@@ -44,6 +87,10 @@ export default function VideoPlayer() {
     if (blob) {
       downloadFile(blob, generateScreenshotFilename())
     }
+  }
+
+  const handleFlipToggle = () => {
+    setIsFlipped(prev => !prev)
   }
 
   const handleResolutionChange = (resolution: string) => {
@@ -94,6 +141,27 @@ export default function VideoPlayer() {
                 </span>
               </div>
             </div>
+
+            {/* Side detection indicator - Bottom left */}
+            <div className="absolute bottom-6 left-6 z-10">
+              <div className="relative flex items-center gap-3 bg-black/90 backdrop-blur-md rounded-full px-4 py-2 border border-white/30 shadow-2xl">
+                <div className="relative">
+                  <div className={`w-3 h-3 rounded-full shadow-lg transition-all duration-300 ${
+                    poseDetectedSide
+                      ? 'bg-blue-400 animate-pulse ring-2 ring-blue-300/90 ring-offset-2 ring-offset-black/50'
+                      : 'bg-gray-500 opacity-50'
+                  }`}></div>
+                  {poseDetectedSide && (
+                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-blue-300 animate-ping opacity-75"></div>
+                  )}
+                </div>
+                <span className={`text-sm font-medium transition-all duration-300 ${
+                  poseDetectedSide ? 'text-blue-100' : 'text-gray-400'
+                }`}>
+                  {poseDetectedSide ? `Lado ${poseDetectedSide === 'left' ? 'Izquierdo' : 'Derecho'}` : 'Detectando...'}
+                </span>
+              </div>
+            </div>
           </>
         )}
 
@@ -106,7 +174,8 @@ export default function VideoPlayer() {
           style={{
             opacity: isActive ? 1 : 0,
             transition: 'opacity 300ms',
-            aspectRatio: 'auto'
+            aspectRatio: 'auto',
+            transform: isFlipped ? 'scaleX(-1)' : 'scaleX(1)'
           }}
           preload="none"
         />
@@ -117,7 +186,8 @@ export default function VideoPlayer() {
           className="absolute inset-0 w-full h-full pointer-events-none"
           style={{
             opacity: isActive ? 1 : 0,
-            transition: 'opacity 300ms'
+            transition: 'opacity 300ms',
+            transform: isFlipped ? 'scaleX(-1)' : 'scaleX(1)'
           }}
         />
 
@@ -158,8 +228,14 @@ export default function VideoPlayer() {
         selectedResolution={selectedResolution}
         isActive={isActive}
         error={error}
+        bikeType={bikeType}
+        isFlipped={isFlipped}
+        visualSettings={visualSettings}
         onDeviceChange={setSelectedDeviceId}
         onResolutionChange={handleResolutionChange}
+        onBikeTypeChange={onBikeTypeChange}
+        onFlipToggle={handleFlipToggle}
+        onVisualSettingsChange={onVisualSettingsChange}
         onStartCamera={handleStartCamera}
         onStopCamera={stopCamera}
         isRecording={isRecording}
