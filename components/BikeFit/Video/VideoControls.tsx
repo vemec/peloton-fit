@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Camera, Settings, Monitor, Smartphone, Tv, Check, Video } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Camera, Settings, Check, Video } from 'lucide-react'
 import type { CameraDevice } from './hooks'
+import { RESOLUTIONS } from './constants'
 
 interface VideoControlsProps {
-  // Camera controls
   devices: CameraDevice[]
   selectedDeviceId: string | null
   selectedResolution: string
@@ -19,13 +15,9 @@ interface VideoControlsProps {
   onResolutionChange: (resolution: string) => void
   onStartCamera: () => void
   onStopCamera: () => void
-
-  // Recording controls
   isRecording: boolean
   onStartRecording: () => void
   onStopRecording: () => void
-
-  // Screenshot controls
   onCaptureScreenshot: () => void
 }
 
@@ -45,102 +37,18 @@ export default function VideoControls({
   onCaptureScreenshot
 }: VideoControlsProps) {
   const [recordingTime, setRecordingTime] = useState(0)
-  const [cameraCapabilities, setCameraCapabilities] = useState<{
-    resolutions: Array<{value: string, label: string, badge?: string}>,
-    frameRates: Array<{value: number, label: string, badge?: string}>
-  }>({
-    resolutions: [
-      { value: "640x480", label: "640×480", badge: "Basic" },
-      { value: "1280x720", label: "1280×720", badge: "HD" },
-      { value: "1920x1080", label: "1920×1080", badge: "Full HD" }
-    ],
-    frameRates: [
-      { value: 15, label: "15 FPS", badge: "Basic" },
-      { value: 24, label: "24 FPS", badge: "Cinema" },
-      { value: 30, label: "30 FPS", badge: "Standard" },
-      { value: 60, label: "60 FPS", badge: "⚡ Performance" }
-    ]
-  })
-
-  // Detect camera capabilities when device changes
-  useEffect(() => {
-    const detectCapabilities = async () => {
-      if (!selectedDeviceId) return
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: selectedDeviceId }
-        })
-
-        const videoTrack = stream.getVideoTracks()[0]
-        const capabilities = videoTrack.getCapabilities()
-
-        // Stop the test stream
-        stream.getTracks().forEach(track => track.stop())
-
-        // Update available resolutions based on capabilities
-        const supportedResolutions = []
-        const testResolutions = [
-          { value: "640x480", label: "640×480", badge: "Basic", width: 640, height: 480 },
-          { value: "1280x720", label: "1280×720", badge: "HD", width: 1280, height: 720 },
-          { value: "1920x1080", label: "1920×1080", badge: "Full HD", width: 1920, height: 1080 }
-        ]
-
-        for (const res of testResolutions) {
-          if (capabilities.width && capabilities.height) {
-            if (res.width <= (capabilities.width.max || 9999) &&
-                res.height <= (capabilities.height.max || 9999)) {
-              supportedResolutions.push(res)
-            }
-          } else {
-            // If we can't detect capabilities, include all resolutions
-            supportedResolutions.push(res)
-          }
-        }
-
-        // Update available frame rates
-        const supportedFrameRates = []
-        const testFrameRates = [
-          { value: 15, label: "15 FPS", badge: "Basic" },
-          { value: 24, label: "24 FPS", badge: "Cinema" },
-          { value: 30, label: "30 FPS", badge: "Standard" },
-          { value: 60, label: "60 FPS", badge: "⚡ Performance" }
-        ]
-
-        for (const fps of testFrameRates) {
-          if (capabilities.frameRate) {
-            if (fps.value <= (capabilities.frameRate.max || 60)) {
-              supportedFrameRates.push(fps)
-            }
-          } else {
-            supportedFrameRates.push(fps)
-          }
-        }
-
-        setCameraCapabilities({
-          resolutions: supportedResolutions,
-          frameRates: supportedFrameRates
-        })
-
-      } catch (error) {
-        console.error('Error detecting camera capabilities:', error)
-        // Keep default capabilities on error
-      }
-    }
-
-    detectCapabilities()
-  }, [selectedDeviceId])
 
   // Timer for recording
   useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isRecording) {
-      interval = setInterval(() => {
-        setRecordingTime(prev => prev + 1)
-      }, 1000)
-    } else {
+    if (!isRecording) {
       setRecordingTime(0)
+      return
     }
+
+    const interval = setInterval(() => {
+      setRecordingTime(prev => prev + 1)
+    }, 1000)
+
     return () => clearInterval(interval)
   }, [isRecording])
 
@@ -175,8 +83,8 @@ export default function VideoControls({
               ) : (
                 devices.map(device => {
                   const cleanLabel = device.label
-                    .replace(/\s*\([^)]*\)$/, '') // Remove ID in parentheses at the end
-                    .replace(/\s+/g, ' ') // Clean multiple spaces
+                    .replace(/\s*\([^)]*\)$/, '')
+                    .replace(/\s+/g, ' ')
                     .trim()
 
                   const isSelected = selectedDeviceId === device.deviceId
@@ -205,8 +113,7 @@ export default function VideoControls({
         </Popover>
 
         {/* Recording button with integrated timer container */}
-        <div className="flex items-center bg-slate-950/50 hover:bg-slate-600/60 rounded-full p-1 gap-1 transition-all duration-300 shadow-lg">
-          {/* Round recording button */}
+        <div className="flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-1 gap-1 transition-all duration-300 shadow-lg">
           <Button
             onClick={isRecording ? onStopRecording : onStartRecording}
             disabled={!isActive}
@@ -224,7 +131,6 @@ export default function VideoControls({
             )}
           </Button>
 
-          {/* Timer display - separate from button but unified container */}
           <div className="px-4 py-2 font-mono text-sm min-w-[60px] text-center text-slate-200">
             {formatTime(recordingTime)}
           </div>
@@ -271,19 +177,9 @@ export default function VideoControls({
           </PopoverTrigger>
           <PopoverContent className="w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200">
             <div className="space-y-1">
-              {cameraCapabilities.resolutions.map(resolution => {
+              {RESOLUTIONS.map(resolution => {
                 const isSelected = selectedResolution === resolution.value
-
-                // Different icons for different resolutions
-                const getIcon = (label: string) => {
-                  if (label.includes('1920')) {
-                    return <Tv className="w-4 h-4" />
-                  } else if (label.includes('1280')) {
-                    return <Monitor className="w-4 h-4" />
-                  } else {
-                    return <Smartphone className="w-4 h-4" />
-                  }
-                }
+                const IconComponent = resolution.icon
 
                 return (
                   <button
@@ -295,9 +191,7 @@ export default function VideoControls({
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
-                    <div className={`${isSelected ? 'text-purple-600' : 'text-gray-400'}`}>
-                      {getIcon(resolution.label)}
-                    </div>
+                    <IconComponent className={`w-4 h-4 ${isSelected ? 'text-purple-600' : 'text-gray-400'}`} />
                     <span className="text-sm font-medium">
                       {resolution.label}
                     </span>

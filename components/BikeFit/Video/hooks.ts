@@ -1,20 +1,8 @@
 import { useState, useCallback } from 'react'
 
-export interface CameraDevice extends MediaDeviceInfo {
+export interface CameraDevice {
   deviceId: string
   label: string
-}
-
-export interface CameraSettings {
-  deviceId: string | null
-  resolution: string
-  fps: number
-}
-
-export interface StreamSettings {
-  width: number
-  height: number
-  frameRate: number
 }
 
 export function useCameraDevices() {
@@ -35,22 +23,19 @@ export function useCameraDevices() {
       const cameras = deviceList
         .filter(device => device.kind === 'videoinput')
         .map(device => ({
-          ...device,
           deviceId: device.deviceId,
           label: device.label || `Camera ${device.deviceId.slice(0, 8)}...`
         }))
 
       setDevices(cameras)
 
-      // Auto-select first camera if none selected
-      if (!selectedDeviceId && cameras.length > 0) {
-        setSelectedDeviceId(cameras[0].deviceId)
-      }
+      // Auto-select first camera if none selected and cameras available
+      setSelectedDeviceId(prev => prev || (cameras.length > 0 ? cameras[0].deviceId : null))
     } catch (err) {
       console.warn('Device enumeration failed:', err)
       setDevices([])
     }
-  }, [selectedDeviceId])
+  }, []) // Removed selectedDeviceId dependency to avoid unnecessary re-renders
 
   return {
     devices,

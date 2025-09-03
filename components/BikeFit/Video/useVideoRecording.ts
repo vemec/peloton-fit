@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
+import { downloadFile } from './utils'
+import { generateVideoFilename } from './constants'
 
 export function useVideoRecording() {
   const [isRecording, setIsRecording] = useState(false)
@@ -24,14 +26,7 @@ export function useVideoRecording() {
 
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunks, { type: 'video/webm' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `bike-fit-analysis-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.webm`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
+        downloadFile(blob, generateVideoFilename())
       }
 
       mediaRecorderRef.current = mediaRecorder

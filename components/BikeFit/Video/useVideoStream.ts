@@ -1,23 +1,22 @@
 import { useState, useRef, useCallback } from 'react'
-import type { StreamSettings } from './hooks'
+import { FIXED_FPS } from './constants'
+import { stopMediaStream } from './utils'
 
 export function useVideoStream() {
   const [isActive, setIsActive] = useState(false)
-  const [currentSettings, setCurrentSettings] = useState<StreamSettings | null>(null)
   const [error, setError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  const buildVideoConstraints = (deviceId: string | null, resolution: string, fps: number) => {
-    const [width, height] = resolution.split('x').map(s => parseInt(s, 10))
-    const constraints: MediaStreamConstraints = {
+  const buildVideoConstraints = (deviceId: string | null, resolution: string): MediaStreamConstraints => {
+    const [width, height] = resolution.split('x').map(Number)
+    return {
       video: {
         ...(deviceId && { deviceId: { ideal: deviceId } }),
         width: { ideal: width },
         height: { ideal: height },
-        frameRate: { ideal: fps }
+        frameRate: { ideal: FIXED_FPS }
       }
     }
-    return constraints
   }
 
   const attachStreamToVideo = async (videoElement: HTMLVideoElement, stream: MediaStream) => {
@@ -27,58 +26,44 @@ export function useVideoStream() {
     videoElement.muted = true
     videoElement.playsInline = true
 
-    await new Promise<void>((resolve) => {
-      if (videoElement.readyState >= 2) {
-        resolve()
-        return
-      }
+    // Wait for video to be ready
+    if (videoElement.readyState < 2) {
+      await new Promise<void>((resolve) => {
+        const onReady = () => {
+          videoElement.removeEventListener('loadedmetadata', onReady)
+          resolve()
+        }
+        videoElement.addEventListener('loadedmetadata', onReady)
 
-      const onReady = () => {
-        cleanup()
-        resolve()
-      }
-
-      const cleanup = () => {
-        videoElement.removeEventListener('loadedmetadata', onReady)
-        videoElement.removeEventListener('canplay', onReady)
-        clearTimeout(timeout)
-      }
-
-      videoElement.addEventListener('loadedmetadata', onReady)
-      videoElement.addEventListener('canplay', onReady)
-
-      const timeout = setTimeout(() => {
-        cleanup()
-        resolve()
-      }, 2000)
-    })
+        // Fallback timeout
+        setTimeout(resolve, 2000)
+      })
+    }
 
     try {
       await videoElement.play()
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : ''
-      if (!msg.includes('interrupted')) {
+    } catch (e) {
+      // Ignore interrupted play attempts
+      if (e instanceof Error && !e.message.includes('interrupted')) {
         console.warn('Video play failed:', e)
       }
     }
   }
 
-  const startCamera = useCallback(async (deviceId: string | null, resolution: string, fps: number) => {
+  const startCamera = useCallback(async (deviceId: string | null, resolution: string) => {
     setError(null)
 
     try {
       // Stop existing stream
       const previousStream = videoRef.current?.srcObject as MediaStream | null
-      if (previousStream) {
-        previousStream.getTracks().forEach(track => track.stop())
-      }
+      stopMediaStream(previousStream)
 
-      const constraints = buildVideoConstraints(deviceId, resolution, fps)
+      const constraints = buildVideoConstraints(deviceId, resolution)
       let stream: MediaStream
 
       try {
         stream = await navigator.mediaDevices.getUserMedia(constraints)
-      } catch (err: unknown) {
+      } catch (err) {
         console.warn('Failed with specific constraints, trying fallback:', err)
         // Fallback to basic constraints
         stream = await navigator.mediaDevices.getUserMedia({
@@ -88,38 +73,24 @@ export function useVideoStream() {
 
       if (videoRef.current) {
         await attachStreamToVideo(videoRef.current, stream)
-
-        // Get actual stream settings
-        const videoTrack = stream.getVideoTracks()[0]
-        const settings = videoTrack.getSettings()
-
-        setCurrentSettings({
-          width: settings.width || 0,
-          height: settings.height || 0,
-          frameRate: settings.frameRate || fps
-        })
-
         setIsActive(true)
       }
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Camera start failed:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to start camera'
       setError(errorMessage)
-      setCurrentSettings(null)
       setIsActive(false)
     }
   }, [])
 
   const stopCamera = useCallback(() => {
     const stream = videoRef.current?.srcObject as MediaStream | null
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop())
-      if (videoRef.current) {
-        videoRef.current.srcObject = null
-      }
+    stopMediaStream(stream)
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null
     }
 
-    setCurrentSettings(null)
     setIsActive(false)
     setError(null)
   }, [])
@@ -127,7 +98,6 @@ export function useVideoStream() {
   return {
     videoRef,
     isActive,
-    currentSettings,
     error,
     startCamera,
     stopCamera

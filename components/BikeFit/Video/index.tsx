@@ -5,33 +5,17 @@ import VideoControls from './VideoControls'
 import { useCameraDevices } from './hooks'
 import { useVideoStream } from './useVideoStream'
 import { useVideoRecording } from './useVideoRecording'
+import { FIXED_FPS, generateScreenshotFilename } from './constants'
+import { captureVideoFrame, downloadFile } from './utils'
 
 export default function VideoPlayer() {
   const [selectedResolution, setSelectedResolution] = useState('1280x720')
-  const selectedFps = 30 // Fixed FPS for simplicity
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // Custom hooks
-  const {
-    devices,
-    selectedDeviceId,
-    setSelectedDeviceId,
-    refreshDevices
-  } = useCameraDevices()
-
-  const {
-    videoRef,
-    isActive,
-    error,
-    startCamera,
-    stopCamera
-  } = useVideoStream()
-
-  const {
-    isRecording,
-    startRecording,
-    stopRecording
-  } = useVideoRecording()
+  const { devices, selectedDeviceId, setSelectedDeviceId, refreshDevices } = useCameraDevices()
+  const { videoRef, isActive, error, startCamera, stopCamera } = useVideoStream()
+  const { isRecording, startRecording, stopRecording } = useVideoRecording()
 
   // Load devices on mount
   useEffect(() => {
@@ -40,62 +24,34 @@ export default function VideoPlayer() {
 
   const handleStartCamera = () => {
     if (selectedDeviceId) {
-      startCamera(selectedDeviceId, selectedResolution, selectedFps)
+      startCamera(selectedDeviceId, selectedResolution)
     }
   }
 
   const handleStartRecording = () => {
     if (canvasRef.current) {
-      startRecording(canvasRef.current, selectedFps)
+      startRecording(canvasRef.current, FIXED_FPS)
     }
   }
 
-  // Capture screenshot from video
-  const handleCaptureScreenshot = () => {
+  const handleCaptureScreenshot = async () => {
     if (!videoRef.current || !isActive) {
       console.warn('Video not active or ref not available')
       return
     }
 
-    const video = videoRef.current
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-
-    if (!ctx) {
-      console.error('Could not get canvas context')
-      return
+    const blob = await captureVideoFrame(videoRef.current)
+    if (blob) {
+      downloadFile(blob, generateScreenshotFilename())
     }
-
-    // Set canvas dimensions to match video
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-
-    // Draw current video frame to canvas
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-
-    // Convert to blob and download
-    canvas.toBlob((blob) => {
-      if (blob) {
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `captura-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
-      }
-    }, 'image/png')
   }
 
-  // Restart camera with new settings when resolution changes
   const handleResolutionChange = (resolution: string) => {
     setSelectedResolution(resolution)
     if (isActive && selectedDeviceId) {
-      // Restart camera with new settings
       stopCamera()
       setTimeout(() => {
-        startCamera(selectedDeviceId, resolution, selectedFps)
+        startCamera(selectedDeviceId, resolution)
       }, 100)
     }
   }
