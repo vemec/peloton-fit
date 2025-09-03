@@ -3,19 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import type { BikeType, DetectedSide } from '../types'
+import type { BikeType, DetectedSide } from '@/types/bikefit'
 
-interface AnalysisConfigProps {
+interface BikeFitAnalysisConfigProps {
   bikeType: BikeType
   detectedSide: DetectedSide
   onBikeTypeChange: (bikeType: BikeType) => void
 }
 
-export default function AnalysisConfig({
+export default function BikeFitAnalysisConfig({
   bikeType,
   detectedSide,
   onBikeTypeChange
-}: AnalysisConfigProps) {
+}: BikeFitAnalysisConfigProps) {
   return (
     <Card className="bg-white/70 backdrop-blur-lg border border-emerald-200/50">
       <CardHeader className="pb-4">

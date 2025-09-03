@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useRef, useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import VideoControls from './VideoControls'
 import { useCameraDevices } from './hooks'
 import { useVideoStream } from './useVideoStream'
@@ -8,10 +9,10 @@ import { useVideoRecording } from './useVideoRecording'
 import { usePoseDetectionRealTime } from '../Analysis/usePoseDetectionRealTime'
 import { usePoseVisualization } from './usePoseVisualization'
 import { FIXED_FPS, generateScreenshotFilename } from './constants'
-import { captureVideoFrame, downloadFile } from './utils'
-import { BikeType, DetectedSide, VisualSettings, Keypoint } from '../types'
+import { captureCanvasFrame, downloadFile } from './utils'
+import type { BikeType, DetectedSide, VisualSettings } from '@/types/bikefit'
 
-interface VideoPlayerProps {
+interface BikeFitVideoPlayerProps {
   bikeType: BikeType
   detectedSide: DetectedSide
   onDetectedSideChange: (side: DetectedSide) => void
@@ -20,14 +21,14 @@ interface VideoPlayerProps {
   onVisualSettingsChange: (settings: VisualSettings) => void
 }
 
-export default function VideoPlayer({
+export default function BikeFitVideoPlayer({
   bikeType,
   detectedSide,
   onDetectedSideChange,
   onBikeTypeChange,
   visualSettings,
   onVisualSettingsChange
-}: VideoPlayerProps) {
+}: BikeFitVideoPlayerProps) {
   const [selectedResolution, setSelectedResolution] = useState('1280x720')
   const [isFlipped, setIsFlipped] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -37,20 +38,22 @@ export default function VideoPlayer({
   const { videoRef, isActive, error, startCamera, stopCamera } = useVideoStream()
   const { isRecording, startRecording, stopRecording } = useVideoRecording()
 
-  // Pose detection hook - Real-time MediaPipe processing
-  const { keypoints, detectedSide: poseDetectedSide, isProcessing, confidence } = usePoseDetectionRealTime(
+  // Pose detection hook - Real-time MediaPipe processing with adaptive FPS
+  const { smoothedKeypoints, detectedSide: poseDetectedSide } = usePoseDetectionRealTime(
     videoRef.current,
-    isActive
+    isActive,
+    FIXED_FPS // Pass FPS for adaptive processing
   )
 
-  // Pose visualization hook
+  // Pose visualization hook - use smoothed keypoints for better visual quality
   usePoseVisualization({
     canvas: canvasRef.current,
     video: videoRef.current,
-    keypoints,
+    keypoints: smoothedKeypoints, // Use smoothed keypoints instead of raw
     detectedSide,
     visualSettings,
-    isActive
+    isActive,
+    isFlipped
   })
 
   // Update detected side when pose detection changes
@@ -65,27 +68,99 @@ export default function VideoPlayer({
     refreshDevices()
   }, [refreshDevices])
 
+  // Handle camera state changes with notifications
+  useEffect(() => {
+    if (isActive) {
+      toast.dismiss('camera-start')
+      toast.success('✅ Cámara conectada correctamente', {
+        description: 'Ya puedes comenzar a grabar o tomar fotos'
+      })
+    }
+  }, [isActive])
+
+  // Handle camera errors with notifications
+  useEffect(() => {
+    if (error) {
+      toast.dismiss('camera-start')
+      toast.error('❌ Error de conexión', {
+        description: error || 'No se pudo acceder a la cámara. Verifica los permisos.'
+      })
+    }
+  }, [error])
+
   const handleStartCamera = () => {
     if (selectedDeviceId) {
+      toast.loading('🎥 Conectando con la cámara...', {
+        id: 'camera-start'
+      })
       startCamera(selectedDeviceId, selectedResolution)
+    } else {
+      toast.error('❌ Selecciona una cámara', {
+        description: 'Elige un dispositivo de video antes de continuar'
+      })
     }
   }
 
   const handleStartRecording = () => {
     if (canvasRef.current) {
       startRecording(canvasRef.current, FIXED_FPS)
+      toast.success('🔴 Grabación iniciada', {
+        description: 'El video incluirá todos los análisis de pose en tiempo real'
+      })
+    } else {
+      toast.error('❌ No se puede grabar', {
+        description: 'Asegúrate de que la cámara esté activa primero'
+      })
     }
   }
 
+  const handleStopCamera = () => {
+    stopCamera()
+    toast.info('📷 Cámara desconectada', {
+      description: 'La sesión de análisis ha terminado'
+    })
+  }
+
+  const handleStopRecording = () => {
+    stopRecording()
+    toast.success('⏹️ Grabación completada', {
+      description: 'Tu video con análisis de pose ha sido guardado'
+    })
+  }
+
     const handleCaptureScreenshot = async () => {
-    if (!isActive || !videoRef.current) {
-      console.warn('Video not active or ref not available')
+    if (!isActive || !canvasRef.current) {
+      toast.error('No se puede capturar imagen', {
+        description: 'Asegúrate de que la cámara esté activa antes de tomar una foto'
+      })
       return
     }
 
-    const blob = await captureVideoFrame(videoRef.current)
-    if (blob) {
-      downloadFile(blob, generateScreenshotFilename())
+    try {
+      // Show loading toast
+      const loadingToast = toast.loading('📸 Capturando imagen con análisis de pose...')
+
+      // Capture from canvas which includes pose overlay
+      const blob = await captureCanvasFrame(canvasRef.current)
+      if (blob) {
+        downloadFile(blob, generateScreenshotFilename())
+
+        // Dismiss loading and show success
+        toast.dismiss(loadingToast)
+        toast.success('✅ Imagen capturada exitosamente', {
+          description: 'Tu foto incluye todos los puntos y ángulos de análisis'
+        })
+      } else {
+        toast.dismiss(loadingToast)
+        toast.error('❌ Error al generar imagen', {
+          description: 'Inténtalo de nuevo en unos segundos'
+        })
+      }
+    } catch (error) {
+      toast.error('❌ Error inesperado', {
+        description: 'No se pudo completar la captura de imagen'
+      })
+      console.error('Error capturing screenshot:', error)
     }
   }
 
@@ -96,9 +171,14 @@ export default function VideoPlayer({
   const handleResolutionChange = (resolution: string) => {
     setSelectedResolution(resolution)
     if (isActive && selectedDeviceId) {
+      toast.loading('🎥 Aplicando nueva resolución...', { id: 'resolution-change' })
       stopCamera()
       setTimeout(() => {
         startCamera(selectedDeviceId, resolution)
+        toast.dismiss('resolution-change')
+        toast.success('✅ Resolución actualizada', {
+          description: `Calidad de video cambiada a ${resolution}`
+        })
       }, 100)
     }
   }
@@ -180,14 +260,14 @@ export default function VideoPlayer({
           preload="none"
         />
 
-        {/* Canvas overlay for future pose visualization */}
+        {/* Canvas overlay for pose visualization */}
         <canvas
           ref={canvasRef}
           className="absolute inset-0 w-full h-full pointer-events-none"
           style={{
             opacity: isActive ? 1 : 0,
-            transition: 'opacity 300ms',
-            transform: isFlipped ? 'scaleX(-1)' : 'scaleX(1)'
+            transition: 'opacity 300ms'
+            // No transform here since we handle flipping internally in the drawing code
           }}
         />
 
@@ -237,10 +317,10 @@ export default function VideoPlayer({
         onFlipToggle={handleFlipToggle}
         onVisualSettingsChange={onVisualSettingsChange}
         onStartCamera={handleStartCamera}
-        onStopCamera={stopCamera}
+        onStopCamera={handleStopCamera}
         isRecording={isRecording}
         onStartRecording={handleStartRecording}
-        onStopRecording={stopRecording}
+        onStopRecording={handleStopRecording}
         onCaptureScreenshot={handleCaptureScreenshot}
       />
     </div>

@@ -1,7 +1,9 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { DetectedSide, Keypoint, MediaPipeResults, MediaPipeLandmark, MediaPipePose } from '../types'
+import type { DetectedSide, Keypoint, MediaPipeResults, MediaPipeLandmark, MediaPipePose } from '@/types/bikefit'
+import { MEDIAPIPE_CONFIG } from '@/lib/bikefit-constants'
+import { useMediaPipeManager } from './useMediaPipeManager'
 
 interface UsePoseDetectionResult {
   keypoints: Keypoint[]
@@ -9,19 +11,32 @@ interface UsePoseDetectionResult {
   isMediaPipeLoaded: boolean
   isProcessing: boolean
   confidence: number
+  smoothedKeypoints: Keypoint[]
 }
 
 export function usePoseDetectionRealTime(
   video: HTMLVideoElement | null,
-  isActive: boolean
+  isActive: boolean,
+  fps: number = 60 // Add FPS parameter for adaptive smoothing
 ): UsePoseDetectionResult {
   const [keypoints, setKeypoints] = useState<Keypoint[]>([])
   const [detectedSide, setDetectedSide] = useState<DetectedSide>(null)
-  const [isMediaPipeLoaded, setIsMediaPipeLoaded] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [confidence, setConfidence] = useState(0)
   const poseRef = useRef<MediaPipePose | null>(null)
   const animationFrameRef = useRef<number | undefined>(undefined)
+  const processingRef = useRef<boolean>(false)
+  const smoothedKeypointsRef = useRef<Keypoint[]>([])
+
+  // Usar el manager centralizado de MediaPipe
+  const { isLoaded: isMediaPipeLoaded } = useMediaPipeManager()
+
+  // FPS-adaptive smoothing for optimal responsiveness (from PoseViewer)
+  const getSmoothingAlpha = useCallback((fps: number) => {
+    if (fps >= 60) return 0.4 // More responsive at 60fps
+    if (fps >= 30) return 0.3 // Balanced at 30fps
+    return 0.2 // More smoothing at low fps
+  }, [])
 
   // Calculate which side of the cyclist we can see better
   const sideScore = useCallback((keypoints: Keypoint[], side: 'left' | 'right'): number => {
@@ -57,130 +72,105 @@ export function usePoseDetectionRealTime(
     return rightScore >= leftScore ? 'right' : 'left'
   }, [sideScore])
 
-  // Load MediaPipe from CDN (más confiable que cargar desde node_modules en el navegador)
+  // Initialize MediaPipe pose when loaded
   useEffect(() => {
-    async function loadMediaPipe() {
-      if (window.Pose) {
-        setIsMediaPipeLoaded(true)
-        return
-      }
+    if (!isMediaPipeLoaded || poseRef.current) return
 
+    async function initPose() {
       try {
-        console.log('Loading MediaPipe from CDN...')
+        const Pose = (window as unknown as Record<string, unknown>).Pose as new (config: { locateFile: (file: string) => string }) => MediaPipePose
 
-        const script = document.createElement('script')
-        // Usar la misma versión que tenemos instalada localmente
-        script.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js'
+        if (!Pose) {
+          throw new Error('MediaPipe Pose constructor not available')
+        }
 
-        await new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            reject(new Error('Timeout loading MediaPipe'))
-          }, 10000)
-
-          script.onload = () => {
-            clearTimeout(timeout)
-            setTimeout(() => {
-              if (window.Pose) {
-                console.log('Successfully loaded MediaPipe from CDN')
-                resolve()
-              } else {
-                reject(new Error('MediaPipe Pose not available after load'))
-              }
-            }, 300)
-          }
-
-          script.onerror = (error) => {
-            clearTimeout(timeout)
-            console.warn('Failed to load MediaPipe:', error)
-            reject(new Error('Failed to load MediaPipe'))
-          }
-
-          document.head.appendChild(script)
+        const pose = new Pose({
+          locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
         })
 
-        setIsMediaPipeLoaded(true)
-      } catch (error) {
-        console.error('Failed to load MediaPipe:', error)
-        setIsMediaPipeLoaded(false)
-      }
-    }
+        // Configure with the same settings as PoseViewer
+        pose.setOptions({
+          modelComplexity: MEDIAPIPE_CONFIG.MODEL_COMPLEXITY,
+          smoothLandmarks: MEDIAPIPE_CONFIG.SMOOTH_LANDMARKS,
+          enableSegmentation: MEDIAPIPE_CONFIG.ENABLE_SEGMENTATION,
+          minDetectionConfidence: MEDIAPIPE_CONFIG.MIN_DETECTION_CONFIDENCE,
+          minTrackingConfidence: MEDIAPIPE_CONFIG.MIN_TRACKING_CONFIDENCE
+        })
 
-    loadMediaPipe()
-  }, [])
-
-  // Initialize MediaPipe pose
-  useEffect(() => {
-    if (!isMediaPipeLoaded || !window.Pose) return
-
-    async function initMediaPipe() {
-      try {
-        console.log('Initializing MediaPipe...')
-
-        if (window.Pose) {
-          const pose = new window.Pose({
-            locateFile: (file: string) => {
-              // Usar CDN para los archivos WASM también
-              return `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/${file}`
-            }
-          })
-
-          // Configurar opciones
-          pose.setOptions({
-            modelComplexity: 0,
-            smoothLandmarks: true,
-            enableSegmentation: false,
-            minDetectionConfidence: 0.6,
-            minTrackingConfidence: 0.5
-          })
-
-          // Configurar callback de resultados
-          pose.onResults((results: MediaPipeResults) => {
-            if (!results || !results.poseLandmarks || !Array.isArray(results.poseLandmarks)) {
-              setIsProcessing(false)
-              return
-            }
-
-            try {
-              const landmarks: Keypoint[] = results.poseLandmarks.map((landmark: MediaPipeLandmark) => ({
-                x: landmark.x,
-                y: landmark.y,
-                score: landmark.visibility || 0.5,
-                visibility: landmark.visibility || 0.5
-              }))
-
-              setKeypoints(landmarks)
-
-              const side = detectSideFromKeypoints(landmarks)
-              setDetectedSide(side)
-
-              const avgConfidence = landmarks.reduce((sum, kp) => sum + (kp.visibility || 0), 0) / landmarks.length
-              setConfidence(avgConfidence)
-            } catch (error) {
-              console.error('Error processing pose results:', error)
-              setKeypoints([])
-              setDetectedSide(null)
-              setConfidence(0)
-            }
+        // Set up results callback
+        pose.onResults((results: MediaPipeResults) => {
+          if (!results || !results.poseLandmarks || !Array.isArray(results.poseLandmarks)) {
+            processingRef.current = false
             setIsProcessing(false)
-          })
+            return
+          }
 
-          poseRef.current = pose
-          console.log('MediaPipe initialized successfully')
-        }
-      } catch (error) {
-        console.error('Failed to initialize MediaPipe pose:', error)
+          try {
+            // Convert MediaPipe landmarks to our format (keep normalized coordinates)
+            const rawKeypoints: Keypoint[] = results.poseLandmarks.map((landmark: MediaPipeLandmark) => ({
+              x: landmark.x, // Keep normalized (0-1)
+              y: landmark.y, // Keep normalized (0-1)
+              score: landmark.visibility || 0.5,
+              visibility: landmark.visibility || 0.5
+            }))
+
+            setKeypoints(rawKeypoints)
+
+            // Apply FPS-adaptive smoothing (same as PoseViewer)
+            const alpha = getSmoothingAlpha(fps)
+            const prev = smoothedKeypointsRef.current
+            const smoothedKeypoints: Keypoint[] = prev.length > 0 ? rawKeypoints.map((kp, i) => {
+              const prevKp = prev[i]
+              if (!prevKp) return { ...kp }
+              return {
+                x: prevKp.x * (1 - alpha) + kp.x * alpha,
+                y: prevKp.y * (1 - alpha) + kp.y * alpha,
+                score: (prevKp.score ?? 0) * (1 - alpha) + (kp.score ?? 0) * alpha,
+                visibility: (prevKp.visibility ?? 0) * (1 - alpha) + (kp.visibility ?? 0) * alpha
+              }
+            }) : rawKeypoints
+
+            smoothedKeypointsRef.current = smoothedKeypoints
+
+            const side = detectSideFromKeypoints(smoothedKeypoints)
+            setDetectedSide(side)
+
+            const avgConfidence = smoothedKeypoints.reduce((sum, kp) => sum + (kp.visibility || 0), 0) / smoothedKeypoints.length
+            setConfidence(avgConfidence)
+
+          } catch {
+            setKeypoints([])
+            smoothedKeypointsRef.current = []
+            setDetectedSide(null)
+            setConfidence(0)
+          }
+
+          processingRef.current = false
+          setIsProcessing(false)
+        })
+
+        poseRef.current = pose
+
+      } catch {
+        setKeypoints([])
+        setDetectedSide(null)
+        setConfidence(0)
       }
     }
 
-    initMediaPipe()
+    initPose()
 
     return () => {
       if (poseRef.current) {
-        poseRef.current.close()
+        try {
+          poseRef.current.close()
+        } catch {
+          // Ignore close errors
+        }
         poseRef.current = null
       }
     }
-  }, [isMediaPipeLoaded, detectSideFromKeypoints])
+  }, [isMediaPipeLoaded, detectSideFromKeypoints, fps, getSmoothingAlpha])
 
   // Process video frames
   useEffect(() => {
@@ -189,82 +179,87 @@ export function usePoseDetectionRealTime(
         cancelAnimationFrame(animationFrameRef.current)
         animationFrameRef.current = undefined
       }
+      processingRef.current = false
       setIsProcessing(false)
       return
     }
 
     const processFrame = async () => {
-      // Additional safety checks
-      if (!poseRef.current || !video || !isActive || isProcessing) return
+      // Prevent overlapping processing calls
+      if (processingRef.current || !poseRef.current || !video || !isActive) {
+        return
+      }
 
-      // Check if video is still playing/active
-      if (video.paused || video.ended || video.readyState < 2) return
+      // Check if video is ready
+      if (video.paused || video.ended || video.readyState < 2) {
+        return
+      }
 
       try {
+        processingRef.current = true
         setIsProcessing(true)
-        // Add additional check before sending
-        if (poseRef.current && video && isActive) {
-          await poseRef.current.send({ image: video })
-        } else {
-          setIsProcessing(false)
-          return
-        }
+
+        // Send frame to MediaPipe with error handling
+        await poseRef.current.send({ image: video })
+
       } catch (error) {
-        console.error('Error processing frame:', error)
+        processingRef.current = false
         setIsProcessing(false)
 
-        // Check if this is the "Module.arguments" error
+        // Check for the specific Module.arguments error
         if (error instanceof Error && error.message.includes('Module.arguments')) {
-          console.warn('MediaPipe module error detected, stopping processing')
-          // Stop all processing and try to reinitialize
-          if (animationFrameRef.current) {
-            cancelAnimationFrame(animationFrameRef.current)
-            animationFrameRef.current = undefined
-          }
-
-          // Reset MediaPipe
+          // Reset everything and trigger reinitialization
           if (poseRef.current) {
             try {
               poseRef.current.close()
-            } catch (closeError) {
-              console.warn('Error closing pose:', closeError)
+            } catch {
+              // Ignore close errors
             }
             poseRef.current = null
           }
 
-          setIsMediaPipeLoaded(false)
           setKeypoints([])
+          smoothedKeypointsRef.current = []
           setDetectedSide(null)
           setConfidence(0)
+
+          // Cancel animation loop
+          if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current)
+            animationFrameRef.current = undefined
+          }
           return
         }
-
-        // For other errors, just skip this frame and continue
-        return
       }
 
-      // Continue processing at ~15 FPS to not overwhelm the system
-      // Only continue if still active
+      // Dynamic throttling for optimal performance (similar to PoseViewer)
+      const getOptimalDelay = (fps: number) => {
+        if (fps >= 60) return 16  // ~60 FPS
+        if (fps >= 30) return 33  // ~30 FPS
+        return 66                 // ~15 FPS
+      }
+
       if (isActive && poseRef.current) {
+        const delay = getOptimalDelay(fps)
         setTimeout(() => {
-          if (isActive && poseRef.current) { // Double check before scheduling
+          if (isActive && poseRef.current) {
             animationFrameRef.current = requestAnimationFrame(processFrame)
           }
-        }, 66) // ~15 FPS
+        }, delay)
       }
     }
 
-    // Start processing when video is playing
-    const handleVideoPlay = () => {
-      if (video.readyState >= 2 && isActive) { // video has enough data and is active
+    // Start processing when video is ready
+    const handleVideoReady = () => {
+      if (video.readyState >= 2 && isActive && poseRef.current) {
         animationFrameRef.current = requestAnimationFrame(processFrame)
       }
     }
 
-    if (video.readyState >= 2 && isActive) {
-      handleVideoPlay()
+    if (video.readyState >= 2) {
+      handleVideoReady()
     } else {
-      video.addEventListener('canplay', handleVideoPlay)
+      video.addEventListener('canplay', handleVideoReady)
     }
 
     return () => {
@@ -272,10 +267,23 @@ export function usePoseDetectionRealTime(
         cancelAnimationFrame(animationFrameRef.current)
         animationFrameRef.current = undefined
       }
+      processingRef.current = false
       setIsProcessing(false)
-      video.removeEventListener('canplay', handleVideoPlay)
+      video.removeEventListener('canplay', handleVideoReady)
     }
-  }, [video, isActive, isMediaPipeLoaded, isProcessing, detectSideFromKeypoints])
+  }, [video, isActive, isMediaPipeLoaded, fps])
+
+  // Reset states when video becomes inactive
+  useEffect(() => {
+    if (!isActive) {
+      setKeypoints([])
+      smoothedKeypointsRef.current = []
+      setDetectedSide(null)
+      setConfidence(0)
+      setIsProcessing(false)
+      processingRef.current = false
+    }
+  }, [isActive])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -284,30 +292,14 @@ export function usePoseDetectionRealTime(
         cancelAnimationFrame(animationFrameRef.current)
         animationFrameRef.current = undefined
       }
+      processingRef.current = false
       setIsProcessing(false)
-      if (poseRef.current) {
-        try {
-          poseRef.current.close()
-        } catch (error) {
-          console.warn('Error closing MediaPipe pose:', error)
-        }
-        poseRef.current = null
-      }
     }
   }, [])
 
-  // Reset states when video becomes inactive
-  useEffect(() => {
-    if (!isActive) {
-      setKeypoints([])
-      setDetectedSide(null)
-      setConfidence(0)
-      setIsProcessing(false)
-    }
-  }, [isActive])
-
   return {
     keypoints,
+    smoothedKeypoints: smoothedKeypointsRef.current,
     detectedSide,
     isMediaPipeLoaded,
     isProcessing,

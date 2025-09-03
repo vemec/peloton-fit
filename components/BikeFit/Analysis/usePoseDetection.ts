@@ -1,27 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
-import type { Keypoint, DetectedSide } from '../types'
+import type { Keypoint, DetectedSide } from '@/types/bikefit'
 
-// Tipos para MediaPipe
-interface MediaPipeOptions {
-  modelComplexity: number
-  smoothLandmarks: boolean
-  enableSegmentation: boolean
-  minDetectionConfidence: number
-  minTrackingConfidence: number
-}
-
-interface MediaPipePose {
-  setOptions: (options: MediaPipeOptions) => void
-  onResults: (callback: (results: { poseLandmarks?: Keypoint[] }) => void) => void
-  send: (data: { image: HTMLVideoElement }) => Promise<void>
-  close: () => void
-}
-
-declare global {
-  interface Window {
-    Pose?: new (config: { locateFile: (file: string) => string }) => MediaPipePose
-  }
-}
+// Note: This file is deprecated in favor of usePoseDetectionRealTime.ts
+// Keeping for compatibility but most logic moved to the real-time version
 
 export function usePoseDetection() {
   const [detectedSide, setDetectedSide] = useState<DetectedSide>(null)

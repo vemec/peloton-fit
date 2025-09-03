@@ -1,13 +1,13 @@
 "use client"
 
 import { useEffect, useRef } from 'react'
-import { Keypoint, VisualSettings, DetectedSide } from '../types'
+import type { Keypoint, VisualSettings, DetectedSide, DrawingContext } from '@/types/bikefit'
 import {
   setupCanvas,
   clearCanvas,
   drawSkeleton,
-  drawBikeFitAngles,
-  DrawingContext
+  drawDetectedSideSkeleton,
+  drawBikeFitAngles
 } from '../Drawing/canvasUtils'
 
 interface UsePoseVisualizationProps {
@@ -17,6 +17,7 @@ interface UsePoseVisualizationProps {
   detectedSide: DetectedSide
   visualSettings: VisualSettings
   isActive: boolean
+  isFlipped?: boolean
 }
 
 export function usePoseVisualization({
@@ -25,7 +26,8 @@ export function usePoseVisualization({
   keypoints,
   detectedSide,
   visualSettings,
-  isActive
+  isActive,
+  isFlipped = false
 }: UsePoseVisualizationProps) {
   const drawingContextRef = useRef<DrawingContext | null>(null)
   const animationFrameRef = useRef<number | undefined>(undefined)
@@ -38,9 +40,13 @@ export function usePoseVisualization({
     }
 
     const setupDrawingContext = () => {
-      const context = setupCanvas(canvas, video)
-      if (context) {
-        drawingContextRef.current = context
+      try {
+        const context = setupCanvas(canvas, video)
+        if (context) {
+          drawingContextRef.current = context
+        }
+      } catch {
+        drawingContextRef.current = null
       }
     }
 
@@ -69,64 +75,98 @@ export function usePoseVisualization({
 
   // Animation loop for drawing poses
   useEffect(() => {
-    if (!drawingContextRef.current || !isActive || keypoints.length === 0) {
+    if (!drawingContextRef.current || !isActive) {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
       return
     }
 
+    // Only draw if we have valid keypoints
+    const hasValidKeypoints = keypoints.length > 0 && keypoints.some(kp => kp && (kp.visibility || kp.score || 0) > 0.5)
+
     const drawFrame = () => {
       const context = drawingContextRef.current
       if (!context) return
 
-      const { ctx, canvas: canvasEl } = context
+      try {
+        const { ctx, canvas: canvasEl, video: videoEl } = context
 
-      // Clear previous frame
-      clearCanvas(ctx, canvasEl.width, canvasEl.height)
+        // Clear previous frame
+        clearCanvas(ctx, canvasEl.width, canvasEl.height)
 
-      // Draw skeleton
-      drawSkeleton(
-        ctx,
-        keypoints,
-        visualSettings,
-        canvasEl.width,
-        canvasEl.height
-      )
+        // Draw video frame first (like PoseViewer) for background
+        if (isFlipped) {
+          ctx.save()
+          ctx.translate(canvasEl.width, 0)
+          ctx.scale(-1, 1)
+          ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height)
+          ctx.restore()
+        } else {
+          ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height)
+        }
 
-      // Draw bike fit angles if we have a detected side
-      if (detectedSide && detectedSide !== null) {
-        drawBikeFitAngles(
-          ctx,
-          keypoints,
-          detectedSide,
-          visualSettings,
-          canvasEl.width,
-          canvasEl.height
-        )
+        // Only draw pose overlay if we have valid keypoints
+        if (hasValidKeypoints) {
+          // Mirror keypoints horizontally if flipped to match the mirrored video
+          const displayKeypoints: Keypoint[] = isFlipped
+            ? keypoints.map(kp => ({
+                ...kp,
+                x: 1 - kp.x // Flip normalized x coordinate
+              }))
+            : keypoints
 
-        // Future: emit angle data for other components
-        // onAnglesCalculated?.(angles)
+          // Apply mirroring context for pose drawing when flipped
+          if (isFlipped) {
+            ctx.save()
+            ctx.translate(canvasEl.width, 0)
+            ctx.scale(-1, 1)
+          }
+
+          // Draw skeleton - use detected side specific drawing if available
+          if (detectedSide && detectedSide !== null) {
+            drawDetectedSideSkeleton(
+              ctx,
+              isFlipped ? keypoints : displayKeypoints, // Use original keypoints when flipped since we're applying transform
+              detectedSide,
+              visualSettings,
+              canvasEl.width,
+              canvasEl.height
+            )
+
+            // Draw bike fit angles for the detected side
+            drawBikeFitAngles(
+              ctx,
+              isFlipped ? keypoints : displayKeypoints, // Use original keypoints when flipped since we're applying transform
+              detectedSide,
+              visualSettings,
+              canvasEl.width,
+              canvasEl.height,
+              isFlipped
+            )
+          } else {
+            // Fallback to full skeleton if no side detected
+            drawSkeleton(
+              ctx,
+              isFlipped ? keypoints : displayKeypoints, // Use original keypoints when flipped since we're applying transform
+              visualSettings,
+              canvasEl.width,
+              canvasEl.height
+            )
+          }
+
+          // Restore context if we applied mirroring
+          if (isFlipped) {
+            ctx.restore()
+          }
+        }
+      } catch {
+        // Continue animation loop even if there's an error
       }
-
-      // Note: Pose detection info is now shown in UI indicator, not drawn on canvas
-      // if (detectedSide) {
-      //   const confidence = keypoints.reduce((sum, kp) => {
-      //     return sum + (kp.visibility || kp.score || 0)
-      //   }, 0) / keypoints.length
-
-      //   drawPoseDetectionInfo(
-      //     ctx,
-      //     detectedSide === null ? 'unknown' : detectedSide,
-      //     confidence
-      //   )
-      // }
 
       // Continue animation loop
       animationFrameRef.current = requestAnimationFrame(drawFrame)
-    }
-
-    // Start the animation loop
+    }    // Start the animation loop
     animationFrameRef.current = requestAnimationFrame(drawFrame)
 
     return () => {
@@ -134,7 +174,7 @@ export function usePoseVisualization({
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [keypoints, detectedSide, visualSettings, isActive])
+  }, [keypoints, detectedSide, visualSettings, isActive, isFlipped])
 
   // Cleanup on unmount
   useEffect(() => {

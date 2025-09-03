@@ -1,9 +1,5 @@
 import { useState, useCallback } from 'react'
-
-export interface CameraDevice {
-  deviceId: string
-  label: string
-}
+import type { CameraDevice } from '@/types/bikefit'
 
 export function useCameraDevices() {
   const [devices, setDevices] = useState<CameraDevice[]>([])

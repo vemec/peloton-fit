@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { FIXED_FPS } from './constants'
+import { VIDEO_CONFIG, ERROR_MESSAGES } from '@/lib/bikefit-constants'
 import { stopMediaStream } from './utils'
 
 export function useVideoStream() {
@@ -14,7 +14,7 @@ export function useVideoStream() {
         ...(deviceId && { deviceId: { ideal: deviceId } }),
         width: { ideal: width },
         height: { ideal: height },
-        frameRate: { ideal: FIXED_FPS }
+        frameRate: { ideal: VIDEO_CONFIG.FIXED_FPS }
       }
     }
   }
@@ -77,7 +77,7 @@ export function useVideoStream() {
       }
     } catch (error) {
       console.error('Camera start failed:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to start camera'
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.CAMERA_ACCESS
       setError(errorMessage)
       setIsActive(false)
     }

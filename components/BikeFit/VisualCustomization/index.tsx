@@ -1,94 +1,141 @@
 import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import type { VisualSettings } from '../types'
+import { Button } from '@/components/ui/button'
+import { RotateCcw } from 'lucide-react'
+import type { VisualSettings } from '@/types/bikefit'
+import {
+  VISUAL_RANGES,
+  COLOR_PALETTE
+} from '@/lib/visual-customization-constants'
+import { useVisualCustomization } from './useVisualCustomization'
 
-interface VisualCustomizationProps {
+interface BikeFitVisualCustomizationProps {
   settings: VisualSettings
   onSettingsChange: (settings: VisualSettings) => void
 }
 
-export default function VisualCustomization({
+export default function BikeFitVisualCustomization({
   settings,
   onSettingsChange
-}: VisualCustomizationProps) {
+}: BikeFitVisualCustomizationProps) {
 
-  const updateSetting = <K extends keyof VisualSettings>(
-    key: K,
-    value: VisualSettings[K]
-  ) => {
-    onSettingsChange({
-      ...settings,
-      [key]: value
-    })
-  }
+  const {
+    updateSetting,
+    resetToDefaults,
+    isDefaultSettings
+  } = useVisualCustomization(settings, onSettingsChange)
 
   return (
-    <Card className="bg-white/70 backdrop-blur-lg border border-purple-200/50">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-slate-700 text-base">
-          🎨 Visual Customization
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Compact layout in a single row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-center">
-          {/* Line Color */}
-          <div className="flex items-center gap-2">
-            <Label htmlFor="lineColor" className="text-xs font-medium text-slate-600">Lines</Label>
-            <input
-              id="lineColor"
-              type="color"
-              value={settings.lineColor}
-              onChange={(e) => updateSetting('lineColor', e.target.value)}
-              className="w-7 h-7 border border-purple-200/60 rounded-md cursor-pointer hover:border-purple-300 transition-colors"
-            />
-          </div>
+    <div>
+      {/* Header with Reset Button */}
+      <div className="flex items-center justify-between">
+        <Label className="text-sm font-medium text-slate-700">Colors</Label>
+        <Button
+          onClick={resetToDefaults}
+          variant="ghost"
+          size="sm"
+          className="h-6 px-2 text-xs text-slate-500 hover:text-slate-700"
+          disabled={isDefaultSettings}
+        >
+          <RotateCcw className="w-3 h-3" />
+        </Button>
+      </div>
 
-          {/* Point Color */}
-          <div className="flex items-center gap-2">
-            <Label htmlFor="pointColor" className="text-xs font-medium text-slate-600">Points</Label>
-            <input
-              id="pointColor"
-              type="color"
-              value={settings.pointColor}
-              onChange={(e) => updateSetting('pointColor', e.target.value)}
-              className="w-7 h-7 border border-purple-200/60 rounded-md cursor-pointer hover:border-purple-300 transition-colors"
+      {/* Line Colors */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs text-gray-600">
+          <div className="w-3 h-0.5 bg-gray-400 rounded"></div>
+          <span>Lines</span>
+        </div>
+        <div className="flex gap-0.5">
+          {COLOR_PALETTE.map((color, index) => (
+            <button
+              key={color}
+              onClick={() => updateSetting('lineColor', color)}
+              className={`w-6 h-4 transition-all ${
+                index === 0 ? 'rounded-l' : ''
+              } ${
+                index === COLOR_PALETTE.length - 1 ? 'rounded-r' : ''
+              } ${
+                settings.lineColor === color
+                  ? 'ring-2 ring-offset-1 ring-gray-400 scale-110'
+                  : ''
+              }`}
+              style={{ backgroundColor: color }}
             />
-          </div>
+          ))}
+        </div>
+      </div>
 
+      {/* Point Colors */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs text-gray-600">
+          <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+          <span>Points</span>
+        </div>
+        <div className="flex gap-0.5">
+          {COLOR_PALETTE.map((color, index) => (
+            <button
+              key={color}
+              onClick={() => updateSetting('pointColor', color)}
+              className={`w-6 h-4 transition-all ${
+                index === 0 ? 'rounded-l' : ''
+              } ${
+                index === COLOR_PALETTE.length - 1 ? 'rounded-r' : ''
+              } ${
+                settings.pointColor === color
+                  ? 'ring-2 ring-offset-1 ring-gray-400 scale-110'
+                  : ''
+              }`}
+              style={{ backgroundColor: color }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Dimensions */}
+      <div className="space-y-3">
+        <Label className="text-xs font-medium text-slate-600">Dimensions</Label>
+
+        <div className="space-y-3">
           {/* Line Width */}
-          <div className="flex items-center gap-2">
-            <Label htmlFor="lineWidth" className="text-xs font-medium text-slate-600 whitespace-nowrap">Width</Label>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-600">Line Width</span>
+              <span className="text-xs text-slate-500 font-mono">
+                {settings.lineWidth}px
+              </span>
+            </div>
             <Slider
-              id="lineWidth"
               value={[settings.lineWidth]}
-              min={1}
-              max={12}
-              step={1}
+              min={VISUAL_RANGES.LINE_WIDTH.min}
+              max={VISUAL_RANGES.LINE_WIDTH.max}
+              step={VISUAL_RANGES.LINE_WIDTH.step}
               onValueChange={(value) => updateSetting('lineWidth', value[0])}
-              className="flex-1 min-w-[60px]"
+              className="w-full"
             />
-            <span className="text-xs text-slate-500 font-mono min-w-[25px]">{settings.lineWidth}</span>
           </div>
 
           {/* Point Size */}
-          <div className="flex items-center gap-2">
-            <Label htmlFor="pointRadius" className="text-xs font-medium text-slate-600 whitespace-nowrap">Size</Label>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-600">Point Size</span>
+              <span className="text-xs text-slate-500 font-mono">
+                {settings.pointRadius}px
+              </span>
+            </div>
             <Slider
-              id="pointRadius"
               value={[settings.pointRadius]}
-              min={1}
-              max={20}
-              step={1}
+              min={VISUAL_RANGES.POINT_RADIUS.min}
+              max={VISUAL_RANGES.POINT_RADIUS.max}
+              step={VISUAL_RANGES.POINT_RADIUS.step}
               onValueChange={(value) => updateSetting('pointRadius', value[0])}
-              className="flex-1 min-w-[60px]"
+              className="w-full"
             />
-            <span className="text-xs text-slate-500 font-mono min-w-[25px]">{settings.pointRadius}</span>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

@@ -1,7 +1,8 @@
 import { Smartphone, Monitor, Tv } from 'lucide-react'
+import { VIDEO_CONFIG, FILE_NAMING } from '@/lib/bikefit-constants'
 
 // Video recording constants
-export const FIXED_FPS = 60
+export const FIXED_FPS = VIDEO_CONFIG.FIXED_FPS
 
 // Resolution configurations
 export const RESOLUTIONS = [
@@ -11,8 +12,5 @@ export const RESOLUTIONS = [
 ] as const
 
 // Download filename generators
-export const generateScreenshotFilename = () =>
-  `captura-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`
-
-export const generateVideoFilename = () =>
-  `bike-fit-analysis-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.webm`
+export const generateScreenshotFilename = FILE_NAMING.generateScreenshotFilename
+export const generateVideoFilename = FILE_NAMING.generateVideoFilename

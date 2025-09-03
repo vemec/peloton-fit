@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Slider } from '@/components/ui/slider'
-import { Camera, Proportions, Check, Video, Bike, Image, Play, Pause, FlipHorizontal, Palette } from 'lucide-react'
-import type { CameraDevice } from './hooks'
-import type { BikeType, VisualSettings } from '../types'
+import { Camera, Proportions, Check, Video, Bike, Aperture, Play, Pause, FlipHorizontal, Palette } from 'lucide-react'
+import type { CameraDevice, BikeType, VisualSettings } from '@/types/bikefit'
 import { RESOLUTIONS } from './constants'
+import BikeFitVisualCustomization from '../VisualCustomization'
 
 interface VideoControlsProps {
   devices: CameraDevice[]
@@ -51,28 +50,6 @@ export default function VideoControls({
   onCaptureScreenshot
 }: VideoControlsProps) {
   const [recordingTime, setRecordingTime] = useState(0)
-
-  // Predefined color palette
-  const colorPalette = [
-    '#3B82F6', // Blue
-    '#EF4444', // Red
-    '#10B981', // Green
-    '#F59E0B', // Yellow
-    '#8B5CF6', // Purple
-    '#F97316', // Orange
-    '#06B6D4', // Cyan
-    '#EC4899'  // Pink
-  ]
-
-  const updateVisualSetting = <K extends keyof VisualSettings>(
-    key: K,
-    value: VisualSettings[K]
-  ) => {
-    onVisualSettingsChange({
-      ...visualSettings,
-      [key]: value
-    })
-  }
 
   // Timer for recording
   useEffect(() => {
@@ -218,7 +195,7 @@ export default function VideoControls({
           size="icon"
           className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Image className="w-6 h-6 transition-all duration-200" />
+          <Aperture className="w-6 h-6 transition-all duration-200" />
         </Button>
 
         {/* Flip Horizontal button */}
@@ -245,84 +222,11 @@ export default function VideoControls({
               <Palette className="w-6 h-6 transition-all duration-200" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200">
-            <div className="space-y-4">
-              {/* Line Colors */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <div className="w-3 h-0.5 bg-gray-400 rounded"></div>
-                  <span>Líneas</span>
-                </div>
-                <div className="flex">
-                  {colorPalette.map((color, index) => (
-                    <button
-                      key={color}
-                      onClick={() => updateVisualSetting('lineColor', color)}
-                      className={`w-8 h-8 transition-all duration-200 hover:scale-105 ${
-                        index === 0 ? 'rounded-l-full' : ''
-                      } ${
-                        index === colorPalette.length - 1 ? 'rounded-r-full' : ''
-                      } ${
-                        visualSettings.lineColor === color
-                          ? 'ring-2 ring-gray-900 ring-offset-1 z-10 relative'
-                          : ''
-                      }`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <span className="text-xs text-gray-500 font-medium">Ancho</span>
-                  <Slider
-                    value={[visualSettings.lineWidth]}
-                    min={1}
-                    max={12}
-                    step={1}
-                    onValueChange={(value) => updateVisualSetting('lineWidth', value[0])}
-                    className="flex-1"
-                  />
-                  <span className="text-xs text-gray-500 font-mono min-w-[25px]">{visualSettings.lineWidth}</span>
-                </div>
-              </div>
-
-              {/* Point Colors */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                  <span>Puntos</span>
-                </div>
-                <div className="flex">
-                  {colorPalette.map((color, index) => (
-                    <button
-                      key={color}
-                      onClick={() => updateVisualSetting('pointColor', color)}
-                      className={`w-8 h-8 transition-all duration-200 hover:scale-105 ${
-                        index === 0 ? 'rounded-l-full' : ''
-                      } ${
-                        index === colorPalette.length - 1 ? 'rounded-r-full' : ''
-                      } ${
-                        visualSettings.pointColor === color
-                          ? 'ring-2 ring-gray-900 ring-offset-1 z-10 relative'
-                          : ''
-                      }`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <span className="text-xs text-gray-500 font-medium">Tamaño</span>
-                  <Slider
-                    value={[visualSettings.pointRadius]}
-                    min={1}
-                    max={20}
-                    step={1}
-                    onValueChange={(value) => updateVisualSetting('pointRadius', value[0])}
-                    className="flex-1"
-                  />
-                  <span className="text-xs text-gray-500 font-mono min-w-[25px]">{visualSettings.pointRadius}</span>
-                </div>
-              </div>
-            </div>
+          <PopoverContent className="w-80 p-3 bg-white rounded-xl shadow-xl border border-gray-200">
+            <BikeFitVisualCustomization
+              settings={visualSettings}
+              onSettingsChange={onVisualSettingsChange}
+            />
           </PopoverContent>
         </Popover>
 
