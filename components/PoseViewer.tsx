@@ -20,7 +20,7 @@ function hexToRgba(hex: string, alpha = 1) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-export default function PoseViewer() {
+function PoseViewer() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const resultsRef = useRef<any>(null)
@@ -115,12 +115,22 @@ export default function PoseViewer() {
   const [isRecording, setIsRecording] = useState<boolean>(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
 
-  // keep refs in sync with state in case state changes come from elsewhere
-  useEffect(() => { lineColorRef.current = lineColor }, [lineColor])
-  useEffect(() => { pointColorRef.current = pointColor }, [pointColor])
-  useEffect(() => { lineWidthRef.current = lineWidth }, [lineWidth])
-  useEffect(() => { pointRadiusRef.current = pointRadius }, [pointRadius])
+  // keep mirrored ref in sync with state
   useEffect(() => { mirroredRef.current = mirrored }, [mirrored])
+
+  // Redraw canvas when visual customization changes
+  useEffect(() => {
+    if (smoothedKeypointsRef.current && detectedSide && canvasRef.current) {
+      const canvas = canvasRef.current
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        // Clear and redraw with new styling
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        drawSkeleton(ctx, smoothedKeypointsRef.current, detectedSide)
+        drawAngles(ctx, smoothedKeypointsRef.current, detectedSide)
+      }
+    }
+  }, [lineColor, pointColor, lineWidth, pointRadius, detectedSide])
 
   // Recommended ranges for bike fitting measurements based on bike type
   const getRecommendedRanges = (type: 'road' | 'triathlon') => {
@@ -271,7 +281,9 @@ export default function PoseViewer() {
       frontStroke: frontScore,
       details: scoredMeasurements
     })
-  }, [angleValues, recommendedRanges])  // Function to check if a measurement is within recommended range
+  }, [angleValues, recommendedRanges])
+
+  // Function to check if a measurement is within recommended range
   function getMeasurementStatus(value: number | null, range: { min: number, max: number }) {
     if (value === null) return 'unknown'
     if (value >= range.min && value <= range.max) return 'good'
@@ -481,18 +493,18 @@ export default function PoseViewer() {
   function getOptimalSkipRates(fps: number) {
     if (fps >= 60) {
       return {
-        mediapipe: 4, // 60fps ÷ 4 = 15fps MediaPipe processing (optimal for pose detection)
-        angles: 6     // 60fps ÷ 6 = 10fps angle calculation (sufficient for measurements)
+        mediapipe: 6, // 60fps ÷ 6 = 10fps MediaPipe processing (reduced load)
+        angles: 10    // 60fps ÷ 10 = 6fps angle calculation (sufficient for measurements)
       }
     } else if (fps >= 30) {
       return {
-        mediapipe: 2, // 30fps ÷ 2 = 15fps MediaPipe processing
-        angles: 3     // 30fps ÷ 3 = 10fps angle calculation
+        mediapipe: 3, // 30fps ÷ 3 = 10fps MediaPipe processing
+        angles: 5     // 30fps ÷ 5 = 6fps angle calculation
       }
     } else {
       return {
-        mediapipe: 1, // Process every frame for low FPS
-        angles: 2
+        mediapipe: 2, // 15fps ÷ 2 = 7.5fps for low FPS
+        angles: 3
       }
     }
   }
@@ -699,16 +711,20 @@ export default function PoseViewer() {
       }
 
       setStatus('mediapipe-loaded')
-
-      try {
-        await ensureDevicePermissionsAndList()
-      } catch {
-        // ignore
-      }
     }
 
     loadMediaPipe()
-  }, [ensureDevicePermissionsAndList])
+  }, [])
+
+  // Device permissions effect (separate to avoid loops)
+  useEffect(() => {
+    if (status === 'mediapipe-loaded') {
+      ensureDevicePermissionsAndList().catch(() => {
+        // ignore permission errors
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status])
 
   // Camera and processing effect
   useEffect(() => {
@@ -972,19 +988,20 @@ export default function PoseViewer() {
     return () => {
       running = false
       if (raf) cancelAnimationFrame(raf)
+      if (pose) {
+        pose.close()
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSettings, selectedFps, detectedSide, detectSideFromKeypoints, sideScore])
+  }, [currentSettings])
 
   // Effect to apply camera settings when controls change
   useEffect(() => {
-    if (status === 'mediapipe-loaded') {
-      // Only auto-start if we have device settings
-      if (selectedDeviceId) {
-        applyCameraSettings()
-      }
+    if (status === 'mediapipe-loaded' && selectedDeviceId) {
+      applyCameraSettings()
     }
-  }, [selectedDeviceId, selectedResolution, selectedFps, status, applyCameraSettings])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDeviceId, selectedResolution, selectedFps, status])
 
   // stop camera helper
   function stopCamera() {
@@ -1273,52 +1290,71 @@ export default function PoseViewer() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 p-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">BikeFit AI — Pose Viewer</h1>
-          <p className="text-sm text-muted-foreground">Real-time bike fitting analysis</p>
+    <div className="w-full max-w-7xl mx-auto flex flex-col gap-8 p-6">
+      {/* Modern Header */}
+      <div className="flex items-center justify-between border-b border-border pb-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            BikeFit AI
+          </h1>
+          <p className="text-muted-foreground">Real-time professional bike fitting analysis</p>
         </div>
-        <Badge variant={status === 'running' ? 'default' : 'secondary'}>
-          Status: {status}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge
+            variant={status === 'running' ? 'default' : 'secondary'}
+            className={`px-3 py-1 text-xs font-medium ${
+              status === 'running'
+                ? 'bg-green-100 text-green-800 border-green-200'
+                : 'bg-gray-100 text-gray-600 border-gray-200'
+            }`}
+          >
+            <div className={`w-2 h-2 rounded-full mr-2 ${
+              status === 'running' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
+            }`} />
+            {status === 'running' ? 'Active' : 'Inactive'}
+          </Badge>
+        </div>
       </div>
 
-      {/* Camera Settings */}
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 shadow-sm">
-        <CardHeader className="pb-4">
+      {/* Modern Camera Settings */}
+      <Card className="border-0 shadow-md bg-white/60 backdrop-blur-sm">
+        <CardHeader className="pb-6">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-blue-800">
-              📹 Camera Settings
-            </CardTitle>
-            {/* Quick Status Indicator */}
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-50 border border-blue-100">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <CardTitle className="text-xl font-semibold text-gray-900">Camera Setup</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">Configure your camera for optimal analysis</p>
+              </div>
+            </div>
+            {/* Status Indicator */}
             <div className="flex items-center gap-2">
               {currentSettings ? (
-                <>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 border border-green-200">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <Badge variant="default" className="bg-green-500 text-white text-xs">Live</Badge>
-                </>
+                  <span className="text-sm font-medium text-green-700">Live</span>
+                </div>
               ) : (
-                <>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200">
                   <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                  <Badge variant="outline" className="text-gray-500 border-gray-300 text-xs">Offline</Badge>
-                </>
+                  <span className="text-sm font-medium text-gray-600">Offline</span>
+                </div>
               )}
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-5">
-          {/* Configuration Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <CardContent className="space-y-6">
+          {/* Configuration Controls */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Camera Device */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-4 bg-blue-400 rounded-full"></div>
-                <Label htmlFor="camera" className="text-sm font-medium text-blue-700">Camera Device</Label>
-              </div>
+            <div className="space-y-3">
+              <Label htmlFor="camera" className="text-sm font-medium text-gray-700">Camera Device</Label>
               <Select value={selectedDeviceId ?? 'no-camera'} onValueChange={(value) => setSelectedDeviceId(value === 'no-camera' ? null : value)}>
-                <SelectTrigger id="camera" className="border-blue-200 focus:border-blue-400 h-10">
+                <SelectTrigger id="camera" className="h-11 border-gray-200 hover:border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                   <SelectValue placeholder="Select camera" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1336,32 +1372,32 @@ export default function PoseViewer() {
             </div>
 
             {/* Resolution */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-4 bg-blue-400 rounded-full"></div>
-                <Label htmlFor="resolution" className="text-sm font-medium text-blue-700">Resolution</Label>
-              </div>
-              <Select value={selectedResolution} onValueChange={setSelectedResolution}>
-                <SelectTrigger id="resolution" className="border-blue-200 focus:border-blue-400 h-10">
+            <div className="space-y-3">
+              <Label htmlFor="resolution" className="text-sm font-medium text-gray-700">Resolution</Label>
+              <Select value={selectedResolution} onValueChange={(value) => {
+                console.log('[Resolution] Changed to:', value)
+                setSelectedResolution(value)
+              }}>
+                <SelectTrigger id="resolution" className="h-11 border-gray-200 hover:border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="640x480">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between w-full">
                       <span>640×480</span>
-                      <Badge variant="outline" className="text-xs">Basic</Badge>
+                      <Badge variant="outline" className="ml-2 text-xs">Basic</Badge>
                     </div>
                   </SelectItem>
                   <SelectItem value="1280x720">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between w-full">
                       <span>1280×720</span>
-                      <Badge variant="outline" className="text-xs bg-blue-50">HD</Badge>
+                      <Badge variant="outline" className="ml-2 text-xs bg-blue-50 text-blue-700">HD</Badge>
                     </div>
                   </SelectItem>
                   <SelectItem value="1920x1080">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between w-full">
                       <span>1920×1080</span>
-                      <Badge variant="outline" className="text-xs bg-purple-50">Full HD</Badge>
+                      <Badge variant="outline" className="ml-2 text-xs bg-purple-50 text-purple-700">Full HD</Badge>
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -1369,38 +1405,38 @@ export default function PoseViewer() {
             </div>
 
             {/* Frame Rate */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-4 bg-blue-400 rounded-full"></div>
-                <Label htmlFor="fps" className="text-sm font-medium text-blue-700">Frame Rate</Label>
-              </div>
-              <Select value={String(selectedFps)} onValueChange={(value) => setSelectedFps(Number(value))}>
-                <SelectTrigger id="fps" className="border-blue-200 focus:border-blue-400 h-10">
+            <div className="space-y-3">
+              <Label htmlFor="fps" className="text-sm font-medium text-gray-700">Frame Rate</Label>
+              <Select value={String(selectedFps)} onValueChange={(value) => {
+                console.log('[FPS] Changed to:', value)
+                setSelectedFps(Number(value))
+              }}>
+                <SelectTrigger id="fps" className="h-11 border-gray-200 hover:border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="15">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between w-full">
                       <span>15 FPS</span>
-                      <Badge variant="outline" className="text-xs">Basic</Badge>
+                      <Badge variant="outline" className="ml-2 text-xs">Basic</Badge>
                     </div>
                   </SelectItem>
                   <SelectItem value="24">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between w-full">
                       <span>24 FPS</span>
-                      <Badge variant="outline" className="text-xs bg-orange-50">Cinema</Badge>
+                      <Badge variant="outline" className="ml-2 text-xs bg-orange-50 text-orange-700">Cinema</Badge>
                     </div>
                   </SelectItem>
                   <SelectItem value="30">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between w-full">
                       <span>30 FPS</span>
-                      <Badge variant="outline" className="text-xs bg-green-50">Standard</Badge>
+                      <Badge variant="outline" className="ml-2 text-xs bg-green-50 text-green-700">Standard</Badge>
                     </div>
                   </SelectItem>
                   <SelectItem value="60">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between w-full">
                       <span>60 FPS</span>
-                      <Badge variant="outline" className="text-xs bg-purple-50">⚡ Performance</Badge>
+                      <Badge variant="outline" className="ml-2 text-xs bg-purple-50 text-purple-700">⚡ Performance</Badge>
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -1409,21 +1445,21 @@ export default function PoseViewer() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2 border-t border-blue-100">
+          <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-100">
             <Button
               variant="outline"
               onClick={() => ensureDevicePermissionsAndList()}
-              className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+              className="flex items-center gap-2 h-11 px-6 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               Refresh Devices
             </Button>
-            <div className="flex gap-2 flex-1">
+            <div className="flex gap-3 flex-1">
               <Button
                 onClick={() => applyCameraSettings()}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 flex-1"
+                className="flex items-center gap-2 h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white flex-1"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-9-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1433,7 +1469,7 @@ export default function PoseViewer() {
               <Button
                 variant="destructive"
                 onClick={() => stopCamera()}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 h-11 px-6"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1446,83 +1482,90 @@ export default function PoseViewer() {
 
           {/* Recording Controls */}
           {currentSettings && (
-            <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t border-blue-100">
-              <div className="flex items-center gap-2 text-blue-700 text-sm font-medium">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                Video Recording:
+            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-100">
+              <div className="flex items-center gap-3 text-gray-700 text-sm font-medium">
+                <div className="p-1.5 rounded-lg bg-red-50 border border-red-100">
+                  <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                Video Recording
               </div>
-              <div className="flex gap-2 flex-1">
+              <div className="flex gap-3 flex-1">
                 {!isRecording ? (
                   <Button
                     onClick={startRecording}
                     disabled={!currentSettings || !detectedSide}
-                    className="flex items-center gap-2 bg-red-600 hover:bg-red-700 flex-1"
+                    className="flex items-center gap-2 h-11 px-6 bg-red-600 hover:bg-red-700 text-white flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10"/>
+                      <circle cx="12" cy="12" r="8"/>
                     </svg>
                     Start Recording
                   </Button>
                 ) : (
                   <Button
                     onClick={stopRecording}
-                    className="flex items-center gap-2 bg-red-600 hover:bg-red-700 flex-1"
+                    className="flex items-center gap-2 h-11 px-6 bg-red-600 hover:bg-red-700 text-white flex-1"
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <rect x="6" y="6" width="12" height="12"/>
+                      <rect x="6" y="6" width="12" height="12" rx="2"/>
                     </svg>
                     Stop Recording
                   </Button>
                 )}
                 {isRecording && (
-                  <Badge variant="default" className="bg-red-500 text-white animate-pulse">
-                    🔴 Recording
-                  </Badge>
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 border border-red-200">
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-red-700">Recording</span>
+                  </div>
                 )}
               </div>
             </div>
-          )}          {/* Enhanced Status Panel */}
+          )}
+
+          {/* Status Panel */}
           {currentSettings ? (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
-              <div className="space-y-3">
+            <div className="bg-white/70 backdrop-blur-lg border border-emerald-200/50 rounded-xl p-5">
+              <div className="space-y-4">
                 {/* Primary Status */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="font-semibold text-green-800">Camera Active</span>
+                      <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                      <span className="font-medium text-slate-700">Camera Active</span>
                     </div>
-                    <div className="text-green-700 font-mono text-sm">
+                    <div className="text-slate-600 font-mono text-sm">
                       {currentSettings.width}×{currentSettings.height}
                     </div>
-                    <Badge variant="default" className="bg-green-500 text-white">
+                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200">
                       {currentSettings.frameRate || currentSettings.frameRate?.ideal || selectedFps} FPS
                     </Badge>
                     {selectedFps >= 60 && (
-                      <Badge variant="default" className="bg-purple-500 text-white">⚡ High Performance</Badge>
+                      <Badge variant="secondary" className="bg-purple-100 text-purple-700 hover:bg-purple-200">
+                        ⚡ High Performance
+                      </Badge>
                     )}
                   </div>
                 </div>
 
                 {/* Performance Metrics */}
-                <div className="grid grid-cols-3 gap-4 pt-2 border-t border-green-200">
+                <div className="grid grid-cols-3 gap-4 pt-3 border-t border-emerald-200/60">
                   <div className="text-center">
-                    <div className="text-xs text-green-600 font-medium">MediaPipe</div>
-                    <div className="text-sm font-mono text-green-800">
+                    <div className="text-xs text-slate-500 font-medium mb-1">MediaPipe</div>
+                    <div className="text-sm font-mono text-slate-700">
                       {Math.round(selectedFps / getOptimalSkipRates(selectedFps).mediapipe)} fps
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xs text-green-600 font-medium">Angle Calc</div>
-                    <div className="text-sm font-mono text-green-800">
+                    <div className="text-xs text-slate-500 font-medium mb-1">Angle Calc</div>
+                    <div className="text-sm font-mono text-slate-700">
                       {Math.round(selectedFps / getOptimalSkipRates(selectedFps).angles)} fps
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xs text-green-600 font-medium">Model</div>
-                    <div className="text-sm font-mono text-green-800">
+                    <div className="text-xs text-slate-500 font-medium mb-1">Mode</div>
+                    <div className="text-sm font-mono text-slate-700">
                       {selectedFps >= 60 ? 'Fast' : selectedFps >= 30 ? 'Balanced' : 'Quality'}
                     </div>
                   </div>
@@ -1530,11 +1573,11 @@ export default function PoseViewer() {
               </div>
             </div>
           ) : (
-            <div className="bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-lg p-4">
+            <div className="bg-white/50 backdrop-blur-lg border border-slate-200/50 rounded-xl p-5">
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                <span className="text-gray-600 font-medium">Camera Inactive</span>
-                <span className="text-gray-500 text-sm">Click &quot;Start Camera&quot; to begin</span>
+                <div className="w-2.5 h-2.5 bg-slate-400 rounded-full"></div>
+                <span className="text-slate-600 font-medium">Camera Inactive</span>
+                <span className="text-slate-500 text-sm">Click &quot;Start Camera&quot; to begin</span>
               </div>
             </div>
           )}
@@ -1542,19 +1585,19 @@ export default function PoseViewer() {
       </Card>
 
       {/* Analysis Configuration */}
-      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+      <Card className="bg-white/70 backdrop-blur-lg border border-emerald-200/50">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-green-800">
+          <CardTitle className="flex items-center gap-2 text-slate-700">
             🔬 Analysis Configuration
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Bike Type Selection */}
             <div className="space-y-3">
-              <Label htmlFor="bikeType" className="text-green-800 font-medium">Bike Type</Label>
+              <Label htmlFor="bikeType" className="text-slate-700 font-medium">Bike Type</Label>
               <Select value={bikeType} onValueChange={(value: 'road' | 'triathlon') => setBikeType(value)}>
-                <SelectTrigger id="bikeType" className="border-green-200">
+                <SelectTrigger id="bikeType" className="border-emerald-200/60">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1562,30 +1605,34 @@ export default function PoseViewer() {
                   <SelectItem value="triathlon">🏊 Triathlon/TT</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-green-600">
+              <p className="text-xs text-slate-500">
                 {bikeType === 'road' ? 'Optimized for comfort & power delivery' : 'Optimized for aerodynamics & speed'}
               </p>
             </div>
 
             {/* Detection Status */}
             <div className="space-y-3">
-              <Label className="text-green-800 font-medium">Pose Detection</Label>
-              <div className="bg-green-100 border border-green-200 rounded-lg p-3">
+              <Label className="text-slate-700 font-medium">Pose Detection</Label>
+              <div className="bg-emerald-50/50 border border-emerald-200/60 rounded-lg p-3">
                 {detectedSide ? (
                   <div className="flex items-center gap-2">
-                    <Badge variant="default" className="bg-green-500 text-white">✅ Detecting</Badge>
-                    <span className="text-green-800 font-medium">
+                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200">
+                      ✅ Detecting
+                    </Badge>
+                    <span className="text-slate-700 font-medium">
                       {detectedSide === 'right' ? 'Right Side' : 'Left Side'} Profile
                     </span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-orange-600 border-orange-200">⚠️ No Detection</Badge>
-                    <span className="text-green-700">Position yourself in profile view</span>
+                    <Badge variant="outline" className="text-orange-600 border-orange-200 hover:bg-orange-50">
+                      ⚠️ No Detection
+                    </Badge>
+                    <span className="text-slate-600">Position yourself in profile view</span>
                   </div>
                 )}
               </div>
-              <p className="text-xs text-green-600">
+              <p className="text-xs text-slate-500">
                 Stand sideways to the camera in your cycling position
               </p>
             </div>
@@ -1610,167 +1657,166 @@ export default function PoseViewer() {
       </Card>
 
       {/* Visual Customization */}
-      <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
+      <Card className="bg-white/70 backdrop-blur-lg border border-purple-200/50">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-purple-800 text-base">
+          <CardTitle className="flex items-center gap-2 text-slate-700 text-base">
             🎨 Visual Customization
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {/* Compact layout in a single row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 items-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-center">
             {/* Line Color */}
             <div className="flex items-center gap-2">
-              <Label htmlFor="lineColor" className="text-xs font-medium text-purple-700">Lines</Label>
+              <Label htmlFor="lineColor" className="text-xs font-medium text-slate-600">Lines</Label>
               <input
                 id="lineColor"
                 type="color"
                 value={lineColor}
-                onChange={e => { setLineColor(e.target.value); lineColorRef.current = e.target.value }}
-                className="w-6 h-6 border border-purple-200 rounded cursor-pointer hover:border-purple-300 transition-colors"
+                onChange={e => {
+                  setLineColor(e.target.value)
+                  lineColorRef.current = e.target.value
+                }}
+                className="w-7 h-7 border border-purple-200/60 rounded-md cursor-pointer hover:border-purple-300 transition-colors"
               />
             </div>
 
             {/* Point Color */}
             <div className="flex items-center gap-2">
-              <Label htmlFor="pointColor" className="text-xs font-medium text-purple-700">Points</Label>
+              <Label htmlFor="pointColor" className="text-xs font-medium text-slate-600">Points</Label>
               <input
                 id="pointColor"
                 type="color"
                 value={pointColor}
-                onChange={e => { setPointColor(e.target.value); pointColorRef.current = e.target.value }}
-                className="w-6 h-6 border border-purple-200 rounded cursor-pointer hover:border-purple-300 transition-colors"
+                onChange={e => {
+                  setPointColor(e.target.value)
+                  pointColorRef.current = e.target.value
+                }}
+                className="w-7 h-7 border border-purple-200/60 rounded-md cursor-pointer hover:border-purple-300 transition-colors"
               />
             </div>
 
             {/* Line Width */}
             <div className="flex items-center gap-2">
-              <Label htmlFor="lineWidth" className="text-xs font-medium text-purple-700 whitespace-nowrap">Width</Label>
+              <Label htmlFor="lineWidth" className="text-xs font-medium text-slate-600 whitespace-nowrap">Width</Label>
               <Slider
                 id="lineWidth"
                 value={[lineWidth]}
                 min={1}
                 max={12}
                 step={1}
-                onValueChange={(value) => { setLineWidth(value[0]); lineWidthRef.current = value[0] }}
+                onValueChange={(value) => {
+                  setLineWidth(value[0])
+                  lineWidthRef.current = value[0]
+                }}
                 className="flex-1 min-w-[60px]"
               />
-              <span className="text-xs text-purple-600 font-mono min-w-[25px]">{lineWidthRef.current}</span>
+              <span className="text-xs text-slate-500 font-mono min-w-[25px]">{lineWidth}</span>
             </div>
 
             {/* Point Size */}
             <div className="flex items-center gap-2">
-              <Label htmlFor="pointRadius" className="text-xs font-medium text-purple-700 whitespace-nowrap">Size</Label>
+              <Label htmlFor="pointRadius" className="text-xs font-medium text-slate-600 whitespace-nowrap">Size</Label>
               <Slider
                 id="pointRadius"
                 value={[pointRadius]}
                 min={1}
                 max={20}
                 step={1}
-                onValueChange={(value) => { setPointRadius(value[0]); pointRadiusRef.current = value[0] }}
+                onValueChange={(value) => {
+                  setPointRadius(value[0])
+                  pointRadiusRef.current = value[0]
+                }}
                 className="flex-1 min-w-[60px]"
               />
-              <span className="text-xs text-purple-600 font-mono min-w-[25px]">{pointRadiusRef.current}</span>
-            </div>
-          </div>
-
-          {/* Compact Preview */}
-          <div className="bg-purple-100 border border-purple-200 rounded-lg p-2 flex items-center justify-center gap-6">
-            <div className="flex items-center gap-2">
-              <div
-                className="rounded"
-                style={{
-                  width: `${Math.max(20, lineWidth * 4)}px`,
-                  height: `${lineWidth}px`,
-                  backgroundColor: lineColor
-                }}
-              />
-              <span className="text-xs text-purple-600">Line</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div
-                className="rounded-full"
-                style={{
-                  width: `${pointRadius * 2}px`,
-                  height: `${pointRadius * 2}px`,
-                  backgroundColor: pointColor
-                }}
-              />
-              <span className="text-xs text-purple-600">Point</span>
+              <span className="text-xs text-slate-500 font-mono min-w-[25px]">{pointRadius}</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Video Canvas */}
-      <div className="relative bg-black/5 border border-border rounded-lg overflow-hidden aspect-video">
-        {currentSettings ? (
-          <>
-            <video
-              ref={videoRef}
-              className="w-full h-full object-contain bg-black"
-              playsInline
-              muted
-              // Mostramos el video directamente; el canvas dibuja encima
-              style={{ opacity: 1, transition: 'opacity 300ms' }}
-              width="1280"
-              height="720"
-              preload="none"
-              onLoadedData={() => {
-                const v = videoRef.current
-                if (v) {
-                  console.log('[Video] loadeddata', { rs: v.readyState, w: v.videoWidth, h: v.videoHeight })
-                }
-              }}
-              onCanPlay={() => {
-                const v = videoRef.current
-                if (v) console.log('[Video] canplay', { rs: v.readyState })
-              }}
-              onPlaying={() => {
-                const v = videoRef.current
-                if (v) console.log('[Video] playing')
-              }}
-            />
-            <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
-            {/* Overlay debug (auto-oculta cuando video tiene dimensiones) */}
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center" id="video-debug-overlay">
-              <span className="text-xs text-white/70 bg-black/40 px-2 py-1 rounded" style={{display: (videoRef.current && videoRef.current.videoWidth) ? 'none' : 'inline-block'}}>Loading video…</span>
-            </div>
-          </>
-        ) : (
-          // Empty State when camera is not active
-          <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-gray-50 to-gray-100 text-gray-500">
-            <div className="text-center space-y-4">
-              <div className="text-6xl opacity-20">📹</div>
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium text-gray-700">Camera Not Active</h3>
-                <p className="text-sm text-gray-500 max-w-md">
+      <div className="relative bg-slate-50/30 border border-slate-200/50 rounded-xl overflow-hidden backdrop-blur-sm">
+        {/* Video element always mounted so videoRef.current is available for stream attachment */}
+        <video
+          ref={videoRef}
+          className="w-full h-auto object-contain bg-slate-900/5"
+          playsInline
+          muted
+          // Show video only when we have currentSettings
+          style={{
+            opacity: currentSettings ? 1 : 0,
+            transition: 'opacity 300ms',
+            aspectRatio: 'auto'
+          }}
+          preload="none"
+          onLoadedData={() => {
+            // Video ready - removed verbose logging
+          }}
+          onCanPlay={() => {
+            // Video can play - removed verbose logging
+          }}
+          onPlaying={() => {
+            // Video playing - removed verbose logging
+          }}
+        />
+
+        {/* Canvas overlay for pose visualization */}
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{
+            opacity: currentSettings ? 1 : 0,
+            transition: 'opacity 300ms'
+          }}
+        />
+
+        {/* Empty State overlay when camera is not active */}
+        {!currentSettings && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm text-slate-500 min-h-[400px]">
+            <div className="text-center space-y-6 p-8">
+              <div className="text-6xl opacity-30">📹</div>
+              <div className="space-y-3">
+                <h3 className="text-lg font-medium text-slate-700">Camera Not Active</h3>
+                <p className="text-sm text-slate-600 max-w-md leading-relaxed">
                   Start your camera to begin bike fit analysis. Position yourself sideways to the camera in your cycling position.
                 </p>
               </div>
-              <div className="flex flex-col gap-2 pt-4">
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+              <div className="flex flex-col gap-3 pt-6">
+                <div className="flex items-center gap-3 text-xs text-slate-500">
+                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
                   <span>Select camera device</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                <div className="flex items-center gap-3 text-xs text-slate-500">
+                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
                   <span>Choose resolution & frame rate</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                <div className="flex items-center gap-3 text-xs text-slate-500">
+                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
                   <span>Click &quot;Start Camera&quot;</span>
                 </div>
               </div>
             </div>
           </div>
         )}
-      </div>
 
+        {/* Loading debug overlay (auto-hides when video has dimensions) */}
+        {currentSettings && (
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center" id="video-debug-overlay">
+            <span
+              className="text-xs text-white/70 bg-black/40 px-2 py-1 rounded"
+              style={{
+                display: (videoRef.current && videoRef.current.videoWidth) ? 'none' : 'inline-block'
+              }}
+            >
+              Loading video…
+            </span>
+          </div>
+        )}
       {/* Bike Fit Analysis */}
       <div className="space-y-6">
         {/* Bike Type Indicator */}
-        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <Card className="bg-white/70 backdrop-blur-lg border border-blue-200/50">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -1778,10 +1824,10 @@ export default function PoseViewer() {
                   {bikeType === 'road' ? '🚴' : '🏊'}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-blue-900">
+                  <h3 className="text-lg font-semibold text-slate-700">
                     {bikeType === 'road' ? 'Road Bike Fit Analysis' : 'Triathlon/TT Fit Analysis'}
                   </h3>
-                  <p className="text-sm text-blue-700">
+                  <p className="text-sm text-slate-600">
                     {bikeType === 'road'
                       ? 'Optimized for comfort, power delivery, and endurance riding'
                       : 'Optimized for aerodynamics, speed, and smooth run transition'
@@ -1789,7 +1835,7 @@ export default function PoseViewer() {
                   </p>
                 </div>
               </div>
-              <Badge variant="secondary" className="text-xs font-mono">
+              <Badge variant="secondary" className="text-xs font-mono bg-blue-100 text-blue-700">
                 {bikeType.toUpperCase()}
               </Badge>
             </div>
@@ -1797,7 +1843,7 @@ export default function PoseViewer() {
         </Card>
 
         {/* FitScore Dashboard */}
-        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+        <Card className="bg-white/70 backdrop-blur-lg border border-purple-200/50">
           <CardContent className="pt-6">
             <div className="space-y-4">
               {/* Overall FitScore */}
@@ -1805,40 +1851,40 @@ export default function PoseViewer() {
                 <div className="flex items-center gap-4">
                   <div className="text-4xl">🎯</div>
                   <div>
-                    <h3 className="text-lg font-semibold text-purple-900">Overall Fit Score</h3>
-                    <p className="text-sm text-purple-700">
+                    <h3 className="text-lg font-semibold text-slate-700">Overall Fit Score</h3>
+                    <p className="text-sm text-slate-600">
                       Real-time analysis of your bike fit positioning
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-4xl font-bold text-purple-900">{fitScore}</div>
-                  <div className="text-sm text-purple-600 font-medium">/100</div>
+                  <div className="text-4xl font-bold text-purple-700">{fitScore}</div>
+                  <div className="text-sm text-slate-500 font-medium">/100</div>
                 </div>
               </div>
 
               {/* Score Breakdown */}
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-purple-200">
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-purple-200/60">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-800">{fitScoreBreakdown.topStroke}</div>
-                  <div className="text-xs text-purple-600 font-medium">Top Stroke</div>
-                  <div className="text-xs text-purple-500">Hip & Knee Position</div>
+                  <div className="text-2xl font-bold text-purple-600">{fitScoreBreakdown.topStroke}</div>
+                  <div className="text-xs text-slate-600 font-medium">Top Stroke</div>
+                  <div className="text-xs text-slate-500">Hip & Knee Position</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-800">{fitScoreBreakdown.bottomStroke}</div>
-                  <div className="text-xs text-purple-600 font-medium">Bottom Stroke</div>
-                  <div className="text-xs text-purple-500">Extension & Back</div>
+                  <div className="text-2xl font-bold text-purple-600">{fitScoreBreakdown.bottomStroke}</div>
+                  <div className="text-xs text-slate-600 font-medium">Bottom Stroke</div>
+                  <div className="text-xs text-slate-500">Extension & Back</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-800">{fitScoreBreakdown.frontStroke}</div>
-                  <div className="text-xs text-purple-600 font-medium">Fore/Aft</div>
-                  <div className="text-xs text-purple-500">Position Balance</div>
+                  <div className="text-2xl font-bold text-purple-600">{fitScoreBreakdown.frontStroke}</div>
+                  <div className="text-xs text-slate-600 font-medium">Fore/Aft</div>
+                  <div className="text-xs text-slate-500">Position Balance</div>
                 </div>
               </div>
 
               {/* FitScore Color Bar */}
               <div className="space-y-2">
-                <div className="flex justify-between text-xs text-purple-600">
+                <div className="flex justify-between text-xs text-slate-500">
                   <span>Poor</span>
                   <span>Good</span>
                   <span>Excellent</span>
@@ -1852,7 +1898,7 @@ export default function PoseViewer() {
                     }}
                   />
                 </div>
-                <div className="text-center text-xs text-purple-600 font-medium">
+                <div className="text-center text-xs text-slate-600 font-medium">
                   {fitScore >= 90 ? '🏆 Excellent Fit!' :
                    fitScore >= 75 ? '✅ Good Fit' :
                    fitScore >= 60 ? '⚠️ Needs Adjustment' :
@@ -1867,7 +1913,7 @@ export default function PoseViewer() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         {/* Top of Pedal Stroke Card */}
-        <div className="bg-slate-800 text-white p-4 rounded-lg">
+        <div className="bg-slate-800/95 backdrop-blur-lg text-white p-5 rounded-xl border border-slate-700/50">
           <h3 className="text-lg font-semibold mb-4 text-white">Top of Pedal Stroke</h3>
           <div className="space-y-4">
 
@@ -1905,7 +1951,7 @@ export default function PoseViewer() {
         </div>
 
         {/* Bottom of Pedal Stroke Card */}
-        <div className="bg-slate-800 text-white p-4 rounded-lg">
+        <div className="bg-slate-800/95 backdrop-blur-lg text-white p-5 rounded-xl border border-slate-700/50">
           <h3 className="text-lg font-semibold mb-4 text-white">Bottom of Pedal Stroke</h3>
           <div className="space-y-4">
 
@@ -1943,7 +1989,7 @@ export default function PoseViewer() {
         </div>
 
         {/* Front of Pedal Stroke Card */}
-        <div className="bg-slate-800 text-white p-4 rounded-lg">
+        <div className="bg-slate-800/95 backdrop-blur-lg text-white p-5 rounded-xl border border-slate-700/50">
           <h3 className="text-lg font-semibold mb-4 text-white">Front of Pedal Stroke</h3>
           <div className="space-y-4">
 
@@ -1972,26 +2018,29 @@ export default function PoseViewer() {
       </div>
 
       {/* Shared Legend */}
-      <div className="bg-slate-700 text-white p-4 rounded-lg mt-4">
+      <div className="bg-slate-700/95 backdrop-blur-lg text-white p-4 rounded-xl border border-slate-600/50 mt-4">
         <div className="flex items-center justify-center gap-6 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-red-500 rounded"></div>
-            <span className="text-gray-300">Extreme Values</span>
+            <div className="w-2.5 h-2.5 bg-red-500 rounded-full"></div>
+            <span className="text-slate-300">Extreme Values</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded"></div>
-            <span className="text-gray-300">Recommended Range</span>
+            <div className="w-2.5 h-2.5 bg-green-500 rounded-full"></div>
+            <span className="text-slate-300">Recommended Range</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-white rounded"></div>
-            <span className="text-gray-300">Your Position (Good)</span>
+            <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+            <span className="text-slate-300">Your Position (Good)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-yellow-400 rounded"></div>
-            <span className="text-gray-300">Your Position (Warning)</span>
+            <div className="w-2.5 h-2.5 bg-yellow-400 rounded-full"></div>
+            <span className="text-slate-300">Your Position (Warning)</span>
           </div>
         </div>
       </div>
     </div>
+    </div>
   )
 }
+
+export default PoseViewer
