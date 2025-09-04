@@ -128,35 +128,29 @@ function drawAngleLabel(
   y = Math.max(4, Math.min(y, maxY))
 
   ctx.save()
+  // Unified drawing origin - use local origin (ox, oy)
+  let ox = x
+  let oy = y
 
   if (isFlipped) {
-    // Flip text back to be readable
+    // When flipped, apply a horizontal mirror transform and draw relative to (0,0)
     ctx.translate(x + boxWidth / 2, y + boxHeight / 2)
     ctx.scale(-1, 1)
     ctx.translate(-boxWidth / 2, -boxHeight / 2)
-
-    // Draw background and text
-    drawRoundedRect(ctx, 0, 0, boxWidth, boxHeight, 6,
-      hexToRgba('#000000', DRAWING_CONFIG.BACKGROUND_ALPHA))
-
-    ctx.fillStyle = '#fff'
-    ctx.font = DRAWING_CONFIG.LABEL_FONT
-    ctx.fillText(labelText, padX, padY + 14)
-
-    ctx.font = `bold ${DRAWING_CONFIG.LABEL_FONT}`
-    ctx.fillText(angleText, padX + labelMetrics.width, padY + 14)
-  } else {
-    // Normal drawing
-    drawRoundedRect(ctx, x, y, boxWidth, boxHeight, 6,
-      hexToRgba('#000000', DRAWING_CONFIG.BACKGROUND_ALPHA))
-
-    ctx.fillStyle = '#fff'
-    ctx.font = DRAWING_CONFIG.LABEL_FONT
-    ctx.fillText(labelText, x + padX, y + padY + 14)
-
-    ctx.font = `bold ${DRAWING_CONFIG.LABEL_FONT}`
-    ctx.fillText(angleText, x + padX + labelMetrics.width, y + padY + 14)
+    ox = 0
+    oy = 0
   }
+
+  // Draw background and text using the unified origin
+  drawRoundedRect(ctx, ox, oy, boxWidth, boxHeight, 6,
+    hexToRgba('#000000', DRAWING_CONFIG.BACKGROUND_ALPHA))
+
+  ctx.fillStyle = '#fff'
+  ctx.font = DRAWING_CONFIG.LABEL_FONT
+  ctx.fillText(labelText, ox + padX, oy + padY + 14)
+
+  ctx.font = `bold ${DRAWING_CONFIG.LABEL_FONT}`
+  ctx.fillText(angleText, ox + padX + labelMetrics.width, oy + padY + 14)
 
   ctx.restore()
 }

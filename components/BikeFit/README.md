@@ -26,7 +26,7 @@ components/BikeFit/
 │   ├── useMediaPipeManager.ts # MediaPipe lifecycle management
 │   └── usePoseDetectionRealTime.ts # Real-time pose detection
 ├── Drawing/                    # Canvas rendering utilities
-│   └── canvasUtils.ts         # Drawing functions for pose visualization
+│   └── index.ts               # Drawing functions for pose visualization (modularized)
 ├── Video/                      # Video capture and streaming
 │   ├── index.tsx              # Main video player component
 │   ├── VideoControls.tsx      # Video control UI
