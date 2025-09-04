@@ -1,24 +1,62 @@
-import { calculateAngleBetweenPoints } from '@/lib/bikefit-utils'
+import { calculateAngleBetweenPoints, hexToRgba } from '@/lib/bikefit-utils'
 import type { Keypoint, VisualSettings } from '@/types/bikefit'
 import {
-  hexToRgba,
   drawRoundedRect,
   normalizeAngleDelta,
   normalizedToCanvas,
   isKeypointVisible
 } from './utils'
-import { DRAWING_CONFIG } from './constants'
+import { DRAWING_CONFIG, KEYPOINT_INDICES } from './constants'
 
 /**
  * Creates a proxy foot point when foot detection is insufficient
  */
 function createFootProxy(knee: Keypoint, ankle: Keypoint): Keypoint {
+  const directionScale = 0.5
   return {
-    x: ankle.x + (ankle.x - knee.x) * 0.5,
-    y: ankle.y + (ankle.y - knee.y) * 0.5,
+    x: ankle.x + (ankle.x - knee.x) * directionScale,
+    y: ankle.y + (ankle.y - knee.y) * directionScale,
     score: 0.8,
     name: 'foot_proxy'
   }
+}
+
+/**
+ * Validates that all required keypoints meet visibility threshold
+ */
+function areKeypointsVisible(
+  keypoints: (Keypoint | undefined)[],
+  threshold = DRAWING_CONFIG.HIGH_VISIBILITY_THRESHOLD
+): keypoints is Keypoint[] {
+  return keypoints.every(kp => kp && isKeypointVisible(kp, threshold))
+}
+
+/**
+ * Calculates arc drawing parameters for angle visualization
+ */
+function calculateArcParameters(
+  pointA: Keypoint,
+  pointB: Keypoint,
+  pointC: Keypoint,
+  canvasWidth: number,
+  canvasHeight: number
+) {
+  const a = normalizedToCanvas(pointA, canvasWidth, canvasHeight)
+  const b = normalizedToCanvas(pointB, canvasWidth, canvasHeight)
+  const c = normalizedToCanvas(pointC, canvasWidth, canvasHeight)
+
+  const v1x = a.x - b.x
+  const v1y = a.y - b.y
+  const v2x = c.x - b.x
+  const v2y = c.y - b.y
+
+  const startAngle = Math.atan2(v1y, v1x)
+  const endAngle = Math.atan2(v2y, v2x)
+  const delta = normalizeAngleDelta(endAngle - startAngle)
+  const smallEndAngle = startAngle + delta
+  const anticlockwise = delta < 0
+
+  return { a, b, c, startAngle, smallEndAngle, anticlockwise }
 }
 
 /**
@@ -35,39 +73,24 @@ export function drawAngleMarker(
   canvasHeight: number,
   isFlipped = false
 ): number | null {
-  // Check visibility/confidence of all points
-  const threshold = DRAWING_CONFIG.HIGH_VISIBILITY_THRESHOLD
-
-  if (!isKeypointVisible(pointA, threshold) ||
-      !isKeypointVisible(pointB, threshold) ||
-      !isKeypointVisible(pointC, threshold)) {
+  // Validate keypoint visibility
+  if (!areKeypointsVisible([pointA, pointB, pointC])) {
     return null
   }
 
-  // Calculate angle using existing utility function
+  // Calculate angle
   const angleDeg = calculateAngleBetweenPoints(
     { x: pointA.x, y: pointA.y, score: pointA.score, name: pointA.name || 'a' },
     { x: pointB.x, y: pointB.y, score: pointB.score, name: pointB.name || 'b' },
     { x: pointC.x, y: pointC.y, score: pointC.score, name: pointC.name || 'c' }
   )
 
-  // Convert to canvas coordinates
-  const a = normalizedToCanvas(pointA, canvasWidth, canvasHeight)
-  const b = normalizedToCanvas(pointB, canvasWidth, canvasHeight)
-  const c = normalizedToCanvas(pointC, canvasWidth, canvasHeight)
-
   // Calculate arc parameters
-  const radius = DRAWING_CONFIG.ARC_RADIUS
-  const v1x = a.x - b.x
-  const v1y = a.y - b.y
-  const v2x = c.x - b.x
-  const v2y = c.y - b.y
+  const { b, startAngle, smallEndAngle, anticlockwise } = calculateArcParameters(
+    pointA, pointB, pointC, canvasWidth, canvasHeight
+  )
 
-  const startAngle = Math.atan2(v1y, v1x)
-  const endAngle = Math.atan2(v2y, v2x)
-  const delta = normalizeAngleDelta(endAngle - startAngle)
-  const smallEndAngle = startAngle + delta
-  const anticlockwise = delta < 0
+  const radius = DRAWING_CONFIG.ARC_RADIUS
 
   // Draw filled sector
   ctx.save()
@@ -80,21 +103,60 @@ export function drawAngleMarker(
   ctx.restore()
 
   // Draw arc outline
-  ctx.strokeStyle = settings.lineColor
-  // Use centralized config for arc stroke width so it's adjustable from constants
-  const arcLineWidth = Math.max(
-    DRAWING_CONFIG.ARC_LINE_MIN_WIDTH,
-    Math.round(settings.lineWidth * DRAWING_CONFIG.ARC_LINE_WIDTH_RATIO)
-  )
-  ctx.lineWidth = arcLineWidth
-  ctx.beginPath()
-  ctx.arc(b.x, b.y, radius, startAngle, smallEndAngle, anticlockwise)
-  ctx.stroke()
+  drawArcOutline(ctx, b, radius, startAngle, smallEndAngle, anticlockwise, settings)
 
   // Draw label
   drawAngleLabel(ctx, b, label, angleDeg, canvasWidth, canvasHeight, isFlipped)
 
   return angleDeg
+}
+
+/**
+ * Draws the arc outline for angle visualization
+ */
+function drawArcOutline(
+  ctx: CanvasRenderingContext2D,
+  center: { x: number; y: number },
+  radius: number,
+  startAngle: number,
+  endAngle: number,
+  anticlockwise: boolean,
+  settings: VisualSettings
+): void {
+  const arcLineWidth = Math.max(
+    DRAWING_CONFIG.ARC_LINE_MIN_WIDTH,
+    Math.round(settings.lineWidth * DRAWING_CONFIG.ARC_LINE_WIDTH_RATIO)
+  )
+
+  ctx.strokeStyle = settings.lineColor
+  ctx.lineWidth = arcLineWidth
+  ctx.beginPath()
+  ctx.arc(center.x, center.y, radius, startAngle, endAngle, anticlockwise)
+  ctx.stroke()
+}
+
+/**
+ * Calculates label position with proper boundary clamping
+ */
+function calculateLabelPosition(
+  center: { x: number; y: number },
+  boxWidth: number,
+  boxHeight: number,
+  canvasWidth: number,
+  canvasHeight: number
+): { x: number; y: number } {
+  let x = center.x + 8
+  let y = center.y - 8 - boxHeight / 2
+
+  // Clamp to canvas bounds with proper margins
+  const margin = 4
+  const maxX = canvasWidth - boxWidth - margin
+  const maxY = canvasHeight - boxHeight - margin
+
+  x = Math.max(margin, Math.min(x, maxX))
+  y = Math.max(margin, Math.min(y, maxY))
+
+  return { x, y }
 }
 
 /**
@@ -122,42 +184,90 @@ function drawAngleLabel(
   const boxWidth = labelMetrics.width + angleMetrics.width + padX * 3
   const boxHeight = 18 + padY * 2
 
-  // Calculate position
-  let x = center.x + 8
-  let y = center.y - 8 - boxHeight / 2
-
-  // Clamp to canvas bounds
-  const maxX = canvasWidth - boxWidth - 4
-  const maxY = canvasHeight - boxHeight - 4
-  x = Math.max(4, Math.min(x, maxX))
-  y = Math.max(4, Math.min(y, maxY))
+  // Calculate optimal position
+  const { x, y } = calculateLabelPosition(center, boxWidth, boxHeight, canvasWidth, canvasHeight)
 
   ctx.save()
-  // Unified drawing origin - use local origin (ox, oy)
-  let ox = x
-  let oy = y
+
+  // Handle flipped drawing with unified origin
+  let originX = x
+  let originY = y
 
   if (isFlipped) {
-    // When flipped, apply a horizontal mirror transform and draw relative to (0,0)
     ctx.translate(x + boxWidth / 2, y + boxHeight / 2)
     ctx.scale(-1, 1)
     ctx.translate(-boxWidth / 2, -boxHeight / 2)
-    ox = 0
-    oy = 0
+    originX = 0
+    originY = 0
   }
 
-  // Draw background and text using the unified origin
-  drawRoundedRect(ctx, ox, oy, boxWidth, boxHeight, 6,
-    hexToRgba('#000000', DRAWING_CONFIG.BACKGROUND_ALPHA))
+  // Draw background with rounded corners
+  drawRoundedRect(
+    ctx,
+    originX,
+    originY,
+    boxWidth,
+    boxHeight,
+    6,
+    hexToRgba('#000000', DRAWING_CONFIG.BACKGROUND_ALPHA)
+  )
 
+  // Draw text with proper styling
   ctx.fillStyle = '#fff'
   ctx.font = DRAWING_CONFIG.LABEL_FONT
-  ctx.fillText(labelText, ox + padX, oy + padY + 14)
+  ctx.fillText(labelText, originX + padX, originY + padY + 14)
 
   ctx.font = `bold ${DRAWING_CONFIG.LABEL_FONT}`
-  ctx.fillText(angleText, ox + padX + labelMetrics.width, oy + padY + 14)
+  ctx.fillText(angleText, originX + padX + labelMetrics.width, originY + padY + 14)
 
   ctx.restore()
+}
+
+/**
+ * Gets keypoint indices based on detected side
+ */
+function getKeypointIndices(detectedSide: 'left' | 'right') {
+  return detectedSide === 'right'
+    ? {
+        shoulder: KEYPOINT_INDICES.RIGHT_SHOULDER,
+        elbow: KEYPOINT_INDICES.RIGHT_ELBOW,
+        wrist: KEYPOINT_INDICES.RIGHT_WRIST,
+        hip: KEYPOINT_INDICES.RIGHT_HIP,
+        knee: KEYPOINT_INDICES.RIGHT_KNEE,
+        ankle: KEYPOINT_INDICES.RIGHT_ANKLE,
+        foot: KEYPOINT_INDICES.RIGHT_FOOT
+      }
+    : {
+        shoulder: KEYPOINT_INDICES.LEFT_SHOULDER,
+        elbow: KEYPOINT_INDICES.LEFT_ELBOW,
+        wrist: KEYPOINT_INDICES.LEFT_WRIST,
+        hip: KEYPOINT_INDICES.LEFT_HIP,
+        knee: KEYPOINT_INDICES.LEFT_KNEE,
+        ankle: KEYPOINT_INDICES.LEFT_ANKLE,
+        foot: KEYPOINT_INDICES.LEFT_FOOT
+      }
+}
+
+/**
+ * Draws a specific angle measurement if all required keypoints are available
+ */
+function drawAngleIfValid(
+  ctx: CanvasRenderingContext2D,
+  keypoint1: Keypoint | undefined,
+  keypoint2: Keypoint | undefined,
+  keypoint3: Keypoint | undefined,
+  label: string,
+  settings: VisualSettings,
+  canvasWidth: number,
+  canvasHeight: number,
+  isFlipped: boolean
+): number | null {
+  if (!keypoint1 || !keypoint2 || !keypoint3) return null
+
+  return drawAngleMarker(
+    ctx, keypoint1, keypoint2, keypoint3, label,
+    settings, canvasWidth, canvasHeight, isFlipped
+  )
 }
 
 /**
@@ -178,11 +288,10 @@ export function drawBikeFitAngles(
     return angles
   }
 
-  // Get keypoint indices based on detected side
-  const indices = detectedSide === 'right'
-    ? { shoulder: 12, elbow: 14, wrist: 16, hip: 24, knee: 26, ankle: 28, foot: 32 }
-    : { shoulder: 11, elbow: 13, wrist: 15, hip: 23, knee: 25, ankle: 27, foot: 31 }
+  // Get keypoint indices for the detected side
+  const indices = getKeypointIndices(detectedSide)
 
+  // Extract keypoints using indices
   const {
     shoulder: shoulderKp,
     elbow: elbowKp,
@@ -201,39 +310,31 @@ export function drawBikeFitAngles(
     foot: keypoints[indices.foot]
   }
 
-  // Draw angles with proper error handling
-  if (shoulderKp && elbowKp && wristKp) {
-    angles.elbow = drawAngleMarker(
-      ctx, shoulderKp, elbowKp, wristKp, 'Elbow',
-      settings, canvasWidth, canvasHeight, isFlipped
-    )
-  }
+  // Draw all relevant angles with proper error handling
+  angles.elbow = drawAngleIfValid(
+    ctx, shoulderKp, elbowKp, wristKp, 'Elbow',
+    settings, canvasWidth, canvasHeight, isFlipped
+  )
 
-  if (hipKp && shoulderKp && elbowKp) {
-    angles.shoulder = drawAngleMarker(
-      ctx, hipKp, shoulderKp, elbowKp, 'Shoulder',
-      settings, canvasWidth, canvasHeight, isFlipped
-    )
-  }
+  angles.shoulder = drawAngleIfValid(
+    ctx, hipKp, shoulderKp, elbowKp, 'Shoulder',
+    settings, canvasWidth, canvasHeight, isFlipped
+  )
 
-  if (shoulderKp && hipKp && kneeKp) {
-    angles.hip = drawAngleMarker(
-      ctx, shoulderKp, hipKp, kneeKp, 'Hip',
-      settings, canvasWidth, canvasHeight, isFlipped
-    )
-  }
+  angles.hip = drawAngleIfValid(
+    ctx, shoulderKp, hipKp, kneeKp, 'Hip',
+    settings, canvasWidth, canvasHeight, isFlipped
+  )
 
-  if (hipKp && kneeKp && ankleKp) {
-    angles.knee = drawAngleMarker(
-      ctx, hipKp, kneeKp, ankleKp, 'Knee',
-      settings, canvasWidth, canvasHeight, isFlipped
-    )
-  }
+  angles.knee = drawAngleIfValid(
+    ctx, hipKp, kneeKp, ankleKp, 'Knee',
+    settings, canvasWidth, canvasHeight, isFlipped
+  )
 
   // Handle ankle angle with foot proxy if needed
   if (kneeKp && ankleKp) {
     const footPoint = footKp || createFootProxy(kneeKp, ankleKp)
-    angles.ankle = drawAngleMarker(
+    angles.ankle = drawAngleIfValid(
       ctx, kneeKp, ankleKp, footPoint, 'Ankle',
       settings, canvasWidth, canvasHeight, isFlipped
     )

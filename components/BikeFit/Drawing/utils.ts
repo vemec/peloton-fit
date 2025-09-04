@@ -4,6 +4,9 @@ import type { Keypoint } from '@/types/bikefit'
  * Canvas setup and utility functions
  */
 
+// Re-export from lib for convenience
+export { hexToRgba } from '@/lib/bikefit-utils'
+
 export interface DrawingContext {
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
@@ -53,21 +56,6 @@ export function clearCanvas(
   height: number
 ): void {
   ctx.clearRect(0, 0, width, height)
-}
-
-/**
- * Converts hex color to rgba
- */
-export function hexToRgba(hex: string, alpha = 1): string {
-  const h = hex.replace('#', '')
-  const bigint = parseInt(
-    h.length === 3 ? h.split('').map(c => c + c).join('') : h,
-    16
-  )
-  const r = (bigint >> 16) & 255
-  const g = (bigint >> 8) & 255
-  const b = bigint & 255
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
 /**

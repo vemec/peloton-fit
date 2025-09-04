@@ -1,15 +1,17 @@
 /**
- * Main drawing utilities - exports all drawing functionality
+ * Drawing Module - Main exports for bike fit visualization
  *
- * This module consolidates all drawing-related functions for bike fit analysis,
- * providing a clean API for pose visualization and angle measurements.
+ * This module provides a comprehensive set of utilities for drawing pose detection
+ * and bike fit analysis overlays on canvas elements. All functions are optimized
+ * for performance and follow TypeScript best practices.
+ *
+ * @module Drawing
  */
 
-// Core canvas utilities
+// === Core Canvas Utilities ===
 export {
   setupCanvas,
   clearCanvas,
-  hexToRgba,
   drawRoundedRect,
   normalizeAngleDelta,
   isKeypointVisible,
@@ -17,7 +19,10 @@ export {
   type DrawingContext,
 } from './utils'
 
-// Skeleton and pose drawing
+// Re-export utilities from lib for convenience
+export { hexToRgba, calculateAngleBetweenPoints } from '@/lib/bikefit-utils'
+
+// === Skeleton and Pose Drawing ===
 export {
   drawKeypoint,
   drawConnection,
@@ -25,21 +30,37 @@ export {
   drawDetectedSideSkeleton,
 } from './skeleton'
 
-// Angle measurement and visualization
+// === Angle Measurement and Visualization ===
 export {
   drawAngleMarker,
   drawBikeFitAngles,
 } from './angles'
 
-// Constants
+// === Performance Optimization ===
+export {
+  setCanvasStyle,
+  clearCanvasStateCache,
+  batchDrawKeypoints,
+  batchDrawConnections,
+  fpsCounter,
+  measureDrawingPerformance,
+  optimizedCanvasResize,
+  type DrawingMetrics,
+} from './performance'
+
+// === Constants and Configuration ===
 export {
   POSE_CONNECTIONS,
   BIKE_FIT_ANGLES,
   RELEVANT_KEYPOINTS,
   SIDE_CONNECTIONS,
   DRAWING_CONFIG,
+  KEYPOINT_INDICES,
+  type PoseConnection,
+  type KeypointIndices,
 } from './constants'
 
-// Legacy compatibility - re-export main functions that were in canvasUtils
+// === Legacy Compatibility ===
+// Maintained for backward compatibility with existing code
 export { setupCanvas as setupCanvasContext } from './utils'
 export { drawSkeleton as drawPoseSkeleton } from './skeleton'

@@ -222,26 +222,43 @@ export default function BikeFitVideoPlayer({
               </div>
             </div>
 
-            {/* Side detection indicator - Bottom left */}
-            <div className="absolute bottom-6 left-6 z-10">
-              <div className="relative flex items-center gap-3 bg-black/90 backdrop-blur-md rounded-full px-4 py-2 border border-white/30 shadow-2xl">
-                <div className="relative">
-                  <div className={`w-3 h-3 rounded-full shadow-lg transition-all duration-300 ${
-                    poseDetectedSide
-                      ? 'bg-blue-400 animate-pulse ring-2 ring-blue-300/90 ring-offset-2 ring-offset-black/50'
-                      : 'bg-gray-500 opacity-50'
-                  }`}></div>
-                  {poseDetectedSide && (
-                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-blue-300 animate-ping opacity-75"></div>
-                  )}
+            {/* Side detection indicator - Bottom left - Only show in side mode */}
+            {skeletonMode === 'side' && (
+              <div className="absolute bottom-6 left-6 z-10">
+                <div className="relative flex items-center gap-3 bg-black/90 backdrop-blur-md rounded-full px-4 py-2 border border-white/30 shadow-2xl">
+                  <div className="relative">
+                    <div className={`w-3 h-3 rounded-full shadow-lg transition-all duration-300 ${
+                      poseDetectedSide
+                        ? 'bg-blue-400 animate-pulse ring-2 ring-blue-300/90 ring-offset-2 ring-offset-black/50'
+                        : 'bg-gray-500 opacity-50'
+                    }`}></div>
+                    {poseDetectedSide && (
+                      <div className="absolute inset-0 w-3 h-3 rounded-full bg-blue-300 animate-ping opacity-75"></div>
+                    )}
+                  </div>
+                  <span className={`text-sm font-medium transition-all duration-300 ${
+                    poseDetectedSide ? 'text-blue-100' : 'text-gray-400'
+                  }`}>
+                    {poseDetectedSide ? `Lado ${poseDetectedSide === 'left' ? 'Izquierdo' : 'Derecho'}` : 'Detectando perfil...'}
+                  </span>
                 </div>
-                <span className={`text-sm font-medium transition-all duration-300 ${
-                  poseDetectedSide ? 'text-blue-100' : 'text-gray-400'
-                }`}>
-                  {poseDetectedSide ? `Lado ${poseDetectedSide === 'left' ? 'Izquierdo' : 'Derecho'}` : 'Detectando perfil...'}
-                </span>
               </div>
-            </div>
+            )}
+
+            {/* Skeleton mode indicator - Bottom left when in full mode */}
+            {skeletonMode === 'full' && (
+              <div className="absolute bottom-6 left-6 z-10">
+                <div className="relative flex items-center gap-3 bg-black/90 backdrop-blur-md rounded-full px-4 py-2 border border-white/30 shadow-2xl">
+                  <div className="relative">
+                    <div className="w-3 h-3 rounded-full bg-green-400 shadow-lg animate-pulse ring-2 ring-green-300/90 ring-offset-2 ring-offset-black/50"></div>
+                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-300 animate-ping opacity-75"></div>
+                  </div>
+                  <span className="text-green-100 text-sm font-medium">
+                    Esqueleto Completo
+                  </span>
+                </div>
+              </div>
+            )}
           </>
         )}
 
