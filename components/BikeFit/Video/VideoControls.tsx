@@ -103,7 +103,7 @@ export default function VideoControls({
                 aria-label="Seleccionar cámara"
                 className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
               >
-                <Video size={20} className={cn('transition-transform duration-300 group-hover:scale-105')} />
+                <Video size={20} className={cn('!w-5 !h-5 transition-transform duration-300 group-hover:scale-105')} />
               </Button>
             </PopoverTrigger>
             <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
