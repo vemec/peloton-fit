@@ -2,7 +2,6 @@
 
 // Main components
 export { default as BikeFitVideoPlayer } from './Video'
-export { BikeFitAnalysisConfig } from './Analysis'
 export { default as BikeFitVisualCustomization } from './VisualCustomization'
 
 // Types (re-exported from centralized location)
@@ -58,9 +57,8 @@ export {
   drawKeypoint,
   drawConnection,
   drawDetectedSideSkeleton,
-  drawPoseDetectionInfo,
   drawBikeFitAngles
-} from './Drawing/canvasUtils'
+} from './Drawing'
 
 // Video utilities
 export {

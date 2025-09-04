@@ -23,7 +23,6 @@ components/BikeFit/
 ├── index.ts                    # Main module exports
 ├── types.ts                    # Type re-exports (legacy compatibility)
 ├── Analysis/                   # Pose detection and analysis
-│   ├── BikeFitAnalysisConfig.tsx # Analysis configuration UI
 │   ├── useMediaPipeManager.ts # MediaPipe lifecycle management
 │   └── usePoseDetectionRealTime.ts # Real-time pose detection
 ├── Drawing/                    # Canvas rendering utilities
@@ -71,14 +70,6 @@ Main video component with pose detection and analysis.
 - `onBikeTypeChange: (type: BikeType) => void` - Bike type change callback
 - `visualSettings: VisualSettings` - Visual appearance settings
 - `onVisualSettingsChange: (settings: VisualSettings) => void` - Settings change callback
-
-### BikeFitAnalysisConfig
-Configuration panel for analysis settings.
-
-**Props:**
-- `bikeType: BikeType` - Current bike type
-- `detectedSide: DetectedSide` - Currently detected side
-- `onBikeTypeChange: (bikeType: BikeType) => void` - Bike type change callback
 
 ### BikeFitVisualCustomization
 Visual customization controls for pose overlay.
@@ -129,7 +120,6 @@ Camera device enumeration and selection.
 ```tsx
 import {
   BikeFitVideoPlayer,
-  BikeFitAnalysisConfig,
   BikeFitVisualCustomization,
   DEFAULT_VISUAL_SETTINGS,
   type BikeType,
@@ -144,12 +134,6 @@ function BikeFitAnalysisPage() {
 
   return (
     <div className="space-y-6">
-      <BikeFitAnalysisConfig
-        bikeType={bikeType}
-        detectedSide={detectedSide}
-        onBikeTypeChange={setBikeType}
-      />
-
       <BikeFitVideoPlayer
         bikeType={bikeType}
         detectedSide={detectedSide}
@@ -162,6 +146,10 @@ function BikeFitAnalysisPage() {
       <BikeFitVisualCustomization
         settings={visualSettings}
         onSettingsChange={setVisualSettings}
+      />
+    </div>
+  )
+}
       />
     </div>
   )

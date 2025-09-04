@@ -1,6 +1,5 @@
 // Analysis module exports
 
-export { default as BikeFitAnalysisConfig } from './BikeFitAnalysisConfig'
 export { useMediaPipeManager } from './useMediaPipeManager'
 export { usePoseDetectionRealTime } from './usePoseDetectionRealTime'
 

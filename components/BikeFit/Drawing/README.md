@@ -14,7 +14,7 @@ El módulo de Drawing ha sido refactorizado siguiendo las mejores prácticas del
 
 ### Archivo Existente Actualizado
 
-- **`canvasUtils.ts`** - Mantenido para compatibilidad, ahora re-exporta las funciones modularizadas
+- **`index.ts`** - Punto de entrada consolidado; agrupa y exporta las utilidades modularizadas
 
 ## 🎯 Mejoras Principales Implementadas
 

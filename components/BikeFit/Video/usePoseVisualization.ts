@@ -8,7 +8,7 @@ import {
   drawSkeleton,
   drawDetectedSideSkeleton,
   drawBikeFitAngles
-} from '../Drawing/canvasUtils'
+} from '../Drawing'
 
 interface UsePoseVisualizationProps {
   canvas: HTMLCanvasElement | null

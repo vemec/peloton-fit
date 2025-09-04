@@ -129,27 +129,3 @@ export function drawDetectedSideSkeleton(
     }
   })
 }
-
-/**
- * Draws pose detection information overlay
- */
-export function drawPoseDetectionInfo(
-  ctx: CanvasRenderingContext2D,
-  detectedSide: 'left' | 'right' | 'unknown',
-  confidence: number
-): void {
-  const infoY = 30
-  const boxWidth = 200
-  const boxHeight = 40
-
-  // Draw background
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)'
-  ctx.fillRect(10, 10, boxWidth, boxHeight)
-
-  // Draw text
-  ctx.fillStyle = '#ffffff'
-  ctx.font = '14px monospace'
-  ctx.textAlign = 'left'
-  ctx.fillText(`Lado: ${detectedSide.toUpperCase()}`, 20, infoY)
-  ctx.fillText(`Confianza: ${Math.round(confidence * 100)}%`, 20, infoY + 20)
-}

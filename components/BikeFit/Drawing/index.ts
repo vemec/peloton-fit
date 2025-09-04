@@ -23,7 +23,6 @@ export {
   drawConnection,
   drawSkeleton,
   drawDetectedSideSkeleton,
-  drawPoseDetectionInfo,
 } from './skeleton'
 
 // Angle measurement and visualization
