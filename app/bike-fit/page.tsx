@@ -3,16 +3,14 @@
 import React, { useState } from 'react'
 import VideoPlayer from '@/components/BikeFit/Video'
 import type { BikeType, DetectedSide, VisualSettings } from '@/components/BikeFit/types'
+import { DEFAULT_VISUAL_SETTINGS } from '@/lib/bikefit-constants'
 
 export default function BikeFitPage() {
   const [bikeType, setBikeType] = useState<BikeType>('road')
   const [detectedSide, setDetectedSide] = useState<DetectedSide>(null)
+  // Inicializa usando los valores centralizados para evitar duplicación
   const [visualSettings, setVisualSettings] = useState<VisualSettings>({
-    lineColor: '#8000FF',
-    pointColor: '#FFD800',
-    lineWidth: 4,
-    pointRadius: 7,
-    pointSize: 7
+    ...DEFAULT_VISUAL_SETTINGS,
   })
 
   return (

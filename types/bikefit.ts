@@ -2,6 +2,7 @@
 
 export type BikeType = 'road' | 'triathlon'
 export type DetectedSide = 'right' | 'left' | null
+export type SkeletonMode = 'side' | 'full'
 
 export interface VisualSettings {
   lineColor: string

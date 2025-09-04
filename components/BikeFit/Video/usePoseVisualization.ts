@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from 'react'
-import type { Keypoint, VisualSettings, DetectedSide, DrawingContext } from '@/types/bikefit'
+import type { Keypoint, VisualSettings, DetectedSide, DrawingContext, SkeletonMode } from '@/types/bikefit'
 import {
   setupCanvas,
   clearCanvas,
@@ -18,6 +18,7 @@ interface UsePoseVisualizationProps {
   visualSettings: VisualSettings
   isActive: boolean
   isFlipped?: boolean
+  skeletonMode?: SkeletonMode
 }
 
 export function usePoseVisualization({
@@ -27,7 +28,8 @@ export function usePoseVisualization({
   detectedSide,
   visualSettings,
   isActive,
-  isFlipped = false
+  isFlipped = false,
+  skeletonMode = 'side'
 }: UsePoseVisualizationProps) {
   const drawingContextRef = useRef<DrawingContext | null>(null)
   const animationFrameRef = useRef<number | undefined>(undefined)
@@ -123,8 +125,18 @@ export function usePoseVisualization({
             ctx.scale(-1, 1)
           }
 
-          // Draw skeleton - use detected side specific drawing if available
-          if (detectedSide && detectedSide !== null) {
+          // Draw skeleton based on mode
+          if (skeletonMode === 'full') {
+            // Always show full skeleton regardless of detected side
+            drawSkeleton(
+              ctx,
+              isFlipped ? keypoints : displayKeypoints,
+              visualSettings,
+              canvasEl.width,
+              canvasEl.height
+            )
+          } else if (detectedSide && detectedSide !== null) {
+            // Show side-specific skeleton when side is detected
             drawDetectedSideSkeleton(
               ctx,
               isFlipped ? keypoints : displayKeypoints, // Use original keypoints when flipped since we're applying transform
@@ -145,7 +157,7 @@ export function usePoseVisualization({
               isFlipped
             )
           } else {
-            // Fallback to full skeleton if no side detected
+            // Fallback to full skeleton if no side detected in side mode
             drawSkeleton(
               ctx,
               isFlipped ? keypoints : displayKeypoints, // Use original keypoints when flipped since we're applying transform
@@ -174,7 +186,7 @@ export function usePoseVisualization({
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [keypoints, detectedSide, visualSettings, isActive, isFlipped])
+  }, [keypoints, detectedSide, visualSettings, isActive, isFlipped, skeletonMode])
 
   // Cleanup on unmount
   useEffect(() => {

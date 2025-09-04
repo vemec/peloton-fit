@@ -8,7 +8,7 @@ export const VIDEO_CONFIG = {
 
 // MediaPipe configuration
 export const MEDIAPIPE_CONFIG = {
-  MODEL_COMPLEXITY: 1,
+  MODEL_COMPLEXITY: 2,
   SMOOTH_LANDMARKS: true,
   ENABLE_SEGMENTATION: false,
   MIN_DETECTION_CONFIDENCE: 0.7,

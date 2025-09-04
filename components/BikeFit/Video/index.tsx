@@ -11,7 +11,7 @@ import { usePoseDetectionRealTime } from '../Analysis/usePoseDetectionRealTime'
 import { usePoseVisualization } from './usePoseVisualization'
 import { FIXED_FPS, generateScreenshotFilename } from './constants'
 import { captureCanvasFrame, downloadFile } from './utils'
-import type { BikeType, DetectedSide, VisualSettings } from '@/types/bikefit'
+import type { BikeType, DetectedSide, VisualSettings, SkeletonMode } from '@/types/bikefit'
 
 interface BikeFitVideoPlayerProps {
   bikeType: BikeType
@@ -32,6 +32,7 @@ export default function BikeFitVideoPlayer({
 }: BikeFitVideoPlayerProps) {
   const [selectedResolution, setSelectedResolution] = useState('1280x720')
   const [isFlipped, setIsFlipped] = useState(false)
+  const [skeletonMode, setSkeletonMode] = useState<SkeletonMode>('side')
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // Custom hooks
@@ -54,7 +55,8 @@ export default function BikeFitVideoPlayer({
     detectedSide,
     visualSettings,
     isActive,
-    isFlipped
+    isFlipped,
+    skeletonMode
   })
 
   // Update detected side when pose detection changes
@@ -159,6 +161,13 @@ export default function BikeFitVideoPlayer({
 
   const handleFlipToggle = () => {
     setIsFlipped(prev => !prev)
+  }
+
+  const handleSkeletonModeToggle = () => {
+    setSkeletonMode(prev => prev === 'side' ? 'full' : 'side')
+    show.success('Modo de esqueleto cambiado', {
+      description: skeletonMode === 'side' ? 'Mostrando esqueleto completo' : 'Mostrando esqueleto lateral'
+    })
   }
 
   const handleResolutionChange = (resolution: string) => {
@@ -302,11 +311,13 @@ export default function BikeFitVideoPlayer({
         bikeType={bikeType}
         isFlipped={isFlipped}
         visualSettings={visualSettings}
+        skeletonMode={skeletonMode}
         onDeviceChange={setSelectedDeviceId}
         onResolutionChange={handleResolutionChange}
         onBikeTypeChange={onBikeTypeChange}
         onFlipToggle={handleFlipToggle}
         onVisualSettingsChange={onVisualSettingsChange}
+        onSkeletonModeToggle={handleSkeletonModeToggle}
         onStartCamera={handleStartCamera}
         onStopCamera={handleStopCamera}
         isRecording={isRecording}
