@@ -1,18 +1,35 @@
 import { useState, useEffect, useRef } from 'react'
 import { MEDIAPIPE_CONFIG, ERROR_MESSAGES } from '@/lib/bikefit-constants'
 
-// Global singleton para evitar múltiples inicializaciones de MediaPipe
+/**
+ * Global singleton state for MediaPipe to prevent multiple initializations
+ */
 let mediaPipeLoading = false
 let mediaPipeLoaded = false
 let mediaPipeError: string | null = null
 
+/**
+ * MediaPipe manager interface
+ */
 interface MediaPipeManager {
+  /** Whether MediaPipe is loaded and ready */
   isLoaded: boolean
+  /** Whether MediaPipe is currently loading */
   isLoading: boolean
+  /** Current error message, if any */
   error: string | null
+  /** Function to manually trigger MediaPipe loading */
   loadMediaPipe: () => Promise<void>
 }
 
+/**
+ * Centralized MediaPipe manager hook
+ *
+ * Manages MediaPipe loading state globally to prevent multiple simultaneous
+ * loads and provide consistent state across components.
+ *
+ * @returns MediaPipe loading state and controls
+ */
 export function useMediaPipeManager(): MediaPipeManager {
   const [isLoaded, setIsLoaded] = useState(mediaPipeLoaded)
   const [isLoading, setIsLoading] = useState(mediaPipeLoading)

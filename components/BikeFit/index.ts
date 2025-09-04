@@ -2,7 +2,7 @@
 
 // Main components
 export { default as BikeFitVideoPlayer } from './Video'
-export { default as BikeFitAnalysisConfig } from './Analysis'
+export { BikeFitAnalysisConfig } from './Analysis'
 export { default as BikeFitVisualCustomization } from './VisualCustomization'
 
 // Types (re-exported from centralized location)
@@ -44,9 +44,8 @@ export {
 export { useCameraDevices } from './Video/hooks'
 export { useVideoStream } from './Video/useVideoStream'
 export { useVideoRecording } from './Video/useVideoRecording'
-export { usePoseDetectionRealTime } from './Analysis/usePoseDetectionRealTime'
+export { useMediaPipeManager, usePoseDetectionRealTime } from './Analysis'
 export { usePoseVisualization } from './Video/usePoseVisualization'
-export { useMediaPipeManager } from './Analysis/useMediaPipeManager'
 export { useVisualCustomization } from './VisualCustomization/useVisualCustomization'
 
 // Drawing utilities

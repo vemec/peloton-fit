@@ -23,9 +23,8 @@ components/BikeFit/
 ├── index.ts                    # Main module exports
 ├── types.ts                    # Type re-exports (legacy compatibility)
 ├── Analysis/                   # Pose detection and analysis
-│   ├── index.tsx              # Analysis configuration UI
+│   ├── BikeFitAnalysisConfig.tsx # Analysis configuration UI
 │   ├── useMediaPipeManager.ts # MediaPipe lifecycle management
-│   ├── usePoseDetection.ts    # Legacy pose detection (deprecated)
 │   └── usePoseDetectionRealTime.ts # Real-time pose detection
 ├── Drawing/                    # Canvas rendering utilities
 │   └── canvasUtils.ts         # Drawing functions for pose visualization

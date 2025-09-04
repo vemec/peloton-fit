@@ -5,19 +5,39 @@ import type { DetectedSide, Keypoint, MediaPipeResults, MediaPipeLandmark, Media
 import { MEDIAPIPE_CONFIG } from '@/lib/bikefit-constants'
 import { useMediaPipeManager } from './useMediaPipeManager'
 
+/**
+ * Hook result interface for real-time pose detection
+ */
 interface UsePoseDetectionResult {
+  /** Raw keypoints detected by MediaPipe */
   keypoints: Keypoint[]
-  detectedSide: DetectedSide
-  isMediaPipeLoaded: boolean
-  isProcessing: boolean
-  confidence: number
+  /** Smoothed keypoints for better visualization */
   smoothedKeypoints: Keypoint[]
+  /** Detected side of cyclist ('left' | 'right' | null) */
+  detectedSide: DetectedSide
+  /** Whether MediaPipe is loaded and ready */
+  isMediaPipeLoaded: boolean
+  /** Whether currently processing a frame */
+  isProcessing: boolean
+  /** Overall confidence score (0-1) */
+  confidence: number
 }
 
+/**
+ * Real-time pose detection hook for bike fit analysis
+ *
+ * Provides real-time pose detection capabilities using MediaPipe, with FPS-adaptive
+ * smoothing and side detection for optimal bike fit analysis.
+ *
+ * @param video - HTMLVideoElement to analyze
+ * @param isActive - Whether detection should be active
+ * @param fps - Target FPS for adaptive smoothing (default: 60)
+ * @returns Pose detection results with keypoints and metadata
+ */
 export function usePoseDetectionRealTime(
   video: HTMLVideoElement | null,
   isActive: boolean,
-  fps: number = 60 // Add FPS parameter for adaptive smoothing
+  fps: number = 60
 ): UsePoseDetectionResult {
   const [keypoints, setKeypoints] = useState<Keypoint[]>([])
   const [detectedSide, setDetectedSide] = useState<DetectedSide>(null)

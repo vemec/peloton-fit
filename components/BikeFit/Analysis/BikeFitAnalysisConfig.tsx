@@ -5,12 +5,27 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import type { BikeType, DetectedSide } from '@/types/bikefit'
 
+/**
+ * Props interface for BikeFitAnalysisConfig component
+ */
 interface BikeFitAnalysisConfigProps {
+  /** Current bike type selection */
   bikeType: BikeType
+  /** Currently detected side of cyclist */
   detectedSide: DetectedSide
+  /** Callback when bike type changes */
   onBikeTypeChange: (bikeType: BikeType) => void
 }
 
+/**
+ * Bike Fit Analysis Configuration Component
+ *
+ * Provides UI controls for configuring bike fit analysis parameters
+ * and displays current pose detection status.
+ *
+ * @param props - Component configuration props
+ * @returns JSX element for analysis configuration
+ */
 export default function BikeFitAnalysisConfig({
   bikeType,
   detectedSide,
