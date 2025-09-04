@@ -189,9 +189,11 @@ export default function VideoControls({
           </PopoverTrigger>
           <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
             <div className={cn('space-y-1')}>
-              {['road', 'triathlon'].map((type) => {
+              {['road', 'triathlon', 'mountain'].map((type) => {
                 const isSelected = bikeType === type
-                const displayName = type === 'road' ? 'Bicicleta de Ruta' : 'Bicicleta de Triatlón'
+                const displayName = type === 'road' ? 'Bicicleta de Ruta' :
+                                  type === 'triathlon' ? 'Bicicleta de Triatlón' :
+                                  'Bicicleta de Montaña'
 
                 return (
                   <button

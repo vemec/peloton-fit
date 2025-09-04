@@ -1,6 +1,6 @@
 // Core BikeFit types and interfaces
 
-export type BikeType = 'road' | 'triathlon'
+export type BikeType = 'road' | 'triathlon' | 'mountain'
 export type DetectedSide = 'right' | 'left' | null
 export type SkeletonMode = 'side' | 'full'
 

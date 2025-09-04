@@ -1,0 +1,47 @@
+{
+  "name": "BikeFit AI - Análisis de Postura en Tiempo Real",
+  "short_name": "BikeFit AI",
+  "description": "Aplicación web de análisis de postura para ciclistas y triatletas en tiempo real",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8b5cf6",
+  "orientation": "landscape-primary",
+  "categories": ["sports", "fitness", "health"],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "features": [
+    "real-time pose detection",
+    "bike fit analysis",
+    "computer vision",
+    "angle calculation"
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

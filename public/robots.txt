@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://bikefit-ai.vercel.app/sitemap.xml
+
+# Disallow admin or private areas if any
+# Disallow: /admin/
+# Disallow: /api/
+
+# Allow important resources
+Allow: /api/health
+Allow: /_next/static/
+Allow: /images/
+Allow: /icons/
+
+# Crawl delay (optional)
+Crawl-delay: 1
