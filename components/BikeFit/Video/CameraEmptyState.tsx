@@ -18,7 +18,7 @@ export default function CameraEmptyState({
 }: CameraEmptyStateProps) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-white/90 via-white/80 to-slate-50/70 backdrop-blur-md p-4 overflow-y-auto">
-      <Card className="bg-white/90 backdrop-blur-sm border-slate-200/50 shadow-xl max-w-xl mx-auto w-full">
+      <Card className="bg-white/90 backdrop-blur-sm border-slate-200/50 shadow-xl mx-auto w-full h-full">
         <div className="text-center space-y-5 p-6">
           {/* Icon and Status */}
           <div className="space-y-3">
