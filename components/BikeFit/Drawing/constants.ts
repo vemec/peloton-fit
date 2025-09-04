@@ -67,12 +67,15 @@ export const SIDE_CONNECTIONS = {
 export const DRAWING_CONFIG = {
   // Angle visualization
   ARC_RADIUS: 65,
+  ARC_RADIUS_MIN: 40, // Minimum arc radius for small screens
+  ARC_RADIUS_MAX: 100, // Maximum arc radius for large screens
   ARC_LINE_WIDTH_RATIO: 0.3,
   ARC_LINE_MIN_WIDTH: 1,
 
   // Visibility thresholds
   MIN_VISIBILITY_THRESHOLD: 0.2,
-  HIGH_VISIBILITY_THRESHOLD: 0.6,
+  HIGH_VISIBILITY_THRESHOLD: 0.4, // Reduced from 0.6 to 0.4 for better angle detection
+  ANGLE_VISIBILITY_THRESHOLD: 0.3, // Specific threshold for angle drawing
 
   // Text and label styling
   LABEL_PADDING: { x: 8, y: 8 } as const,

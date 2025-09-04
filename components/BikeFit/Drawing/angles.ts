@@ -23,10 +23,11 @@ function createFootProxy(knee: Keypoint, ankle: Keypoint): Keypoint {
 
 /**
  * Validates that all required keypoints meet visibility threshold
+ * Uses a more lenient threshold for angle detection
  */
 function areKeypointsVisible(
   keypoints: (Keypoint | undefined)[],
-  threshold = DRAWING_CONFIG.HIGH_VISIBILITY_THRESHOLD
+  threshold = DRAWING_CONFIG.ANGLE_VISIBILITY_THRESHOLD
 ): keypoints is Keypoint[] {
   return keypoints.every(kp => kp && isKeypointVisible(kp, threshold))
 }
@@ -73,7 +74,7 @@ export function drawAngleMarker(
   canvasHeight: number,
   isFlipped = false
 ): number | null {
-  // Validate keypoint visibility
+  // Validate keypoint visibility with more permissive threshold
   if (!areKeypointsVisible([pointA, pointB, pointC])) {
     return null
   }
@@ -85,30 +86,44 @@ export function drawAngleMarker(
     { x: pointC.x, y: pointC.y, score: pointC.score, name: pointC.name || 'c' }
   )
 
-  // Calculate arc parameters
-  const { b, startAngle, smallEndAngle, anticlockwise } = calculateArcParameters(
-    pointA, pointB, pointC, canvasWidth, canvasHeight
-  )
+  // Skip invalid angles
+  if (!isFinite(angleDeg) || angleDeg < 0 || angleDeg > 180) {
+    return null
+  }
 
-  const radius = DRAWING_CONFIG.ARC_RADIUS
+  try {
+    // Calculate arc parameters
+    const { b, startAngle, smallEndAngle, anticlockwise } = calculateArcParameters(
+      pointA, pointB, pointC, canvasWidth, canvasHeight
+    )
 
-  // Draw filled sector
-  ctx.save()
-  ctx.beginPath()
-  ctx.moveTo(b.x, b.y)
-  ctx.arc(b.x, b.y, radius, startAngle, smallEndAngle, anticlockwise)
-  ctx.closePath()
-  ctx.fillStyle = hexToRgba(settings.lineColor, DRAWING_CONFIG.SECTOR_ALPHA)
-  ctx.fill()
-  ctx.restore()
+    // Calculate dynamic radius based on canvas size
+    const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.08 // 8% of the smaller dimension
+    const radius = Math.min(
+      Math.max(baseRadius, DRAWING_CONFIG.ARC_RADIUS_MIN),
+      DRAWING_CONFIG.ARC_RADIUS_MAX
+    )
 
-  // Draw arc outline
-  drawArcOutline(ctx, b, radius, startAngle, smallEndAngle, anticlockwise, settings)
+    // Draw filled sector
+    ctx.save()
+    ctx.beginPath()
+    ctx.moveTo(b.x, b.y)
+    ctx.arc(b.x, b.y, radius, startAngle, smallEndAngle, anticlockwise)
+    ctx.closePath()
+    ctx.fillStyle = hexToRgba(settings.lineColor, DRAWING_CONFIG.SECTOR_ALPHA)
+    ctx.fill()
+    ctx.restore()
 
-  // Draw label
-  drawAngleLabel(ctx, b, label, angleDeg, canvasWidth, canvasHeight, isFlipped)
+    // Draw arc outline
+    drawArcOutline(ctx, b, radius, startAngle, smallEndAngle, anticlockwise, settings)
 
-  return angleDeg
+    // Draw label
+    drawAngleLabel(ctx, b, label, angleDeg, canvasWidth, canvasHeight, isFlipped)
+
+    return angleDeg
+  } catch {
+    return null
+  }
 }
 
 /**
