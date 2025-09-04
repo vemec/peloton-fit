@@ -90,9 +90,9 @@ export default function VideoControls({
             className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
           >
             {isActive ? (
-              <Pause className={cn('w-6 h-6 transition-all duration-200')} />
+              <Pause className={cn('!w-5 !h-5 transition-all duration-200')} />
             ) : (
-              <Play className={cn('w-6 h-6 transition-all duration-200')} />
+              <Play className={cn('!w-5 !h-5 transition-all duration-200')} />
             )}
           </Button>
           {/* Camera selector */}
@@ -165,17 +165,16 @@ export default function VideoControls({
           <div className={cn('px-4 py-2 font-mono text-sm min-w-[60px] text-center text-slate-200')}>
             {formatTime(recordingTime)}
           </div>
+          {/* Capture Screenshot button */}
+          <Button
+            onClick={onCaptureScreenshot}
+            disabled={!isActive}
+            size="icon"
+            className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
+          >
+            <Aperture className={cn('!w-5 !h-5 transition-all duration-200')} />
+          </Button>
         </div>
-
-        {/* Capture Screenshot button */}
-        <Button
-          onClick={onCaptureScreenshot}
-          disabled={!isActive}
-          size="icon"
-          className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
-        >
-          <Aperture className={cn('w-6 h-6 transition-all duration-200')} />
-        </Button>
 
         {/* Bike type selector */}
         <Popover>
@@ -185,7 +184,7 @@ export default function VideoControls({
               size="icon"
               className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
             >
-              <Bike className={cn('w-6 h-6')} />
+              <Bike className={cn('!w-5 !h-5')} />
             </Button>
           </PopoverTrigger>
           <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
@@ -226,7 +225,7 @@ export default function VideoControls({
               : 'bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 focus:ring-slate-400/50'
           )}
         >
-          <FlipHorizontal className={cn('w-6 h-6 transition-all duration-200')} />
+          <FlipHorizontal className={cn('!w-5 !h-5 transition-all duration-200')} />
         </Button>
 
         {/* Skeleton Mode Toggle button */}
@@ -241,7 +240,7 @@ export default function VideoControls({
           )}
           title={skeletonMode === 'full' ? 'Esqueleto Completo' : 'Esqueleto Lateral'}
         >
-          <PersonStanding className={cn('w-6 h-6 transition-all duration-200')} />
+          <PersonStanding className={cn('!w-5 !h-5 transition-all duration-200')} />
         </Button>
 
         {/* Visual Customization button */}
@@ -252,7 +251,7 @@ export default function VideoControls({
               size="icon"
               className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
             >
-              <Palette className={cn('w-6 h-6 transition-all duration-200')} />
+              <Palette className={cn('!w-5 !h-5 transition-all duration-200')} />
             </Button>
           </PopoverTrigger>
           <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
@@ -271,7 +270,7 @@ export default function VideoControls({
               size="icon"
               className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
             >
-              <Proportions className={cn('w-6 h-6 transition-all duration-200')} />
+              <Proportions className={cn('!w-5 !h-5 transition-all duration-200')} />
             </Button>
           </PopoverTrigger>
           <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>

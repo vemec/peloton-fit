@@ -185,6 +185,31 @@ export default function BikeFitVideoPlayer({
 
   return (
     <div className="space-y-6">
+      {/* Video Controls - Below video */}
+      <VideoControls
+        devices={devices}
+        selectedDeviceId={selectedDeviceId}
+        selectedResolution={selectedResolution}
+        isActive={isActive}
+        error={error}
+        bikeType={bikeType}
+        isFlipped={isFlipped}
+        visualSettings={visualSettings}
+        skeletonMode={skeletonMode}
+        onDeviceChange={setSelectedDeviceId}
+        onResolutionChange={handleResolutionChange}
+        onBikeTypeChange={onBikeTypeChange}
+        onFlipToggle={handleFlipToggle}
+        onVisualSettingsChange={onVisualSettingsChange}
+        onSkeletonModeToggle={handleSkeletonModeToggle}
+        onStartCamera={handleStartCamera}
+        onStopCamera={handleStopCamera}
+        isRecording={isRecording}
+        onStartRecording={handleStartRecording}
+        onStopRecording={handleStopRecording}
+        onCaptureScreenshot={handleCaptureScreenshot}
+      />
+
       {/* Video Display */}
       <div className="relative bg-slate-50/30 border border-slate-200/50 rounded-3xl overflow-hidden backdrop-blur-sm min-h-[691px]">
         {/* Status indicators - Top corners - Only show when video is active */}
@@ -317,31 +342,6 @@ export default function BikeFitVideoPlayer({
           </div>
         )}
       </div>
-
-      {/* Video Controls - Below video */}
-      <VideoControls
-        devices={devices}
-        selectedDeviceId={selectedDeviceId}
-        selectedResolution={selectedResolution}
-        isActive={isActive}
-        error={error}
-        bikeType={bikeType}
-        isFlipped={isFlipped}
-        visualSettings={visualSettings}
-        skeletonMode={skeletonMode}
-        onDeviceChange={setSelectedDeviceId}
-        onResolutionChange={handleResolutionChange}
-        onBikeTypeChange={onBikeTypeChange}
-        onFlipToggle={handleFlipToggle}
-        onVisualSettingsChange={onVisualSettingsChange}
-        onSkeletonModeToggle={handleSkeletonModeToggle}
-        onStartCamera={handleStartCamera}
-        onStopCamera={handleStopCamera}
-        isRecording={isRecording}
-        onStartRecording={handleStartRecording}
-        onStopRecording={handleStopRecording}
-        onCaptureScreenshot={handleCaptureScreenshot}
-      />
     </div>
   )
 }
