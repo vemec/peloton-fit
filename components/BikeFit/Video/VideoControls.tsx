@@ -5,6 +5,7 @@ import { Camera, Proportions, Check, Video, Bike, Aperture, Play, Pause, FlipHor
 import type { CameraDevice, BikeType, VisualSettings } from '@/types/bikefit'
 import { RESOLUTIONS } from './constants'
 import BikeFitVisualCustomization from '../VisualCustomization'
+import { cn } from '@/lib/utils'
 
 interface VideoControlsProps {
   devices: CameraDevice[]
@@ -72,26 +73,25 @@ export default function VideoControls({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className={cn('flex flex-col gap-4')}>
       {/* Horizontal control bar */}
-      <div className="bg-gray-800/90 backdrop-blur-sm rounded-full px-6 py-3 inline-flex items-center justify-center gap-4 shadow-lg mx-auto">
-
+      <div className={cn('bg-gray-900 backdrop-blur-sm rounded-full px-4 py-3 inline-flex items-center justify-center gap-4 shadow-lg mx-auto')}>
         {/* Camera selector */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
-              size="icon"
-              className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl"
+              aria-label="Seleccionar cámara"
+              className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
             >
-              <Video className="w-6 h-6" />
+              <Video size={20} className={cn('transition-transform duration-300 group-hover:scale-105')} />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200">
-            <div className="space-y-1">
+          <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
+            <div className={cn('space-y-1')}>
               {devices.length === 0 ? (
-                <div className="p-3 text-center">
-                  <p className="text-sm text-gray-500">Sin cámaras</p>
+                <div className={cn('p-3 text-center')}>
+                  <p className={cn('text-sm text-gray-500')}>Sin cámaras</p>
                 </div>
               ) : (
                 devices.map(device => {
@@ -106,17 +106,16 @@ export default function VideoControls({
                     <button
                       key={device.deviceId}
                       onClick={() => onDeviceChange(device.deviceId)}
-                      className={`w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3 ${
-                        isSelected
-                          ? 'bg-blue-50 text-blue-900'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
+                      className={cn(
+                        'w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3',
+                        isSelected ? 'bg-blue-50 text-blue-900' : 'text-gray-700 hover:bg-gray-50'
+                      )}
                     >
-                      <Camera className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`} />
-                      <span className="text-sm font-medium">
+                      <Camera className={cn('w-4 h-4', isSelected ? 'text-blue-600' : 'text-gray-400')} />
+                      <span className={cn('text-sm font-medium')}>
                         {cleanLabel || 'Cámara sin nombre'}
                       </span>
-                      {isSelected && <Check className="w-4 h-4 text-blue-600 ml-auto" />}
+                      {isSelected && <Check className={cn('w-4 h-4 text-blue-600 ml-auto')} />}
                     </button>
                   )
                 })
@@ -131,13 +130,13 @@ export default function VideoControls({
             <Button
               variant="ghost"
               size="icon"
-              className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl"
+              className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
             >
-              <Bike className="w-6 h-6" />
+              <Bike className={cn('w-6 h-6')} />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200">
-            <div className="space-y-1">
+          <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
+            <div className={cn('space-y-1')}>
               {['road', 'triathlon'].map((type) => {
                 const isSelected = bikeType === type
                 const displayName = type === 'road' ? 'Bicicleta de Ruta' : 'Bicicleta de Triatlón'
@@ -146,17 +145,16 @@ export default function VideoControls({
                   <button
                     key={type}
                     onClick={() => onBikeTypeChange(type as BikeType)}
-                    className={`w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3 ${
-                      isSelected
-                        ? 'bg-blue-50 text-blue-900'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
+                    className={cn(
+                      'w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3',
+                      isSelected ? 'bg-blue-50 text-blue-900' : 'text-gray-700 hover:bg-gray-50'
+                    )}
                   >
-                    <Bike className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <span className="text-sm font-medium">
+                    <Bike className={cn('w-4 h-4', isSelected ? 'text-blue-600' : 'text-gray-400')} />
+                    <span className={cn('text-sm font-medium')}>
                       {displayName}
                     </span>
-                    {isSelected && <Check className="w-4 h-4 text-blue-600 ml-auto" />}
+                    {isSelected && <Check className={cn('w-4 h-4 text-blue-600 ml-auto')} />}
                   </button>
                 )
               })}
@@ -165,27 +163,26 @@ export default function VideoControls({
         </Popover>
 
         {/* Recording button with integrated timer container */}
-        <div className="flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-1 gap-1 transition-all duration-300 shadow-lg">
+    <div className={cn('flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-1 gap-1 transition-all duration-300 shadow-lg')}>
           <Button
             onClick={isRecording ? onStopRecording : onStartRecording}
             disabled={!isActive}
             size="icon"
-            className={`w-12 h-12 rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl ${
-              isRecording
-                ? 'bg-red-500 hover:bg-red-400 focus:bg-red-300 border-red-400 hover:border-red-300 focus:border-red-200 focus:ring-red-400'
-                : 'bg-red-500 hover:bg-red-400 focus:bg-red-300 border-red-400 hover:border-red-300 focus:border-red-200 focus:ring-red-400'
-            } text-white disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            {isRecording ? (
-              <div className="w-4 h-4 bg-white rounded transition-all duration-200"></div>
-            ) : (
-              <div className="w-6 h-6 bg-white rounded-full transition-all duration-200"></div>
+            className={cn(
+              'w-12 h-12 bg-white rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out hover:bg-white',
+              'text-white disabled:opacity-50 disabled:cursor-not-allowed'
             )}
+          >
+            <div
+              className={cn(
+                'w-6 h-6 rounded bg-red-500 hover:bg-red-400 focus:bg-red-300 border-red-400 hover:border-red-300 focus:border-red-200 focus:ring-red-400 transition-all duration-200',
+                !isRecording && 'w-10 h-10 rounded-full'
+              )}
+            />
           </Button>
-
-          <div className="px-4 py-2 font-mono text-sm min-w-[60px] text-center text-slate-200">
-            {formatTime(recordingTime)}
-          </div>
+      <div className={cn('px-4 py-2 font-mono text-sm min-w-[60px] text-center text-slate-200')}>
+              {formatTime(recordingTime)}
+            </div>
         </div>
 
         {/* Capture Screenshot button */}
@@ -193,22 +190,23 @@ export default function VideoControls({
           onClick={onCaptureScreenshot}
           disabled={!isActive}
           size="icon"
-          className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
         >
-          <Aperture className="w-6 h-6 transition-all duration-200" />
+          <Aperture className={cn('w-6 h-6 transition-all duration-200')} />
         </Button>
 
         {/* Flip Horizontal button */}
         <Button
           onClick={onFlipToggle}
           size="icon"
-          className={`w-12 h-12 rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl ${
+          className={cn(
+            'w-12 h-12 rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl',
             isFlipped
               ? 'bg-blue-500 hover:bg-blue-400 focus:bg-blue-300 border-blue-400 hover:border-blue-300 focus:border-blue-200 text-white focus:ring-blue-400'
               : 'bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 focus:ring-slate-400/50'
-          }`}
+          )}
         >
-          <FlipHorizontal className="w-6 h-6 transition-all duration-200" />
+          <FlipHorizontal className={cn('w-6 h-6 transition-all duration-200')} />
         </Button>
 
         {/* Visual Customization button */}
@@ -217,12 +215,12 @@ export default function VideoControls({
             <Button
               variant="ghost"
               size="icon"
-              className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl"
+              className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
             >
-              <Palette className="w-6 h-6 transition-all duration-200" />
+              <Palette className={cn('w-6 h-6 transition-all duration-200')} />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-65 p-3 bg-white rounded-xl shadow-xl border border-gray-200">
+          <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
             <BikeFitVisualCustomization
               settings={visualSettings}
               onSettingsChange={onVisualSettingsChange}
@@ -235,12 +233,12 @@ export default function VideoControls({
           onClick={isActive ? onStopCamera : onStartCamera}
           disabled={!selectedDeviceId}
           size="icon"
-          className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
         >
           {isActive ? (
-            <Pause className="w-6 h-6 transition-all duration-200" />
+            <Pause className={cn('w-6 h-6 transition-all duration-200')} />
           ) : (
-            <Play className="w-6 h-6 transition-all duration-200" />
+            <Play className={cn('w-6 h-6 transition-all duration-200')} />
           )}
         </Button>
 
@@ -250,13 +248,13 @@ export default function VideoControls({
             <Button
               variant="ghost"
               size="icon"
-              className="w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl"
+              className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
             >
-              <Proportions className="w-6 h-6 transition-all duration-200" />
+              <Proportions className={cn('w-6 h-6 transition-all duration-200')} />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200">
-            <div className="space-y-1">
+          <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
+            <div className={cn('space-y-1')}>
               {RESOLUTIONS.map(resolution => {
                 const isSelected = selectedResolution === resolution.value
                 const IconComponent = resolution.icon
@@ -265,17 +263,16 @@ export default function VideoControls({
                   <button
                     key={resolution.value}
                     onClick={() => onResolutionChange(resolution.value)}
-                    className={`w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3 ${
-                      isSelected
-                        ? 'bg-purple-50 text-purple-900'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
+                    className={cn(
+                      'w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3',
+                      isSelected ? 'bg-purple-50 text-purple-900' : 'text-gray-700 hover:bg-gray-50'
+                    )}
                   >
-                    <IconComponent className={`w-4 h-4 ${isSelected ? 'text-purple-600' : 'text-gray-400'}`} />
-                    <span className="text-sm font-medium">
+                    <IconComponent className={cn('w-4 h-4', isSelected ? 'text-purple-600' : 'text-gray-400')} />
+                    <span className={cn('text-sm font-medium')}>
                       {resolution.label}
                     </span>
-                    {isSelected && <Check className="w-4 h-4 text-purple-600 ml-auto" />}
+                    {isSelected && <Check className={cn('w-4 h-4 text-purple-600 ml-auto')} />}
                   </button>
                 )
               })}
@@ -286,12 +283,12 @@ export default function VideoControls({
 
       {/* Error Display */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className={cn('bg-red-50 border border-red-200 rounded-lg p-3')}>
+          <div className={cn('flex items-center gap-2')}>
+            <svg className={cn('w-4 h-4 text-red-600')} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-sm font-medium text-red-800">Error: {error}</span>
+            <span className={cn('text-sm font-medium text-red-800')}>Error: {error}</span>
           </div>
         </div>
       )}

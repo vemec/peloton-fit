@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useEffect } from 'react'
 import { toast } from 'sonner'
+import show from '@/lib/toast'
 import VideoControls from './VideoControls'
 import { useCameraDevices } from './hooks'
 import { useVideoStream } from './useVideoStream'
@@ -72,8 +73,8 @@ export default function BikeFitVideoPlayer({
   useEffect(() => {
     if (isActive) {
       toast.dismiss('camera-start')
-      toast.success('✅ Cámara conectada correctamente', {
-        description: 'Ya puedes comenzar a grabar o tomar fotos'
+      toast.success('Cámara conectada', {
+        description: 'La cámara está activa. Puedes grabar o tomar fotos.'
       })
     }
   }, [isActive])
@@ -82,21 +83,19 @@ export default function BikeFitVideoPlayer({
   useEffect(() => {
     if (error) {
       toast.dismiss('camera-start')
-      toast.error('❌ Error de conexión', {
-        description: error || 'No se pudo acceder a la cámara. Verifica los permisos.'
+      toast.error('Error al conectar la cámara', {
+        description: (error as string) || 'No se pudo acceder a la cámara. Verifica permisos y dispositivo.'
       })
     }
   }, [error])
 
   const handleStartCamera = () => {
     if (selectedDeviceId) {
-      toast.loading('🎥 Conectando con la cámara...', {
-        id: 'camera-start'
-      })
+      show.loading('Conectando cámara...', { id: 'camera-start' })
       startCamera(selectedDeviceId, selectedResolution)
     } else {
-      toast.error('❌ Selecciona una cámara', {
-        description: 'Elige un dispositivo de video antes de continuar'
+      show.error('Selecciona una cámara', {
+        description: 'Elige un dispositivo de video antes de continuar.'
       })
     }
   }
@@ -104,27 +103,27 @@ export default function BikeFitVideoPlayer({
   const handleStartRecording = () => {
     if (canvasRef.current) {
       startRecording(canvasRef.current, FIXED_FPS)
-      toast.success('🔴 Grabación iniciada', {
-        description: 'El video incluirá todos los análisis de pose en tiempo real'
+      show.success('Grabación iniciada', {
+        description: 'El video incluirá el análisis de postura en tiempo real.'
       })
     } else {
-      toast.error('❌ No se puede grabar', {
-        description: 'Asegúrate de que la cámara esté activa primero'
+      show.error('No se puede grabar', {
+        description: 'Activa la cámara antes de iniciar la grabación.'
       })
     }
   }
 
   const handleStopCamera = () => {
     stopCamera()
-    toast.info('📷 Cámara desconectada', {
-      description: 'La sesión de análisis ha terminado'
+    show.info('Cámara desconectada', {
+      description: 'La sesión de análisis ha finalizado.'
     })
   }
 
   const handleStopRecording = () => {
     stopRecording()
-    toast.success('⏹️ Grabación completada', {
-      description: 'Tu video con análisis de pose ha sido guardado'
+    show.success('Grabación completada', {
+      description: 'El video con el análisis de postura se ha guardado.'
     })
   }
 
@@ -137,30 +136,24 @@ export default function BikeFitVideoPlayer({
     }
 
     try {
-      // Show loading toast
-      const loadingToast = toast.loading('📸 Capturando imagen con análisis de pose...')
-
       // Capture from canvas which includes pose overlay
       const blob = await captureCanvasFrame(canvasRef.current)
       if (blob) {
         downloadFile(blob, generateScreenshotFilename())
-
-        // Dismiss loading and show success
-        toast.dismiss(loadingToast)
-        toast.success('✅ Imagen capturada exitosamente', {
-          description: 'Tu foto incluye todos los puntos y ángulos de análisis'
+        // Show success
+        show.success('Imagen guardada', {
+          description: 'La foto se ha guardado con los puntos y ángulos de análisis.'
         })
       } else {
-        toast.dismiss(loadingToast)
-        toast.error('❌ Error al generar imagen', {
-          description: 'Inténtalo de nuevo en unos segundos'
+        show.error('Error al generar imagen', {
+          description: 'No se pudo generar la imagen. Intenta nuevamente.'
         })
       }
-    } catch (error) {
-      toast.error('❌ Error inesperado', {
-        description: 'No se pudo completar la captura de imagen'
+    } catch (err) {
+      show.error('Error inesperado', {
+        description: 'No se pudo completar la captura de imagen.'
       })
-      console.error('Error capturing screenshot:', error)
+      console.error('Error capturing screenshot:', err)
     }
   }
 
@@ -171,13 +164,11 @@ export default function BikeFitVideoPlayer({
   const handleResolutionChange = (resolution: string) => {
     setSelectedResolution(resolution)
     if (isActive && selectedDeviceId) {
-      toast.loading('🎥 Aplicando nueva resolución...', { id: 'resolution-change' })
       stopCamera()
       setTimeout(() => {
         startCamera(selectedDeviceId, resolution)
-        toast.dismiss('resolution-change')
-        toast.success('✅ Resolución actualizada', {
-          description: `Calidad de video cambiada a ${resolution}`
+        show.success('Resolución actualizada', {
+          description: `Calidad de video: ${resolution}`
         })
       }, 100)
     }
@@ -238,7 +229,7 @@ export default function BikeFitVideoPlayer({
                 <span className={`text-sm font-medium transition-all duration-300 ${
                   poseDetectedSide ? 'text-blue-100' : 'text-gray-400'
                 }`}>
-                  {poseDetectedSide ? `Lado ${poseDetectedSide === 'left' ? 'Izquierdo' : 'Derecho'}` : 'Detectando...'}
+                  {poseDetectedSide ? `Lado ${poseDetectedSide === 'left' ? 'Izquierdo' : 'Derecho'}` : 'Detectando perfil...'}
                 </span>
               </div>
             </div>

@@ -81,7 +81,12 @@ export function drawAngleMarker(
 
   // Draw arc outline
   ctx.strokeStyle = settings.lineColor
-  ctx.lineWidth = Math.max(1, settings.lineWidth)
+  // Use centralized config for arc stroke width so it's adjustable from constants
+  const arcLineWidth = Math.max(
+    DRAWING_CONFIG.ARC_LINE_MIN_WIDTH,
+    Math.round(settings.lineWidth * DRAWING_CONFIG.ARC_LINE_WIDTH_RATIO)
+  )
+  ctx.lineWidth = arcLineWidth
   ctx.beginPath()
   ctx.arc(b.x, b.y, radius, startAngle, smallEndAngle, anticlockwise)
   ctx.stroke()

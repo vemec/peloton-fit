@@ -60,7 +60,11 @@ export const SIDE_CONNECTIONS = {
 
 // Drawing configuration
 export const DRAWING_CONFIG = {
-  ARC_RADIUS: 60,
+  ARC_RADIUS: 65,
+  // Ratio of the global `lineWidth` to use for the angle arc stroke
+  ARC_LINE_WIDTH_RATIO: 0.3,
+  // Minimum pixel width for the angle arc stroke
+  ARC_LINE_MIN_WIDTH: 1,
   MIN_VISIBILITY_THRESHOLD: 0.2,
   HIGH_VISIBILITY_THRESHOLD: 0.6,
   LABEL_PADDING: { x: 8, y: 8 },
