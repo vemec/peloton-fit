@@ -4,11 +4,9 @@ import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 import { RotateCcw } from 'lucide-react'
 import type { VisualSettings } from '@/types/bikefit'
-import {
-  VISUAL_RANGES,
-  COLOR_PALETTE
-} from '@/lib/visual-customization-constants'
+import { VISUAL_RANGES } from '@/lib/visual-customization-constants'
 import { useVisualCustomization } from './useVisualCustomization'
+import ColorSelector from './ColorSelector'
 
 interface BikeFitVisualCustomizationProps {
   settings: VisualSettings
@@ -27,7 +25,7 @@ export default function BikeFitVisualCustomization({
   } = useVisualCustomization(settings, onSettingsChange)
 
   return (
-    <div>
+    <div className="space-y-4">
       {/* Header with Reset Button */}
       <div className="flex items-center justify-between">
         <Label className="text-sm font-medium text-slate-700">Colors</Label>
@@ -43,56 +41,20 @@ export default function BikeFitVisualCustomization({
       </div>
 
       {/* Line Colors */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-xs text-gray-600">
-          <div className="w-3 h-0.5 bg-gray-400 rounded"></div>
-          <span>Lines</span>
-        </div>
-        <div className="flex gap-0.5">
-          {COLOR_PALETTE.map((color, index) => (
-            <button
-              key={color}
-              onClick={() => updateSetting('lineColor', color)}
-              className={`w-6 h-4 transition-all ${
-                index === 0 ? 'rounded-l' : ''
-              } ${
-                index === COLOR_PALETTE.length - 1 ? 'rounded-r' : ''
-              } ${
-                settings.lineColor === color
-                  ? 'ring-2 ring-offset-1 ring-gray-400 scale-110'
-                  : ''
-              }`}
-              style={{ backgroundColor: color }}
-            />
-          ))}
-        </div>
-      </div>
+      <ColorSelector
+        label="Lines"
+        icon={<div className="w-3 h-0.5 bg-gray-400 rounded"></div>}
+        selectedColor={settings.lineColor}
+        onColorChange={(color) => updateSetting('lineColor', color)}
+      />
 
       {/* Point Colors */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-xs text-gray-600">
-          <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-          <span>Points</span>
-        </div>
-        <div className="flex gap-0.5">
-          {COLOR_PALETTE.map((color, index) => (
-            <button
-              key={color}
-              onClick={() => updateSetting('pointColor', color)}
-              className={`w-6 h-4 transition-all ${
-                index === 0 ? 'rounded-l' : ''
-              } ${
-                index === COLOR_PALETTE.length - 1 ? 'rounded-r' : ''
-              } ${
-                settings.pointColor === color
-                  ? 'ring-2 ring-offset-1 ring-gray-400 scale-110'
-                  : ''
-              }`}
-              style={{ backgroundColor: color }}
-            />
-          ))}
-        </div>
-      </div>
+      <ColorSelector
+        label="Points"
+        icon={<div className="w-3 h-3 bg-gray-400 rounded-full"></div>}
+        selectedColor={settings.pointColor}
+        onColorChange={(color) => updateSetting('pointColor', color)}
+      />
 
       {/* Dimensions */}
       <div className="space-y-3">

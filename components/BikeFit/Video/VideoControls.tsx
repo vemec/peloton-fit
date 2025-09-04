@@ -222,7 +222,7 @@ export default function VideoControls({
               <Palette className="w-6 h-6 transition-all duration-200" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-3 bg-white rounded-xl shadow-xl border border-gray-200">
+          <PopoverContent className="w-65 p-3 bg-white rounded-xl shadow-xl border border-gray-200">
             <BikeFitVisualCustomization
               settings={visualSettings}
               onSettingsChange={onVisualSettingsChange}
