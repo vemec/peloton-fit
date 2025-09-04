@@ -80,53 +80,102 @@ export default function VideoControls({
     <div className={cn('flex flex-col gap-4')}>
       {/* Horizontal control bar */}
       <div className={cn('bg-gray-900 backdrop-blur-sm rounded-full px-4 py-3 inline-flex items-center justify-center gap-4 shadow-lg mx-auto')}>
-        {/* Camera selector */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              aria-label="Seleccionar cámara"
-              className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
-            >
-              <Video size={20} className={cn('transition-transform duration-300 group-hover:scale-105')} />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
-            <div className={cn('space-y-1')}>
-              {devices.length === 0 ? (
-                <div className={cn('p-3 text-center')}>
-                  <p className={cn('text-sm text-gray-500')}>Sin cámaras</p>
-                </div>
-              ) : (
-                devices.map(device => {
-                  const cleanLabel = device.label
-                    .replace(/\s*\([^)]*\)$/, '')
-                    .replace(/\s+/g, ' ')
-                    .trim()
 
-                  const isSelected = selectedDeviceId === device.deviceId
+        {/* Play/Pause video button */}
+        <div className={cn('flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-1 gap-1 transition-all duration-300 shadow-lg')}>
+          <Button
+            onClick={isActive ? onStopCamera : onStartCamera}
+            disabled={!selectedDeviceId}
+            size="icon"
+            className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
+          >
+            {isActive ? (
+              <Pause className={cn('w-6 h-6 transition-all duration-200')} />
+            ) : (
+              <Play className={cn('w-6 h-6 transition-all duration-200')} />
+            )}
+          </Button>
+          {/* Camera selector */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                aria-label="Seleccionar cámara"
+                className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
+              >
+                <Video size={20} className={cn('transition-transform duration-300 group-hover:scale-105')} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
+              <div className={cn('space-y-1')}>
+                {devices.length === 0 ? (
+                  <div className={cn('p-3 text-center')}>
+                    <p className={cn('text-sm text-gray-500')}>Sin cámaras</p>
+                  </div>
+                ) : (
+                  devices.map(device => {
+                    const cleanLabel = device.label
+                      .replace(/\s*\([^)]*\)$/, '')
+                      .replace(/\s+/g, ' ')
+                      .trim()
 
-                  return (
-                    <button
-                      key={device.deviceId}
-                      onClick={() => onDeviceChange(device.deviceId)}
-                      className={cn(
-                        'w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3',
-                        isSelected ? 'bg-blue-50 text-blue-900' : 'text-gray-700 hover:bg-gray-50'
-                      )}
-                    >
-                      <Camera className={cn('w-4 h-4', isSelected ? 'text-blue-600' : 'text-gray-400')} />
-                      <span className={cn('text-sm font-medium')}>
-                        {cleanLabel || 'Cámara sin nombre'}
-                      </span>
-                      {isSelected && <Check className={cn('w-4 h-4 text-blue-600 ml-auto')} />}
-                    </button>
-                  )
-                })
+                    const isSelected = selectedDeviceId === device.deviceId
+
+                    return (
+                      <button
+                        key={device.deviceId}
+                        onClick={() => onDeviceChange(device.deviceId)}
+                        className={cn(
+                          'w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3',
+                          isSelected ? 'bg-blue-50 text-blue-900' : 'text-gray-700 hover:bg-gray-50'
+                        )}
+                      >
+                        <Camera className={cn('w-4 h-4', isSelected ? 'text-blue-600' : 'text-gray-400')} />
+                        <span className={cn('text-sm font-medium')}>
+                          {cleanLabel || 'Cámara sin nombre'}
+                        </span>
+                        {isSelected && <Check className={cn('w-4 h-4 text-blue-600 ml-auto')} />}
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Recording button with integrated timer container */}
+        <div className={cn('flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-1 gap-1 transition-all duration-300 shadow-lg')}>
+          <Button
+            onClick={isRecording ? onStopRecording : onStartRecording}
+            disabled={!isActive}
+            size="icon"
+            className={cn(
+              'w-12 h-12 bg-white rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out hover:bg-white',
+              'text-white disabled:opacity-50 disabled:cursor-not-allowed'
+            )}
+          >
+            <div
+              className={cn(
+                'w-6 h-6 rounded bg-red-500 hover:bg-red-400 focus:bg-red-300 border-red-400 hover:border-red-300 focus:border-red-200 focus:ring-red-400 transition-all duration-200',
+                !isRecording && 'w-10 h-10 rounded-full'
               )}
-            </div>
-          </PopoverContent>
-        </Popover>
+            />
+          </Button>
+          <div className={cn('px-4 py-2 font-mono text-sm min-w-[60px] text-center text-slate-200')}>
+            {formatTime(recordingTime)}
+          </div>
+        </div>
+
+        {/* Capture Screenshot button */}
+        <Button
+          onClick={onCaptureScreenshot}
+          disabled={!isActive}
+          size="icon"
+          className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
+        >
+          <Aperture className={cn('w-6 h-6 transition-all duration-200')} />
+        </Button>
 
         {/* Bike type selector */}
         <Popover>
@@ -165,39 +214,6 @@ export default function VideoControls({
             </div>
           </PopoverContent>
         </Popover>
-
-        {/* Recording button with integrated timer container */}
-    <div className={cn('flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-1 gap-1 transition-all duration-300 shadow-lg')}>
-          <Button
-            onClick={isRecording ? onStopRecording : onStartRecording}
-            disabled={!isActive}
-            size="icon"
-            className={cn(
-              'w-12 h-12 bg-white rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out hover:bg-white',
-              'text-white disabled:opacity-50 disabled:cursor-not-allowed'
-            )}
-          >
-            <div
-              className={cn(
-                'w-6 h-6 rounded bg-red-500 hover:bg-red-400 focus:bg-red-300 border-red-400 hover:border-red-300 focus:border-red-200 focus:ring-red-400 transition-all duration-200',
-                !isRecording && 'w-10 h-10 rounded-full'
-              )}
-            />
-          </Button>
-      <div className={cn('px-4 py-2 font-mono text-sm min-w-[60px] text-center text-slate-200')}>
-              {formatTime(recordingTime)}
-            </div>
-        </div>
-
-        {/* Capture Screenshot button */}
-        <Button
-          onClick={onCaptureScreenshot}
-          disabled={!isActive}
-          size="icon"
-          className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
-        >
-          <Aperture className={cn('w-6 h-6 transition-all duration-200')} />
-        </Button>
 
         {/* Flip Horizontal button */}
         <Button
@@ -246,20 +262,6 @@ export default function VideoControls({
             />
           </PopoverContent>
         </Popover>
-
-        {/* Play/Pause video button */}
-        <Button
-          onClick={isActive ? onStopCamera : onStartCamera}
-          disabled={!selectedDeviceId}
-          size="icon"
-          className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
-        >
-          {isActive ? (
-            <Pause className={cn('w-6 h-6 transition-all duration-200')} />
-          ) : (
-            <Play className={cn('w-6 h-6 transition-all duration-200')} />
-          )}
-        </Button>
 
         {/* Settings/Options */}
         <Popover>
