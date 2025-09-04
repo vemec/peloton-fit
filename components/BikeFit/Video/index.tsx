@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import show from '@/lib/toast'
 import VideoControls from './VideoControls'
+import CameraEmptyState from './CameraEmptyState'
 import { useCameraDevices } from './hooks'
 import { useVideoStream } from './useVideoStream'
 import { useVideoRecording } from './useVideoRecording'
@@ -315,31 +316,11 @@ export default function BikeFitVideoPlayer({
 
         {/* Empty State */}
         {!isActive && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm text-slate-500">
-            <div className="text-center space-y-6 p-8">
-              <div className="text-8xl opacity-30">📹</div>
-              <div className="space-y-3">
-                <h3 className="text-xl font-medium text-slate-700">Cámara No Activa</h3>
-                <p className="text-base text-slate-600 max-w-lg leading-relaxed">
-                  Inicia tu cámara para comenzar el análisis de bike fit. Colócate de lado a la cámara en tu posición de ciclismo.
-                </p>
-              </div>
-              <div className="flex flex-col gap-4 pt-8">
-                <div className="flex items-center gap-3 text-sm text-slate-500">
-                  <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                  <span>Selecciona tu cámara</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-slate-500">
-                  <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                  <span>Haz clic en &quot;Iniciar Cámara&quot;</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-slate-500">
-                  <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                  <span>Comienza a grabar cuando estés listo</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <CameraEmptyState
+            onStartCamera={handleStartCamera}
+            hasSelectedDevice={!!selectedDeviceId}
+            error={error as string}
+          />
         )}
       </div>
     </div>
