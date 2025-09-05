@@ -157,22 +157,13 @@ export default function AngleCard({
   }
 
   return (
-    <div className={cn(
-      "p-4 rounded-xl transition-all duration-300 grid gap-5",
-      isDetected
-        ? "bg-white border border-gray-200/80 shadow-sm hover:shadow-md"
-        : "bg-gray-50 border border-gray-200/50"
-    )}>
+    <div className={cn("p-4 rounded-xl transition-all duration-300 grid gap-5", isDetected ? "bg-white border border-gray-200/80 shadow-sm hover:shadow-md" : "bg-gray-50 border border-gray-200/50")}>
       {/* Header with name and status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h3 className={cn(
-            "text-base font-semibold",
-            !isDetected ? "text-gray-500" : "text-gray-800"
-          )}>
+          <h3 className={cn("text-base font-semibold", !isDetected ? "text-gray-500" : "text-gray-800")}>
             {finalDisplayName}
           </h3>
-
           <div className="flex items-center gap-2">
             <div className={getColorClasses.indicator(status.color, !isDetected)} />
             <div className={getColorClasses.value(status.color, !isDetected)}>
@@ -180,8 +171,7 @@ export default function AngleCard({
             </div>
           </div>
         </div>
-
-        {getStatusBadge()}
+        { getStatusBadge() }
       </div>
 
       {/* Angle indicator */}
