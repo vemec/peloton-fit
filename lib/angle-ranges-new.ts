@@ -365,19 +365,19 @@ export function getAngleRanges(bikeType: BikeType): Record<string, AngleRange> {
 export function getAngleStatus(bikeType: BikeType, angleName: string, value: number): 'optimal' | 'warning' | 'extreme' {
   const ranges = getAngleRanges(bikeType)
   const range = ranges[angleName]
-  
+
   if (!range) return 'extreme'
-  
+
   // Check if value is in optimal range
   if (value >= range.optimal.min && value <= range.optimal.max) {
     return 'optimal'
   }
-  
+
   // Check if value is in acceptable range
   if (value >= range.min && value <= range.max) {
     return 'warning'
   }
-  
+
   return 'extreme'
 }
 
@@ -387,11 +387,11 @@ export function getAngleStatus(bikeType: BikeType, angleName: string, value: num
 export function getIndicatorPosition(bikeType: BikeType, angleName: string, value: number): number {
   const ranges = getAngleRanges(bikeType)
   const range = ranges[angleName]
-  
+
   if (!range) return 0
-  
+
   const totalRange = range.max - range.min
   const position = ((value - range.min) / totalRange) * 100
-  
+
   return Math.max(0, Math.min(100, position))
 }

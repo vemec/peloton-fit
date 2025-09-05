@@ -6,7 +6,7 @@ import type { BikeType, DetectedSide, VisualSettings } from '@/components/BikeFi
 import { DEFAULT_VISUAL_SETTINGS } from '@/lib/bikefit-constants'
 
 export default function BikeFitPage() {
-  const [bikeType, setBikeType] = useState<BikeType>('road')
+  const [bikeType, setBikeType] = useState<BikeType>('triathlon')
   const [detectedSide, setDetectedSide] = useState<DetectedSide>(null)
   // Inicializa usando los valores centralizados para evitar duplicación
   const [visualSettings, setVisualSettings] = useState<VisualSettings>({

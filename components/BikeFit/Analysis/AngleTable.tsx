@@ -1,143 +1,14 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { getAngleRanges, getAngleStatus, getIndicatorPosition } from '@/lib/angle-ranges'
+import { getAngleStatus } from '@/lib/angle-ranges'
+import { AdvancedAngleIndicator } from './AdvancedAngleIndicator'
 import type { BikeType } from '@/types/bikefit'
-
-interface AngleIndicatorProps {
-  angleName: string
-  value: number
-  bikeType: BikeType
-}
 
 interface AngleTableProps {
   angles: Record<string, number | null>
   bikeType: BikeType
   className?: string
-}
-
-/**
- * Angle indicator component with modern design
- */
-function AngleIndicator({ angleName, value, bikeType, isDisabled = false }: AngleIndicatorProps & { isDisabled?: boolean }) {
-  const ranges = getAngleRanges(bikeType)
-  const range = ranges[angleName]
-  const position = getIndicatorPosition(bikeType, angleName, value || 0)
-  const status = isDisabled ? 'extreme' : getAngleStatus(bikeType, angleName, value || 0)
-
-  if (!range) return null
-
-  return (
-    <div className={`transition-all duration-300 ${isDisabled ? 'opacity-40' : ''}`}>
-      {/* Header with value and status */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          {/* Status dot */}
-          <div className={`w-3 h-3 rounded-full ${
-            isDisabled ? 'bg-gray-300' :
-            status === 'optimal' ? 'bg-emerald-500 shadow-emerald-200 shadow-lg' :
-            status === 'warning' ? 'bg-amber-500 shadow-amber-200 shadow-lg' :
-            'bg-red-500 shadow-red-200 shadow-lg'
-          }`} />
-
-          {/* Angle value with modern typography */}
-          <div className={`font-mono text-xl font-bold tracking-tight ${
-            isDisabled ? 'text-gray-400' :
-            status === 'optimal' ? 'text-emerald-700' :
-            status === 'warning' ? 'text-amber-700' :
-            'text-red-700'
-          }`}>
-            {isDisabled ? '--°' : `${value!.toFixed(0)}°`}
-          </div>
-        </div>
-
-        {/* Range info */}
-        <div className="text-right">
-          <div className="text-xs font-medium text-gray-600">
-            {range.optimal.min}° - {range.optimal.max}°
-          </div>
-          <div className="text-xs text-gray-400 uppercase tracking-wide">
-            óptimo
-          </div>
-        </div>
-      </div>
-
-      {/* Modern progress bar */}
-      <div className="relative">
-        {/* Background track */}
-        <div className="h-4 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full shadow-inner overflow-hidden border border-gray-200/50">
-          {/* Gradient zones */}
-          {(() => {
-            const totalRange = range.max - range.min
-            const extremeLeftWidth = ((range.optimal.min - range.min) / totalRange) * 100
-            const optimalWidth = ((range.optimal.max - range.optimal.min) / totalRange) * 100
-            const extremeRightWidth = ((range.max - range.optimal.max) / totalRange) * 100
-
-            // Create smooth gradients for zones
-            const warningZoneSize = 0.3
-            const redLeftWidth = extremeLeftWidth * (1 - warningZoneSize)
-            const yellowLeftWidth = extremeLeftWidth * warningZoneSize
-            const yellowRightWidth = extremeRightWidth * warningZoneSize
-            const redRightWidth = extremeRightWidth * (1 - warningZoneSize)
-
-            return (
-              <div className="flex h-full">
-                {/* Extreme left (red to orange gradient) */}
-                <div
-                  className={isDisabled ? "bg-gray-300" : "bg-gradient-to-r from-red-500 to-red-400"}
-                  style={{ width: `${redLeftWidth}%` }}
-                />
-                {/* Warning left (orange to yellow gradient) */}
-                <div
-                  className={isDisabled ? "bg-gray-350" : "bg-gradient-to-r from-red-400 to-amber-400"}
-                  style={{ width: `${yellowLeftWidth}%` }}
-                />
-                {/* Optimal range (green gradient) */}
-                <div
-                  className={isDisabled ? "bg-gray-400" : "bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400"}
-                  style={{ width: `${optimalWidth}%` }}
-                />
-                {/* Warning right (yellow to orange gradient) */}
-                <div
-                  className={isDisabled ? "bg-gray-350" : "bg-gradient-to-r from-amber-400 to-red-400"}
-                  style={{ width: `${yellowRightWidth}%` }}
-                />
-                {/* Extreme right (orange to red gradient) */}
-                <div
-                  className={isDisabled ? "bg-gray-300" : "bg-gradient-to-r from-red-400 to-red-500"}
-                  style={{ width: `${redRightWidth}%` }}
-                />
-              </div>
-            )
-          })()}
-        </div>
-
-        {/* Modern indicator */}
-        {!isDisabled && (
-          <>
-            {/* Glow effect */}
-            <div
-              className={`absolute top-1/2 w-1 h-8 rounded-full transform -translate-y-1/2 -translate-x-1/2 z-10 ${
-                status === 'optimal' ? 'bg-emerald-400/30 blur-sm' :
-                status === 'warning' ? 'bg-amber-400/30 blur-sm' :
-                'bg-red-400/30 blur-sm'
-              }`}
-              style={{ left: `${position}%` }}
-            />
-            {/* Main indicator */}
-            <div
-              className={`absolute top-1/2 w-1 h-6 rounded-full transform -translate-y-1/2 -translate-x-1/2 z-20 shadow-lg border-2 border-white ${
-                status === 'optimal' ? 'bg-emerald-600' :
-                status === 'warning' ? 'bg-amber-600' :
-                'bg-red-600'
-              }`}
-              style={{ left: `${position}%` }}
-            />
-          </>
-        )}
-      </div>
-    </div>
-  )
 }
 
 /**
@@ -225,7 +96,7 @@ export default function AngleTable({ angles, bikeType, className = '' }: AngleTa
                 </div>
 
                 {/* Angle indicator */}
-                <AngleIndicator
+                <AdvancedAngleIndicator
                   angleName={angleName}
                   value={isDetected ? value! : 0}
                   bikeType={bikeType}
