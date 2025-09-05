@@ -41,8 +41,8 @@ export const PHYSIOLOGICAL_RANGES: Record<string, PhysiologicalRange> = {
     max: 180      // Extensión completa
   },
   hip: {
-    min: 40,      // Flexión máxima fuera de la bici
-    max: 210      // Extensión máxima fuera de la bici
+    min: 35,      // Flexión máxima fuera de la bici
+    max: 200      // Extensión máxima fuera de la bici
   },
   ankle: {
     min: 100,     // Dorsiflexión máxima fuera de la bici
@@ -366,4 +366,105 @@ export function getIndicatorPosition(bikeType: BikeType, angleName: string, valu
   const position = ((value - physioRange.min) / totalRange) * 100
 
   return Math.max(0, Math.min(100, position))
+}
+
+/**
+ * Check if an angle is related to pedaling motion
+ * Only knee, hip, and ankle are affected by pedaling
+ */
+export function isPedalingAngle(angleName: string): boolean {
+  return ['knee', 'hip', 'ankle'].includes(angleName)
+}
+
+/**
+ * Check if an angle is related to upper body cycling motion
+ * Shoulder and elbow are affected by cycling posture
+ */
+export function isCyclingAngle(angleName: string): boolean {
+  return ['shoulder', 'elbow'].includes(angleName)
+}
+
+/**
+ * Check if an angle has cycling-specific ranges (either pedaling or upper body)
+ */
+export function hasMovementZone(angleName: string): boolean {
+  return isPedalingAngle(angleName) || isCyclingAngle(angleName)
+}
+
+/**
+ * Get the complete pedaling zone range (from minimum flexion to maximum extension)
+ * This represents the "gray zone" where pedaling motion occurs
+ */
+export function getPedalingZone(bikeType: BikeType, angleName: string): { min: number; max: number } | null {
+  if (!isPedalingAngle(angleName)) return null
+
+  const bikeRanges = getBikeSpecificRanges(bikeType)
+  const range = bikeRanges[angleName]
+
+  if (!range?.pedalDown || !range?.pedalUp) return null
+
+  // The pedaling zone goes from the minimum of flexion to maximum of extension
+  const pedalingMin = Math.min(range.pedalUp.min, range.pedalDown.min)
+  const pedalingMax = Math.max(range.pedalUp.max, range.pedalDown.max)
+
+  return {
+    min: pedalingMin,
+    max: pedalingMax
+  }
+}
+
+/**
+ * Get the complete cycling movement zone for any cycling-related angle
+ * This represents the range where cycling motion occurs (pedaling or upper body)
+ */
+export function getMovementZone(bikeType: BikeType, angleName: string): { min: number; max: number } | null {
+  if (!hasMovementZone(angleName)) return null
+
+  const bikeRanges = getBikeSpecificRanges(bikeType)
+  const range = bikeRanges[angleName]
+
+  if (!range?.pedalDown || !range?.pedalUp) return null
+
+  // The movement zone goes from the minimum of one position to maximum of the other
+  const movementMin = Math.min(range.pedalUp.min, range.pedalDown.min)
+  const movementMax = Math.max(range.pedalUp.max, range.pedalDown.max)
+
+  return {
+    min: movementMin,
+    max: movementMax
+  }
+}/**
+ * Determine the status of an angle value with enhanced movement zone analysis
+ */
+export function getEnhancedAngleStatus(bikeType: BikeType, angleName: string, value: number): 'optimal-extension' | 'optimal-flexion' | 'movement-zone' | 'physiological' | 'extreme' {
+  const bikeRanges = getBikeSpecificRanges(bikeType)
+  const range = bikeRanges[angleName]
+  const physioRange = PHYSIOLOGICAL_RANGES[angleName]
+
+  if (!range || !physioRange) return 'extreme'
+
+  // Check if value is in extension optimal range
+  if (range.pedalDown && value >= range.pedalDown.min && value <= range.pedalDown.max) {
+    return 'optimal-extension'
+  }
+
+  // Check if value is in flexion optimal range
+  if (range.pedalUp && value >= range.pedalUp.min && value <= range.pedalUp.max) {
+    return 'optimal-flexion'
+  }
+
+  // Check if value is in the movement zone (applies to all cycling angles)
+  if (hasMovementZone(angleName)) {
+    const movementZone = getMovementZone(bikeType, angleName)
+    if (movementZone && value >= movementZone.min && value <= movementZone.max) {
+      return 'movement-zone'
+    }
+  }
+
+  // Check if value is in physiological range (acceptable but not optimal)
+  if (value >= physioRange.min && value <= physioRange.max) {
+    return 'physiological'
+  }
+
+  return 'extreme'
 }

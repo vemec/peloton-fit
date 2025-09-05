@@ -1,5 +1,5 @@
 import React from 'react'
-import { getAngleRanges } from '@/lib/angle-ranges'
+import { getAngleRanges, isPedalingAngle, getMovementZone, hasMovementZone, getEnhancedAngleStatus } from '@/lib/angle-ranges'
 import { cn } from '@/lib/utils'
 import type { BikeType } from '@/types/bikefit'
 
@@ -22,7 +22,7 @@ const getColorClasses = {
   ),
 
   pointer: (color: string) => cn(
-    "absolute top-0 w-1 h-6 rounded-full transform -translate-x-1/2 shadow-lg border-2 border-white z-20",
+    "absolute -top-2 w-3 h-10 rounded-full transform -translate-x-1/2 shadow-lg border-2 border-white z-20",
     color === 'blue' && "bg-blue-600",
     color === 'green' && "bg-green-600",
     color === 'emerald' && "bg-emerald-600",
@@ -103,22 +103,29 @@ export function AdvancedAngleIndicator({
   const getZoneStatus = () => {
     if (isDisabled) return { color: 'gray' }
 
-    if (value >= pedalDown!.min && value <= pedalDown!.max) {
-      return { color: 'blue' }
+    const status = getEnhancedAngleStatus(bikeType, angleName, value)
+
+    switch (status) {
+      case 'optimal-extension':
+        return { color: 'blue' }
+      case 'optimal-flexion':
+        return { color: 'green' }
+      case 'movement-zone':
+        return { color: 'emerald' }
+      case 'physiological':
+        return { color: 'amber' }
+      case 'extreme':
+      default:
+        return { color: 'red' }
     }
-    if (value >= pedalUp!.min && value <= pedalUp!.max) {
-      return { color: 'green' }
-    }
-    if (value >= range.optimal.min && value <= range.optimal.max) {
-      return { color: 'emerald' }
-    }
-    if (value >= physiological!.min && value <= physiological!.max) {
-      return { color: 'amber' }
-    }
-    return { color: 'red' }
   }
 
   const status = getZoneStatus()
+
+  // Calculate movement zone (pedaling for lower body, cycling motion for upper body)
+  const movementZone = hasMovementZone(angleName) ? getMovementZone(bikeType, angleName) : null
+  const movementZoneStart = movementZone ? ((movementZone.min - physiological!.min) / physioRange) * 100 : 0
+  const movementZoneEnd = movementZone ? ((movementZone.max - physiological!.min) / physioRange) * 100 : 0
 
   return (
     <>
@@ -135,6 +142,21 @@ export function AdvancedAngleIndicator({
         {/* Physiological range visualization */}
         <div data-slot="physiological-range-bar" className="transition-all duration-300 relative">
           <div className="h-6 bg-gradient-to-r from-gray-100 to-gray-200 rounded-lg shadow-inner overflow-hidden border border-gray-200/50 relative">
+
+            {/* Movement Zone (applies to all cycling angles) */}
+            {hasMovementZone(angleName) && movementZone && (
+              <div
+                className={cn(
+                  "absolute top-0 h-full transition-all duration-300",
+                  isDisabled ? "bg-gray-300/50" : "bg-gradient-to-r from-green-300/40 to-blue-300/40"
+                )}
+                style={{
+                  left: `${movementZoneStart}%`,
+                  width: `${movementZoneEnd - movementZoneStart}%`
+                }}
+              />
+            )}
+
             {/* Extension Zone */}
             <div
               className={cn(
@@ -177,24 +199,36 @@ export function AdvancedAngleIndicator({
 
         {/* Mobility range visualization */}
         <div data-slot="mobility-range" className="transition-all duration-300 text-xs text-gray-500 text-center">
-          Rango de movilidad en bici: ~{Math.abs(pedalDown!.max - pedalUp!.min)}°
-          ({pedalUp!.min}° - {pedalDown!.max}°)
+          {hasMovementZone(angleName) && movementZone ? (
+            <>
+              {isPedalingAngle(angleName) ? 'Zona de pedaleo' : 'Zona de ciclismo'}: ~{Math.abs(movementZone.max - movementZone.min)}°
+              ({movementZone.min}° - {movementZone.max}°)
+            </>
+          ) : (
+            <>
+              Rango de movilidad en bici: ~{Math.abs(pedalDown!.max - pedalUp!.min)}°
+              ({pedalUp!.min}° - {pedalDown!.max}°)
+            </>
+          )}
         </div>
       </div>
 
       {/* Legend */}
-      <div data-slot="legend" className="transition-all duration-300 flex justify-between text-xs">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-gradient-to-r from-green-400 to-green-500 rounded"></div>
-          <span className="text-gray-600">
-            {labels.flexionLabel}: {pedalUp!.min}°-{pedalUp!.max}°
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-500 rounded"></div>
-          <span className="text-gray-600">
-            {labels.extensionLabel}: {pedalDown!.min}°-{pedalDown!.max}°
-          </span>
+      <div data-slot="legend" className="transition-all duration-300 space-y-2">
+        {/* Main optimal ranges */}
+        <div className="flex justify-between text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-gradient-to-r from-green-400 to-green-500 rounded"></div>
+            <span className="text-gray-600">
+              {labels.flexionLabel}: {pedalUp!.min}°-{pedalUp!.max}°
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-500 rounded"></div>
+            <span className="text-gray-600">
+              {labels.extensionLabel}: {pedalDown!.min}°-{pedalDown!.max}°
+            </span>
+          </div>
         </div>
       </div>
     </>
