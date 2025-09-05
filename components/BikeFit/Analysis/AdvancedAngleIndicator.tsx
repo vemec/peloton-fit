@@ -81,18 +81,6 @@ export function AdvancedAngleIndicator({
 
   if (!range) return null
 
-  // Check if we have advanced ranges (with physiological data)
-  const hasAdvancedRanges = range.pedalDown && range.pedalUp && range.physiological
-
-  if (!hasAdvancedRanges) {
-    // Fallback to simple indicator
-    return <SimpleAngleIndicator
-      value={value}
-      isDisabled={isDisabled}
-      bikeType={bikeType}
-    />
-  }
-
   const { pedalDown, pedalUp, physiological } = range
 
   // Get labels based on angle type
@@ -210,29 +198,5 @@ export function AdvancedAngleIndicator({
         </div>
       </div>
     </>
-  )
-}
-
-/**
- * Simple angle indicator for basic analysis
- */
-function SimpleAngleIndicator({
-  value,
-  isDisabled = false,
-  bikeType
-}: {
-  value: number,
-  isDisabled?: boolean,
-  bikeType: BikeType
-}) {
-  return (
-    <div className={cn(
-      "transition-all duration-300",
-      isDisabled && "opacity-40"
-    )}>
-      <div className="text-center text-gray-500 text-sm">
-        Análisis estándar para {bikeType}: {isDisabled ? '--°' : `${value.toFixed(0)}°`}
-      </div>
-    </div>
   )
 }

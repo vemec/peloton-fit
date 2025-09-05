@@ -1,4 +1,5 @@
 import React from 'react'
+import { cn } from '@/lib/utils'
 import { COLOR_PALETTE } from '@/lib/constants'
 
 interface ColorSelectorProps {
@@ -25,15 +26,14 @@ export default function ColorSelector({
           <button
             key={color}
             onClick={() => onColorChange(color)}
-            className={`w-6 h-6 transition-all relative ${
-              index === 0 ? 'rounded-l' : ''
-            } ${
-              index === COLOR_PALETTE.length - 1 ? 'rounded-r' : ''
-            } ${
+            className={cn(
+              "w-6 h-6 transition-all relative",
+              index === 0 && "rounded-l",
+              index === COLOR_PALETTE.length - 1 && "rounded-r",
               selectedColor === color
-                ? 'scale-150 rounded z-10 shadow-md'
-                : 'hover:scale-105'
-            }`}
+                ? "scale-150 rounded z-10 shadow-md"
+                : "hover:scale-105"
+            )}
             style={{ backgroundColor: color }}
           />
         ))}
