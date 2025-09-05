@@ -204,7 +204,7 @@ export const BIKE_SPECIFIC_RANGES: Record<BikeType, Record<string, BikeSpecificR
     elbow: {
       optimal: {
         min: 80,      // Flexión óptima: 80°-90°
-        max: 170      // Extensión óptima: 160°-170°
+        max: 90      // Extensión óptima: 160°-170°
       },
       // Rangos específicos para triatlón
       pedalDown: {    // Extensión

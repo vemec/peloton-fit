@@ -145,6 +145,44 @@ export default function VideoControls({
           </Popover>
         </div>
 
+        {/* Settings/Options */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
+            >
+              <Proportions className={cn('!w-5 !h-5 transition-all duration-200')} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
+            <div className={cn('space-y-1')}>
+              {RESOLUTIONS.map(resolution => {
+                const isSelected = selectedResolution === resolution.value
+                const IconComponent = resolution.icon
+
+                return (
+                  <button
+                    key={resolution.value}
+                    onClick={() => onResolutionChange(resolution.value)}
+                    className={cn(
+                      'w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3',
+                      isSelected ? 'bg-purple-50 text-purple-900' : 'text-gray-700 hover:bg-gray-50'
+                    )}
+                  >
+                    <IconComponent className={cn('w-4 h-4', isSelected ? 'text-purple-600' : 'text-gray-400')} />
+                    <span className={cn('text-sm font-medium')}>
+                      {resolution.label}
+                    </span>
+                    {isSelected && <Check className={cn('w-4 h-4 text-purple-600 ml-auto')} />}
+                  </button>
+                )
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
+
         {/* Recording button with integrated timer container */}
         <div className={cn('flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-1 gap-1 transition-all duration-300 shadow-lg')}>
           <Button
@@ -176,6 +214,45 @@ export default function VideoControls({
             <Aperture className={cn('!w-5 !h-5 transition-all duration-200')} />
           </Button>
         </div>
+
+        {/* Visual Customization button */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
+            >
+              <Palette className={cn('!w-5 !h-5 transition-all duration-200')} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
+            <BikeFitVisualCustomization
+              settings={visualSettings}
+              onSettingsChange={onVisualSettingsChange}
+            />
+          </PopoverContent>
+        </Popover>
+
+        {/* Flip Horizontal button */}
+        <Button
+          onClick={onFlipToggle}
+          size="icon"
+          className={cn(
+            'w-12 h-12 rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl',
+            isFlipped
+              ? 'bg-blue-500 hover:bg-blue-400 focus:bg-blue-300 border-blue-400 hover:border-blue-300 focus:border-blue-200 text-white focus:ring-blue-400'
+              : 'bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 focus:ring-slate-400/50'
+          )}
+        >
+          <FlipHorizontal className={cn('!w-5 !h-5 transition-all duration-200')} />
+        </Button>
+
+        {/* Skeleton Mode Toggle */}
+        <SkeletonModeSelector
+          selectedMode={skeletonMode}
+          onModeChange={onSkeletonModeChange}
+        />
 
         {/* Bike type selector */}
         <Popover>
@@ -217,82 +294,6 @@ export default function VideoControls({
           </PopoverContent>
         </Popover>
 
-        {/* Flip Horizontal button */}
-        <Button
-          onClick={onFlipToggle}
-          size="icon"
-          className={cn(
-            'w-12 h-12 rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl',
-            isFlipped
-              ? 'bg-blue-500 hover:bg-blue-400 focus:bg-blue-300 border-blue-400 hover:border-blue-300 focus:border-blue-200 text-white focus:ring-blue-400'
-              : 'bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 focus:ring-slate-400/50'
-          )}
-        >
-          <FlipHorizontal className={cn('!w-5 !h-5 transition-all duration-200')} />
-        </Button>
-
-        {/* Skeleton Mode Toggle */}
-        <SkeletonModeSelector
-          selectedMode={skeletonMode}
-          onModeChange={onSkeletonModeChange}
-        />
-
-        {/* Visual Customization button */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
-            >
-              <Palette className={cn('!w-5 !h-5 transition-all duration-200')} />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
-            <BikeFitVisualCustomization
-              settings={visualSettings}
-              onSettingsChange={onVisualSettingsChange}
-            />
-          </PopoverContent>
-        </Popover>
-
-        {/* Settings/Options */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
-            >
-              <Proportions className={cn('!w-5 !h-5 transition-all duration-200')} />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
-            <div className={cn('space-y-1')}>
-              {RESOLUTIONS.map(resolution => {
-                const isSelected = selectedResolution === resolution.value
-                const IconComponent = resolution.icon
-
-                return (
-                  <button
-                    key={resolution.value}
-                    onClick={() => onResolutionChange(resolution.value)}
-                    className={cn(
-                      'w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3',
-                      isSelected ? 'bg-purple-50 text-purple-900' : 'text-gray-700 hover:bg-gray-50'
-                    )}
-                  >
-                    <IconComponent className={cn('w-4 h-4', isSelected ? 'text-purple-600' : 'text-gray-400')} />
-                    <span className={cn('text-sm font-medium')}>
-                      {resolution.label}
-                    </span>
-                    {isSelected && <Check className={cn('w-4 h-4 text-purple-600 ml-auto')} />}
-                  </button>
-                )
-              })}
-            </div>
-          </PopoverContent>
-        </Popover>
       </div>
 
       {/* Error Display */}

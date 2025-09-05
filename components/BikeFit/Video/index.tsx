@@ -191,31 +191,6 @@ export default function BikeFitVideoPlayer({
 
   return (
     <div className="space-y-6">
-      {/* Video Controls - Below video */}
-      <VideoControls
-        devices={devices}
-        selectedDeviceId={selectedDeviceId}
-        selectedResolution={selectedResolution}
-        isActive={isActive}
-        error={error}
-        bikeType={bikeType}
-        isFlipped={isFlipped}
-        visualSettings={visualSettings}
-        skeletonMode={skeletonMode}
-        onDeviceChange={setSelectedDeviceId}
-        onResolutionChange={handleResolutionChange}
-        onBikeTypeChange={onBikeTypeChange}
-        onFlipToggle={handleFlipToggle}
-        onVisualSettingsChange={onVisualSettingsChange}
-        onSkeletonModeChange={handleSkeletonModeChange}
-        onStartCamera={handleStartCamera}
-        onStopCamera={handleStopCamera}
-        isRecording={isRecording}
-        onStartRecording={handleStartRecording}
-        onStopRecording={handleStopRecording}
-        onCaptureScreenshot={handleCaptureScreenshot}
-      />
-
       {/* Main content: Video and Angle Table */}
       <div className="space-y-6">
         {/* Video Display */}
@@ -331,11 +306,35 @@ export default function BikeFitVideoPlayer({
           )}
         </div>
 
+        {/* Video Controls - Below video */}
+        <VideoControls
+          devices={devices}
+          selectedDeviceId={selectedDeviceId}
+          selectedResolution={selectedResolution}
+          isActive={isActive}
+          error={error}
+          bikeType={bikeType}
+          isFlipped={isFlipped}
+          visualSettings={visualSettings}
+          skeletonMode={skeletonMode}
+          onDeviceChange={setSelectedDeviceId}
+          onResolutionChange={handleResolutionChange}
+          onBikeTypeChange={onBikeTypeChange}
+          onFlipToggle={handleFlipToggle}
+          onVisualSettingsChange={onVisualSettingsChange}
+          onSkeletonModeChange={handleSkeletonModeChange}
+          onStartCamera={handleStartCamera}
+          onStopCamera={handleStopCamera}
+          isRecording={isRecording}
+          onStartRecording={handleStartRecording}
+          onStopRecording={handleStopRecording}
+          onCaptureScreenshot={handleCaptureScreenshot}
+        />
+
         {/* Angle Table - Below the video */}
         <AngleTable
           angles={angles}
           bikeType={bikeType}
-          className="w-full"
         />
       </div>
     </div>
