@@ -1,14 +1,15 @@
 import type { Keypoint, VisualSettings } from '@/types/bikefit'
-import {
-  isKeypointVisible,
-  normalizedToCanvas
-} from './utils'
+import { isKeypointValid } from '@/lib/bikefit-utils'
+import { normalizedToCanvas } from './utils'
 import {
   DRAWING_CONFIG,
   POSE_CONNECTIONS,
   RELEVANT_KEYPOINTS,
   SIDE_CONNECTIONS,
-  type PoseConnection
+  CONNECTION_GROUPS,
+  SKELETON_MODES,
+  type PoseConnection,
+  type SkeletonMode
 } from './constants'
 
 /**
@@ -21,7 +22,7 @@ export function drawKeypoint(
   canvasWidth: number,
   canvasHeight: number
 ): void {
-  if (!isKeypointVisible(keypoint, DRAWING_CONFIG.MIN_VISIBILITY_THRESHOLD)) {
+  if (!isKeypointValid(keypoint, DRAWING_CONFIG.MIN_VISIBILITY_THRESHOLD)) {
     return
   }
 
@@ -54,8 +55,8 @@ function validateConnectionKeypoints(
   return !!(
     keypoint1 &&
     keypoint2 &&
-    isKeypointVisible(keypoint1, threshold) &&
-    isKeypointVisible(keypoint2, threshold)
+    isKeypointValid(keypoint1, threshold) &&
+    isKeypointValid(keypoint2, threshold)
   )
 }
 
@@ -135,7 +136,7 @@ function drawKeypoints(
   // Batch draw all keypoints for better performance
   keypointIndices.forEach(idx => {
     const keypoint = keypoints[idx]
-    if (keypoint && isKeypointVisible(keypoint, MIN_VISIBILITY_THRESHOLD)) {
+    if (keypoint && isKeypointValid(keypoint, MIN_VISIBILITY_THRESHOLD)) {
       const { x, y } = normalizedToCanvas(keypoint, canvasWidth, canvasHeight)
 
       // Draw main point
@@ -170,7 +171,7 @@ export function drawSkeleton(
 }
 
 /**
- * Draws skeleton for only the detected side (cleaner visualization)
+ * Draws skeleton for only the detected side
  */
 export function drawDetectedSideSkeleton(
   ctx: CanvasRenderingContext2D,
@@ -183,9 +184,33 @@ export function drawDetectedSideSkeleton(
   const connections = SIDE_CONNECTIONS[detectedSide]
   const sideKeypoints = RELEVANT_KEYPOINTS[detectedSide.toUpperCase() as 'LEFT' | 'RIGHT']
 
-  // Draw connections for the detected side only
+  // Draw connections for the detected side
   drawConnections(ctx, keypoints, connections, settings, canvasWidth, canvasHeight)
 
-  // Draw keypoints for the detected side only
+  // Draw keypoints for the detected side
   drawKeypoints(ctx, keypoints, sideKeypoints, settings, canvasWidth, canvasHeight)
 }
+
+/**
+ * Draws skeleton with full detail
+ */
+export function drawSkeletonWithMode(
+  ctx: CanvasRenderingContext2D,
+  keypoints: Keypoint[],
+  settings: VisualSettings,
+  canvasWidth: number,
+  canvasHeight: number,
+  mode: SkeletonMode
+): void {
+  if (mode === SKELETON_MODES.FULL) {
+    const connectionGroup = CONNECTION_GROUPS.full
+
+    // Draw connections first (so they appear behind points)
+    drawConnections(ctx, keypoints, connectionGroup.connections, settings, canvasWidth, canvasHeight)
+
+    // Draw keypoints
+    drawKeypoints(ctx, keypoints, connectionGroup.keypoints, settings, canvasWidth, canvasHeight)
+  }
+}
+
+

@@ -1,10 +1,9 @@
-import { calculateAngleBetweenPoints, hexToRgba } from '@/lib/bikefit-utils'
+import { calculateAngleBetweenPoints, hexToRgba, isKeypointValid } from '@/lib/bikefit-utils'
 import type { Keypoint, VisualSettings } from '@/types/bikefit'
 import {
   drawRoundedRect,
   normalizeAngleDelta,
-  normalizedToCanvas,
-  isKeypointVisible
+  normalizedToCanvas
 } from './utils'
 import { DRAWING_CONFIG, KEYPOINT_INDICES } from './constants'
 
@@ -29,7 +28,7 @@ function areKeypointsVisible(
   keypoints: (Keypoint | undefined)[],
   threshold = DRAWING_CONFIG.ANGLE_VISIBILITY_THRESHOLD
 ): keypoints is Keypoint[] {
-  return keypoints.every(kp => kp && isKeypointVisible(kp, threshold))
+  return keypoints.every(kp => kp && isKeypointValid(kp, threshold))
 }
 
 /**
@@ -250,7 +249,7 @@ function getKeypointIndices(detectedSide: 'left' | 'right') {
         hip: KEYPOINT_INDICES.RIGHT_HIP,
         knee: KEYPOINT_INDICES.RIGHT_KNEE,
         ankle: KEYPOINT_INDICES.RIGHT_ANKLE,
-        foot: KEYPOINT_INDICES.RIGHT_FOOT
+        foot: KEYPOINT_INDICES.RIGHT_FOOT_INDEX
       }
     : {
         shoulder: KEYPOINT_INDICES.LEFT_SHOULDER,
@@ -259,7 +258,7 @@ function getKeypointIndices(detectedSide: 'left' | 'right') {
         hip: KEYPOINT_INDICES.LEFT_HIP,
         knee: KEYPOINT_INDICES.LEFT_KNEE,
         ankle: KEYPOINT_INDICES.LEFT_ANKLE,
-        foot: KEYPOINT_INDICES.LEFT_FOOT
+        foot: KEYPOINT_INDICES.LEFT_FOOT_INDEX
       }
 }
 

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Camera, Proportions, Check, Video, Bike, Aperture, Play, Pause, FlipHorizontal, Palette, PersonStanding } from 'lucide-react'
+import { Camera, Proportions, Check, Video, Bike, Aperture, Play, Pause, FlipHorizontal, Palette } from 'lucide-react'
 import type { CameraDevice, BikeType, VisualSettings, SkeletonMode } from '@/types/bikefit'
 import { RESOLUTIONS } from './constants'
 import BikeFitVisualCustomization from '../VisualCustomization'
+import SkeletonModeSelector from '../VisualCustomization/SkeletonModeSelector'
 import { cn } from '@/lib/utils'
 
 interface VideoControlsProps {
@@ -22,7 +23,7 @@ interface VideoControlsProps {
   onBikeTypeChange: (type: BikeType) => void
   onFlipToggle: () => void
   onVisualSettingsChange: (settings: VisualSettings) => void
-  onSkeletonModeToggle: () => void
+  onSkeletonModeChange: (mode: SkeletonMode) => void
   onStartCamera: () => void
   onStopCamera: () => void
   isRecording: boolean
@@ -46,7 +47,7 @@ export default function VideoControls({
   onBikeTypeChange,
   onFlipToggle,
   onVisualSettingsChange,
-  onSkeletonModeToggle,
+  onSkeletonModeChange,
   onStartCamera,
   onStopCamera,
   isRecording,
@@ -230,20 +231,11 @@ export default function VideoControls({
           <FlipHorizontal className={cn('!w-5 !h-5 transition-all duration-200')} />
         </Button>
 
-        {/* Skeleton Mode Toggle button */}
-        <Button
-          onClick={onSkeletonModeToggle}
-          size="icon"
-          className={cn(
-            'w-12 h-12 rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl',
-            skeletonMode === 'full'
-              ? 'bg-green-500 hover:bg-green-400 focus:bg-green-300 border-green-400 hover:border-green-300 focus:border-green-200 text-white focus:ring-green-400'
-              : 'bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 focus:ring-slate-400/50'
-          )}
-          title={skeletonMode === 'full' ? 'Esqueleto Completo' : 'Esqueleto Lateral'}
-        >
-          <PersonStanding className={cn('!w-5 !h-5 transition-all duration-200')} />
-        </Button>
+        {/* Skeleton Mode Toggle */}
+        <SkeletonModeSelector
+          selectedMode={skeletonMode}
+          onModeChange={onSkeletonModeChange}
+        />
 
         {/* Visual Customization button */}
         <Popover>

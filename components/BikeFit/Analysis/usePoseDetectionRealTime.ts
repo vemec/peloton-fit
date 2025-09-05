@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { DetectedSide, Keypoint, MediaPipeResults, MediaPipeLandmark, MediaPipePose } from '@/types/bikefit'
-import { MEDIAPIPE_CONFIG } from '@/lib/bikefit-constants'
+import { MEDIAPIPE_CONFIG } from '@/lib/constants'
 import { useMediaPipeManager } from './useMediaPipeManager'
 
 /**

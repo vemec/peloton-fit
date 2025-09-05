@@ -1,5 +1,5 @@
 import React from 'react'
-import { COLOR_PALETTE } from '@/lib/visual-customization-constants'
+import { COLOR_PALETTE } from '@/lib/constants'
 
 interface ColorSelectorProps {
   label: string

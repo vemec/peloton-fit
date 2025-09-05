@@ -5,6 +5,8 @@
  * and bike fit analysis overlays on canvas elements. All functions are optimized
  * for performance and follow TypeScript best practices.
  *
+ * Note: Import utilities from @/lib/bikefit-utils directly rather than through re-exports
+ *
  * @module Drawing
  */
 
@@ -14,13 +16,9 @@ export {
   clearCanvas,
   drawRoundedRect,
   normalizeAngleDelta,
-  isKeypointVisible,
   normalizedToCanvas,
   type DrawingContext,
 } from './utils'
-
-// Re-export utilities from lib for convenience
-export { hexToRgba, calculateAngleBetweenPoints } from '@/lib/bikefit-utils'
 
 // === Skeleton and Pose Drawing ===
 export {
@@ -28,6 +26,7 @@ export {
   drawConnection,
   drawSkeleton,
   drawDetectedSideSkeleton,
+  drawSkeletonWithMode,
 } from './skeleton'
 
 // === Angle Measurement and Visualization ===
@@ -56,8 +55,12 @@ export {
   SIDE_CONNECTIONS,
   DRAWING_CONFIG,
   KEYPOINT_INDICES,
+  KEYPOINT_NAMES,
+  SKELETON_MODES,
+  CONNECTION_GROUPS,
   type PoseConnection,
   type KeypointIndices,
+  type SkeletonMode,
 } from './constants'
 
 // === Legacy Compatibility ===

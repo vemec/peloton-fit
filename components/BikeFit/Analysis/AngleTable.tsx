@@ -1,8 +1,7 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { getAngleStatus } from '@/lib/angle-ranges'
-import { AdvancedAngleIndicator } from './AdvancedAngleIndicator'
+import AngleCard from './AngleCard'
 import type { BikeType } from '@/types/bikefit'
 
 interface AngleTableProps {
@@ -17,15 +16,6 @@ interface AngleTableProps {
 export default function AngleTable({ angles, bikeType, className = '' }: AngleTableProps) {
   // Define all possible angles that we want to show
   const allAngles = ['knee', 'hip', 'ankle', 'shoulder', 'elbow']
-
-  // Map to display names
-  const displayNames = {
-    knee: 'Rodilla',
-    hip: 'Cadera',
-    ankle: 'Tobillo',
-    shoulder: 'Hombro',
-    elbow: 'Codo'
-  }
 
   // Count detected angles - using the same logic as in the render
   const detectedCount = allAngles.filter(angleName => {
@@ -56,55 +46,14 @@ export default function AngleTable({ angles, bikeType, className = '' }: AngleTa
       <CardContent className="pt-6">
         {/* Grid layout for 2 columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {allAngles.map((angleName) => {
-            const value = angles[angleName]
-            const isDetected = value !== null && value !== undefined && typeof value === 'number' && value > 0
-            const displayName = displayNames[angleName as keyof typeof displayNames] || angleName
-
-            return (
-              <div key={angleName} className={`p-4 rounded-xl transition-all duration-300 ${
-                isDetected
-                  ? 'bg-white border border-gray-200/80 shadow-sm hover:shadow-md'
-                  : 'bg-gray-50 border border-gray-200/50'
-              }`}>
-                {/* Header with name and status */}
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className={`text-base font-semibold ${
-                    !isDetected ? 'text-gray-500' : 'text-gray-800'
-                  }`}>
-                    {displayName}
-                  </h3>
-
-                  {isDetected ? (
-                    <Badge
-                      variant={(() => {
-                        const status = getAngleStatus(bikeType, angleName, value!)
-                        return status === 'optimal' ? 'default' : status === 'warning' ? 'secondary' : 'destructive'
-                      })()}
-                      className="text-xs font-medium px-2 py-1"
-                    >
-                      {(() => {
-                        const status = getAngleStatus(bikeType, angleName, value!)
-                        return status === 'optimal' ? '✓ Óptimo' : status === 'warning' ? '⚠ Advertencia' : '⚠ Extremo'
-                      })()}
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-xs text-gray-400 font-medium px-2 py-1">
-                      · No detectado
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Angle indicator */}
-                <AdvancedAngleIndicator
-                  angleName={angleName}
-                  value={isDetected ? value! : 0}
-                  bikeType={bikeType}
-                  isDisabled={!isDetected}
-                />
-              </div>
-            )
-          })}
+          {allAngles.map((angleName) => (
+            <AngleCard
+              key={angleName}
+              angleName={angleName}
+              value={angles[angleName]}
+              bikeType={bikeType}
+            />
+          ))}
         </div>
       </CardContent>
     </Card>

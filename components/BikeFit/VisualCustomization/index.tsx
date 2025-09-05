@@ -4,7 +4,7 @@ import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 import { RotateCcw } from 'lucide-react'
 import type { VisualSettings } from '@/types/bikefit'
-import { VISUAL_RANGES } from '@/lib/visual-customization-constants'
+import { VISUAL_RANGES } from '@/lib/constants'
 import { useVisualCustomization } from './useVisualCustomization'
 import ColorSelector from './ColorSelector'
 

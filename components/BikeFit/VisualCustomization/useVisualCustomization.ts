@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import type { VisualSettings } from '@/types/bikefit'
-import { DEFAULT_VISUAL_SETTINGS } from '@/lib/bikefit-constants'
+import { DEFAULT_VISUAL_SETTINGS } from '@/lib/constants'
 
 /**
  * Custom hook for managing visual customization logic

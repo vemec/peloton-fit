@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { VIDEO_CONFIG, ERROR_MESSAGES } from '@/lib/bikefit-constants'
+import { VIDEO_CONFIG, ERROR_MESSAGES } from '@/lib/constants'
 import { stopMediaStream } from './utils'
 
 export function useVideoStream() {

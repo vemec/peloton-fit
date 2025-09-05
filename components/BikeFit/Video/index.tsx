@@ -13,6 +13,7 @@ import { usePoseVisualization } from './usePoseVisualization'
 import { useAngles, AngleTable } from '../Analysis'
 import { FIXED_FPS, generateScreenshotFilename } from './constants'
 import { captureCanvasFrame, downloadFile } from './utils'
+import { SKELETON_MODES } from '../Drawing'
 import type { BikeType, DetectedSide, VisualSettings, SkeletonMode } from '@/types/bikefit'
 
 interface BikeFitVideoPlayerProps {
@@ -34,7 +35,7 @@ export default function BikeFitVideoPlayer({
 }: BikeFitVideoPlayerProps) {
   const [selectedResolution, setSelectedResolution] = useState('1280x720')
   const [isFlipped, setIsFlipped] = useState(false)
-  const [skeletonMode, setSkeletonMode] = useState<SkeletonMode>('side')
+  const [skeletonMode, setSkeletonMode] = useState<SkeletonMode>(SKELETON_MODES.SIDE_FULL)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // Custom hooks
@@ -168,10 +169,10 @@ export default function BikeFitVideoPlayer({
     setIsFlipped(prev => !prev)
   }
 
-  const handleSkeletonModeToggle = () => {
-    setSkeletonMode(prev => prev === 'side' ? 'full' : 'side')
+  const handleSkeletonModeChange = (mode: SkeletonMode) => {
+    setSkeletonMode(mode)
     show.success('Modo de esqueleto cambiado', {
-      description: skeletonMode === 'side' ? 'Mostrando esqueleto completo' : 'Mostrando esqueleto lateral'
+      description: `Ahora mostrando: ${mode}`
     })
   }
 
@@ -206,7 +207,7 @@ export default function BikeFitVideoPlayer({
         onBikeTypeChange={onBikeTypeChange}
         onFlipToggle={handleFlipToggle}
         onVisualSettingsChange={onVisualSettingsChange}
-        onSkeletonModeToggle={handleSkeletonModeToggle}
+        onSkeletonModeChange={handleSkeletonModeChange}
         onStartCamera={handleStartCamera}
         onStopCamera={handleStopCamera}
         isRecording={isRecording}
@@ -255,7 +256,7 @@ export default function BikeFitVideoPlayer({
               </div>
 
               {/* Side detection indicator - Bottom left - Only show in side mode */}
-              {skeletonMode === 'side' && (
+              {skeletonMode === SKELETON_MODES.SIDE_FULL && (
                 <div className="absolute bottom-6 left-6 z-10">
                   <div className="relative flex items-center gap-3 bg-black/90 backdrop-blur-md rounded-full px-4 py-2 border border-white/30 shadow-2xl">
                     <div className="relative">
@@ -278,7 +279,7 @@ export default function BikeFitVideoPlayer({
               )}
 
               {/* Skeleton mode indicator - Bottom left when in full mode */}
-              {skeletonMode === 'full' && (
+              {skeletonMode === SKELETON_MODES.FULL && (
                 <div className="absolute bottom-6 left-6 z-10">
                   <div className="relative flex items-center gap-3 bg-black/90 backdrop-blur-md rounded-full px-4 py-2 border border-white/30 shadow-2xl">
                     <div className="relative">

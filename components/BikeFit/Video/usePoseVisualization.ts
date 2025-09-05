@@ -7,7 +7,9 @@ import {
   clearCanvas,
   drawSkeleton,
   drawDetectedSideSkeleton,
-  drawBikeFitAngles
+  drawSkeletonWithMode,
+  drawBikeFitAngles,
+  SKELETON_MODES
 } from '../Drawing'
 
 interface UsePoseVisualizationProps {
@@ -29,7 +31,7 @@ export function usePoseVisualization({
   visualSettings,
   isActive,
   isFlipped = false,
-  skeletonMode = 'side'
+  skeletonMode = SKELETON_MODES.SIDE_FULL
 }: UsePoseVisualizationProps) {
   const drawingContextRef = useRef<DrawingContext | null>(null)
   const animationFrameRef = useRef<number | undefined>(undefined)
@@ -126,20 +128,21 @@ export function usePoseVisualization({
           }
 
           // Draw skeleton based on mode
-          if (skeletonMode === 'full') {
-            // Always show full skeleton regardless of detected side
-            drawSkeleton(
+          if (skeletonMode === SKELETON_MODES.FULL) {
+            // Show full skeleton with all landmarks
+            drawSkeletonWithMode(
               ctx,
               isFlipped ? keypoints : displayKeypoints,
               visualSettings,
               canvasEl.width,
-              canvasEl.height
+              canvasEl.height,
+              SKELETON_MODES.FULL
             )
           } else if (detectedSide && detectedSide !== null) {
             // Show side-specific skeleton when side is detected
             drawDetectedSideSkeleton(
               ctx,
-              isFlipped ? keypoints : displayKeypoints, // Use original keypoints when flipped since we're applying transform
+              isFlipped ? keypoints : displayKeypoints,
               detectedSide,
               visualSettings,
               canvasEl.width,
@@ -149,7 +152,7 @@ export function usePoseVisualization({
             // Draw bike fit angles for the detected side
             drawBikeFitAngles(
               ctx,
-              isFlipped ? keypoints : displayKeypoints, // Use original keypoints when flipped since we're applying transform
+              isFlipped ? keypoints : displayKeypoints,
               detectedSide,
               visualSettings,
               canvasEl.width,

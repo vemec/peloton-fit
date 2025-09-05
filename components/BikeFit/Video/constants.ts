@@ -1,5 +1,5 @@
 import { Smartphone, Monitor, Tv } from 'lucide-react'
-import { VIDEO_CONFIG, FILE_NAMING } from '@/lib/bikefit-constants'
+import { VIDEO_CONFIG, FILE_NAMING } from '@/lib/constants'
 
 // Video recording constants
 export const FIXED_FPS = VIDEO_CONFIG.FIXED_FPS

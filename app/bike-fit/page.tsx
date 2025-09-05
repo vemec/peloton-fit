@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react'
 import VideoPlayer from '@/components/BikeFit/Video'
-import type { BikeType, DetectedSide, VisualSettings } from '@/components/BikeFit/types'
-import { DEFAULT_VISUAL_SETTINGS } from '@/lib/bikefit-constants'
+import type { BikeType, DetectedSide, VisualSettings } from '@/types/bikefit'
+import { DEFAULT_VISUAL_SETTINGS } from '@/lib/constants'
 
 export default function BikeFitPage() {
   const [bikeType, setBikeType] = useState<BikeType>('triathlon')

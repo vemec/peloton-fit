@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { MEDIAPIPE_CONFIG, ERROR_MESSAGES } from '@/lib/bikefit-constants'
+import { MEDIAPIPE_CONFIG, ERROR_MESSAGES } from '@/lib/constants'
 
 /**
  * Global singleton state for MediaPipe to prevent multiple initializations

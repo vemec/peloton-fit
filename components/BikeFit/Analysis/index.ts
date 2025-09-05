@@ -1,16 +1,11 @@
-// Analysis module exports
+/**
+ * Analysis Module - Core analysis components and hooks
+ *
+ * Note: Import types directly from @/types/bikefit rather than through these exports
+ */
 
 export { useMediaPipeManager } from './useMediaPipeManager'
 export { usePoseDetectionRealTime } from './usePoseDetectionRealTime'
 export { useAngles } from './useAngles'
 export { default as AngleTable } from './AngleTable'
-
-// Re-export types for convenience
-export type {
-  DetectedSide,
-  BikeType,
-  Keypoint,
-  MediaPipeResults,
-  MediaPipeLandmark,
-  MediaPipePose
-} from '@/types/bikefit'
+export { default as AngleCard } from './AngleCard'

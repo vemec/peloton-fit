@@ -1,11 +1,6 @@
-import type { Keypoint } from '@/types/bikefit'
-
 /**
  * Canvas setup and utility functions
  */
-
-// Re-export from lib for convenience
-export { hexToRgba } from '@/lib/bikefit-utils'
 
 export interface DrawingContext {
   canvas: HTMLCanvasElement
@@ -92,17 +87,6 @@ export function normalizeAngleDelta(delta: number): number {
   while (normalized <= -Math.PI) normalized += Math.PI * 2
   while (normalized > Math.PI) normalized -= Math.PI * 2
   return normalized
-}
-
-/**
- * Checks if a keypoint meets visibility requirements
- */
-export function isKeypointVisible(
-  keypoint: Keypoint,
-  threshold = 0.5
-): boolean {
-  const visibility = keypoint.score || keypoint.visibility || 0
-  return visibility >= threshold
 }
 
 /**
