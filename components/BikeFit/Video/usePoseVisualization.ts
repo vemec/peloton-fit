@@ -21,6 +21,7 @@ interface UsePoseVisualizationProps {
   isActive: boolean
   isFlipped?: boolean
   skeletonMode?: SkeletonMode
+  hideVideoBackground?: boolean
 }
 
 export function usePoseVisualization({
@@ -31,7 +32,8 @@ export function usePoseVisualization({
   visualSettings,
   isActive,
   isFlipped = false,
-  skeletonMode = SKELETON_MODES.SIDE_FULL
+  skeletonMode = SKELETON_MODES.SIDE_FULL,
+  hideVideoBackground = false
 }: UsePoseVisualizationProps) {
   const drawingContextRef = useRef<DrawingContext | null>(null)
   const animationFrameRef = useRef<number | undefined>(undefined)
@@ -99,15 +101,22 @@ export function usePoseVisualization({
         // Clear previous frame
         clearCanvas(ctx, canvasEl.width, canvasEl.height)
 
-        // Draw video frame first (like PoseViewer) for background
-        if (isFlipped) {
-          ctx.save()
-          ctx.translate(canvasEl.width, 0)
-          ctx.scale(-1, 1)
-          ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height)
-          ctx.restore()
+        // Draw background: either the video frame or a solid black fill
+        if (!hideVideoBackground) {
+          if (isFlipped) {
+            ctx.save()
+            ctx.translate(canvasEl.width, 0)
+            ctx.scale(-1, 1)
+            ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height)
+            ctx.restore()
+          } else {
+            ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height)
+          }
         } else {
-          ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height)
+          ctx.save()
+          ctx.fillStyle = '#000'
+          ctx.fillRect(0, 0, canvasEl.width, canvasEl.height)
+          ctx.restore()
         }
 
         // Only draw pose overlay if we have valid keypoints
@@ -181,7 +190,9 @@ export function usePoseVisualization({
 
       // Continue animation loop
       animationFrameRef.current = requestAnimationFrame(drawFrame)
-    }    // Start the animation loop
+    }
+
+    // Start the animation loop
     animationFrameRef.current = requestAnimationFrame(drawFrame)
 
     return () => {
@@ -189,7 +200,7 @@ export function usePoseVisualization({
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [keypoints, detectedSide, visualSettings, isActive, isFlipped, skeletonMode])
+  }, [keypoints, detectedSide, visualSettings, isActive, isFlipped, skeletonMode, hideVideoBackground])
 
   // Cleanup on unmount
   useEffect(() => {

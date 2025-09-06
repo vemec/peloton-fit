@@ -97,7 +97,7 @@ export const DRAWING_CONFIG = {
   // Visibility thresholds
   MIN_VISIBILITY_THRESHOLD: 0.2,
   HIGH_VISIBILITY_THRESHOLD: 0.4, // Reduced from 0.6 to 0.4 for better angle detection
-  ANGLE_VISIBILITY_THRESHOLD: 0.3, // Specific threshold for angle drawing
+  ANGLE_VISIBILITY_THRESHOLD: 0.2, // Lower threshold for angle drawing per request
 
   // Text and label styling
   LABEL_PADDING: { x: 8, y: 8 } as const,

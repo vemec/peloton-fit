@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { DetectedSide, Keypoint, MediaPipeResults, MediaPipeLandmark, MediaPipePose } from '@/types/bikefit'
-import { MEDIAPIPE_CONFIG } from '@/lib/constants'
+import { getMediaPipeOptions } from '@/lib/constants'
 import { useMediaPipeManager } from './useMediaPipeManager'
 
 /**
@@ -108,14 +108,8 @@ export function usePoseDetectionRealTime(
           locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
         })
 
-        // Configure with the same settings as PoseViewer
-        pose.setOptions({
-          modelComplexity: MEDIAPIPE_CONFIG.MODEL_COMPLEXITY,
-          smoothLandmarks: MEDIAPIPE_CONFIG.SMOOTH_LANDMARKS,
-          enableSegmentation: MEDIAPIPE_CONFIG.ENABLE_SEGMENTATION,
-          minDetectionConfidence: MEDIAPIPE_CONFIG.MIN_DETECTION_CONFIDENCE,
-          minTrackingConfidence: MEDIAPIPE_CONFIG.MIN_TRACKING_CONFIDENCE
-        })
+        // Configure MediaPipe with adaptive modelComplexity based on FPS
+        pose.setOptions(getMediaPipeOptions(fps))
 
         // Set up results callback
         pose.onResults((results: MediaPipeResults) => {

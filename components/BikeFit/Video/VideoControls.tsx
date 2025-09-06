@@ -1,7 +1,7 @@
+import { Camera, Proportions, Check, Video, VideoOff, Bike, Aperture, FlipHorizontal, Palette, ChevronUp, ChevronDown, Play, Square } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Camera, Proportions, Check, Video, Bike, Aperture, Play, Pause, FlipHorizontal, Palette } from 'lucide-react'
 import type { CameraDevice, BikeType, VisualSettings, SkeletonMode } from '@/types/bikefit'
 import { RESOLUTIONS } from './constants'
 import BikeFitVisualCustomization from '../VisualCustomization'
@@ -16,12 +16,14 @@ interface VideoControlsProps {
   error: string | null
   bikeType: BikeType
   isFlipped: boolean
+  isVideoHidden: boolean
   visualSettings: VisualSettings
   skeletonMode: SkeletonMode
   onDeviceChange: (deviceId: string | null) => void
   onResolutionChange: (resolution: string) => void
   onBikeTypeChange: (type: BikeType) => void
   onFlipToggle: () => void
+  onToggleVideoBackground: () => void
   onVisualSettingsChange: (settings: VisualSettings) => void
   onSkeletonModeChange: (mode: SkeletonMode) => void
   onStartCamera: () => void
@@ -40,12 +42,14 @@ export default function VideoControls({
   error,
   bikeType,
   isFlipped,
+  isVideoHidden,
   visualSettings,
   skeletonMode,
   onDeviceChange,
   onResolutionChange,
   onBikeTypeChange,
   onFlipToggle,
+  onToggleVideoBackground,
   onVisualSettingsChange,
   onSkeletonModeChange,
   onStartCamera,
@@ -56,6 +60,7 @@ export default function VideoControls({
   onCaptureScreenshot
 }: VideoControlsProps) {
   const [recordingTime, setRecordingTime] = useState(0)
+  const [cameraSelectorOpen, setCameraSelectorOpen] = useState(false)
 
   // Timer for recording
   useEffect(() => {
@@ -79,32 +84,21 @@ export default function VideoControls({
 
   return (
     <div className={cn('flex flex-col gap-4')}>
-      {/* Horizontal control bar */}
-      <div className={cn('bg-gray-900 backdrop-blur-sm rounded-full px-4 py-3 inline-flex items-center justify-center gap-4 shadow-lg mx-auto')}>
-
-        {/* Play/Pause video button */}
-        <div className={cn('flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-1 gap-1 transition-all duration-300 shadow-lg')}>
-          <Button
-            onClick={isActive ? onStopCamera : onStartCamera}
-            disabled={!selectedDeviceId}
-            size="icon"
-            className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
-          >
-            {isActive ? (
-              <Pause className={cn('!w-5 !h-5 transition-all duration-200')} />
-            ) : (
-              <Play className={cn('!w-5 !h-5 transition-all duration-200')} />
-            )}
-          </Button>
-          {/* Camera selector */}
-          <Popover>
+      <div className={cn('flex items-center bg-slate-700/50 rounded-full p-2 gap-3 mx-auto')}>
+        {/* Camera control: left opens device selector, right toggles camera */}
+        <div className={cn('flex items-center bg-slate-700/50 hover:bg-slate-800/60 rounded-full p-0 gap-0 transition-all duration-300 shadow-lg')}>
+          <Popover open={cameraSelectorOpen} onOpenChange={setCameraSelectorOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="ghost"
                 aria-label="Seleccionar cámara"
-                className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
+                className={cn('w-10 h-10 rounded-full bg-transparent hover:bg-transparent text-slate-200 hover:text-white cursor-pointer transition-all duration-300 ease-in-out')}
               >
-                <Video size={20} className={cn('!w-5 !h-5 transition-transform duration-300 group-hover:scale-105')} />
+                {cameraSelectorOpen ? (
+                  <ChevronDown className={cn('!w-5 !h-5 text-slate-300')} />
+                ) : (
+                  <ChevronUp className={cn('!w-5 !h-5 text-slate-300')} />
+                )}
               </Button>
             </PopoverTrigger>
             <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
@@ -116,7 +110,7 @@ export default function VideoControls({
                 ) : (
                   devices.map(device => {
                     const cleanLabel = device.label
-                      .replace(/\s*\([^)]*\)$/, '')
+                      .replace(/\s*\([^)]*\)$/,'')
                       .replace(/\s+/g, ' ')
                       .trim()
 
@@ -143,7 +137,41 @@ export default function VideoControls({
               </div>
             </PopoverContent>
           </Popover>
+
+          <Button
+            onClick={isActive ? onStopCamera : onStartCamera}
+            disabled={!selectedDeviceId}
+            size="icon"
+            aria-label={isActive ? 'Detener cámara' : 'Iniciar cámara'}
+            className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
+          >
+            {isActive ? (
+              <Square size={20} className={cn('!w-5 !h-5 transition-transform duration-300')} />
+            ) : (
+              <Play size={20} className={cn('!w-5 !h-5 transition-transform duration-300')} />
+            )}
+          </Button>
         </div>
+
+        {/* Hide/Show Video Background button */}
+        <Button
+          onClick={onToggleVideoBackground}
+          size="icon"
+          className={cn(
+            'w-12 h-12 rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl',
+            isVideoHidden
+              ? 'bg-red-500 hover:bg-red-400 focus:bg-red-300 border-red-400 hover:border-red-300 focus:border-red-200 text-white focus:ring-red-400'
+              : 'bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 focus:ring-slate-400/50'
+          )}
+          aria-label={isVideoHidden ? 'Mostrar video' : 'Ocultar video'}
+          title={isVideoHidden ? 'Mostrar video' : 'Ocultar video'}
+        >
+          {isVideoHidden ? (
+            <VideoOff className={cn('!w-5 !h-5 transition-all duration-200')} />
+          ) : (
+            <Video className={cn('!w-5 !h-5 transition-all duration-200')} />
+          )}
+        </Button>
 
         {/* Settings/Options */}
         <Popover>
@@ -184,7 +212,7 @@ export default function VideoControls({
         </Popover>
 
         {/* Recording button with integrated timer container */}
-        <div className={cn('flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-1 gap-1 transition-all duration-300 shadow-lg')}>
+        <div className={cn('flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-0 gap-1 transition-all duration-300 shadow-lg')}>
           <Button
             onClick={isRecording ? onStopRecording : onStartRecording}
             disabled={!isActive}

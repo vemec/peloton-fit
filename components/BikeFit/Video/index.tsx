@@ -36,6 +36,7 @@ export default function BikeFitVideoPlayer({
   const [selectedResolution, setSelectedResolution] = useState('1280x720')
   const [isFlipped, setIsFlipped] = useState(false)
   const [skeletonMode, setSkeletonMode] = useState<SkeletonMode>(SKELETON_MODES.SIDE_FULL)
+  const [isVideoHidden, setIsVideoHidden] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // Custom hooks
@@ -62,7 +63,8 @@ export default function BikeFitVideoPlayer({
     visualSettings,
     isActive,
     isFlipped,
-    skeletonMode
+  skeletonMode,
+  hideVideoBackground: isVideoHidden
   })
 
   // Update detected side when pose detection changes
@@ -176,6 +178,10 @@ export default function BikeFitVideoPlayer({
     })
   }
 
+  const handleToggleVideoBackground = () => {
+    setIsVideoHidden((prev) => !prev)
+  }
+
   const handleResolutionChange = (resolution: string) => {
     setSelectedResolution(resolution)
     if (isActive && selectedDeviceId) {
@@ -277,7 +283,8 @@ export default function BikeFitVideoPlayer({
             playsInline
             muted
             style={{
-              opacity: isActive ? 1 : 0,
+              // If video feed is hidden, keep element invisible while canvas still renders skeleton
+              opacity: isActive && !isVideoHidden ? 1 : 0,
               transition: 'opacity 300ms',
               aspectRatio: 'auto',
               transform: isFlipped ? 'scaleX(-1)' : 'scaleX(1)'
@@ -315,12 +322,14 @@ export default function BikeFitVideoPlayer({
           error={error}
           bikeType={bikeType}
           isFlipped={isFlipped}
+          isVideoHidden={isVideoHidden}
           visualSettings={visualSettings}
           skeletonMode={skeletonMode}
           onDeviceChange={setSelectedDeviceId}
           onResolutionChange={handleResolutionChange}
           onBikeTypeChange={onBikeTypeChange}
           onFlipToggle={handleFlipToggle}
+          onToggleVideoBackground={handleToggleVideoBackground}
           onVisualSettingsChange={onVisualSettingsChange}
           onSkeletonModeChange={handleSkeletonModeChange}
           onStartCamera={handleStartCamera}

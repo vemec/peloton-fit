@@ -18,6 +18,23 @@ export const MEDIAPIPE_CONFIG = {
   CDN_URL: 'https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js' as const,
 } as const
 
+/**
+ * Returns MediaPipe Pose options with adaptive modelComplexity based on target FPS.
+ * - >= 60fps: modelComplexity 0 (fastest)
+ * - >= 30fps: modelComplexity 1 (balanced)
+ * - else    : modelComplexity 2 (highest quality)
+ */
+export function getMediaPipeOptions(fps: number = VIDEO_CONFIG.FIXED_FPS) {
+  const modelComplexity = fps >= 60 ? 0 : fps >= 30 ? 1 : 2
+  return {
+    modelComplexity,
+    smoothLandmarks: MEDIAPIPE_CONFIG.SMOOTH_LANDMARKS,
+    enableSegmentation: MEDIAPIPE_CONFIG.ENABLE_SEGMENTATION,
+    minDetectionConfidence: MEDIAPIPE_CONFIG.MIN_DETECTION_CONFIDENCE,
+    minTrackingConfidence: MEDIAPIPE_CONFIG.MIN_TRACKING_CONFIDENCE,
+  }
+}
+
 // === Visual Settings ===
 export const DEFAULT_VISUAL_SETTINGS = {
   lineColor: '#10b981',
