@@ -25,7 +25,7 @@ export default function AngleTable({ angles, bikeType }: AngleTableProps) {
 
   return (
     <>
-      <div className="text-xl font-bold flex items-center gap-3 text-gray-800">
+      <div className="text-xl font-bold flex items-center gap-2 text-gray-800">
         <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
         Análisis de Ángulos
         <Badge
@@ -43,7 +43,7 @@ export default function AngleTable({ angles, bikeType }: AngleTableProps) {
         </Badge>
       </div>
       {/* Grid layout for 2 columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {allAngles.map((angleName) => (
           <AngleCard
             key={angleName}

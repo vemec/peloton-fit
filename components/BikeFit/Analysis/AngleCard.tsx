@@ -157,7 +157,7 @@ export default function AngleCard({
   }
 
   return (
-    <div className={cn("p-4 rounded-xl transition-all duration-300 grid gap-5", isDetected ? "bg-white border border-gray-200/80 shadow-sm hover:shadow-md" : "bg-gray-50 border border-gray-200/50")}>
+    <div className={cn("p-4 rounded-xl transition-all duration-300 grid gap-2", isDetected ? "bg-white border border-gray-200/80 shadow-sm hover:shadow-md" : "bg-gray-50 border border-gray-200/50")}>
       {/* Header with name and status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
