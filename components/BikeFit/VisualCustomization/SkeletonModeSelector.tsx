@@ -26,10 +26,10 @@ export default function SkeletonModeSelector({
       onClick={handleToggle}
       size="icon"
       className={cn(
-        'w-12 h-12 rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl',
+        'w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed',
         isFullMode
           ? 'bg-green-500 hover:bg-green-400 focus:bg-green-300 border-green-400 hover:border-green-300 focus:border-green-200 text-white focus:ring-green-400'
-          : 'bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 focus:ring-slate-400/50'
+          : 'w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed'
       )}
       title={isFullMode ? 'Esqueleto Completo' : 'Esqueleto Lateral'}
     >

@@ -84,7 +84,7 @@ export default function VideoControls({
 
   return (
     <div className={cn('flex flex-col gap-4')}>
-      <div className={cn('flex items-center bg-slate-700/50 rounded-full p-2 gap-3 mx-auto')}>
+      <div className={cn('flex items-center bg-slate-400 rounded-full p-2 gap-2 mx-auto')}>
         {/* Camera control: left opens device selector, right toggles camera */}
         <div className={cn('flex items-center bg-slate-700/50 hover:bg-slate-800/60 rounded-full p-0 gap-0 transition-all duration-300 shadow-lg')}>
           <Popover open={cameraSelectorOpen} onOpenChange={setCameraSelectorOpen}>
@@ -143,7 +143,7 @@ export default function VideoControls({
             disabled={!selectedDeviceId}
             size="icon"
             aria-label={isActive ? 'Detener cámara' : 'Iniciar cámara'}
-            className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
+            className={cn('w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
           >
             {isActive ? (
               <Square size={20} className={cn('!w-5 !h-5 transition-transform duration-300')} />
@@ -158,10 +158,10 @@ export default function VideoControls({
           onClick={onToggleVideoBackground}
           size="icon"
           className={cn(
-            'w-12 h-12 rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl',
+            'w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed',
             isVideoHidden
               ? 'bg-red-500 hover:bg-red-400 focus:bg-red-300 border-red-400 hover:border-red-300 focus:border-red-200 text-white focus:ring-red-400'
-              : 'bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 focus:ring-slate-400/50'
+              : 'w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed'
           )}
           aria-label={isVideoHidden ? 'Mostrar video' : 'Ocultar video'}
           title={isVideoHidden ? 'Mostrar video' : 'Ocultar video'}
@@ -179,7 +179,7 @@ export default function VideoControls({
             <Button
               variant="ghost"
               size="icon"
-              className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
+              className={cn('w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
             >
               <Proportions className={cn('!w-5 !h-5 transition-all duration-200')} />
             </Button>
@@ -237,7 +237,7 @@ export default function VideoControls({
             onClick={onCaptureScreenshot}
             disabled={!isActive}
             size="icon"
-            className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
+            className={cn('w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
           >
             <Aperture className={cn('!w-5 !h-5 transition-all duration-200')} />
           </Button>
@@ -249,7 +249,7 @@ export default function VideoControls({
             <Button
               variant="ghost"
               size="icon"
-              className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
+              className={cn('w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
             >
               <Palette className={cn('!w-5 !h-5 transition-all duration-200')} />
             </Button>
@@ -267,10 +267,10 @@ export default function VideoControls({
           onClick={onFlipToggle}
           size="icon"
           className={cn(
-            'w-12 h-12 rounded-full border-2 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl',
+            'w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed',
             isFlipped
               ? 'bg-blue-500 hover:bg-blue-400 focus:bg-blue-300 border-blue-400 hover:border-blue-300 focus:border-blue-200 text-white focus:ring-blue-400'
-              : 'bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 focus:ring-slate-400/50'
+              : 'w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >
           <FlipHorizontal className={cn('!w-5 !h-5 transition-all duration-200')} />
@@ -288,12 +288,12 @@ export default function VideoControls({
             <Button
               variant="ghost"
               size="icon"
-              className={cn('w-12 h-12 rounded-full bg-slate-700/50 hover:bg-slate-600/60 focus:bg-slate-500/70 text-slate-200 hover:text-white border-2 border-slate-600/40 hover:border-slate-500/60 focus:border-slate-400/70 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-400/50 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-xl')}
+              className={cn('w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
             >
               <Bike className={cn('!w-5 !h-5')} />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className={cn('w-60 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
+          <PopoverContent className={cn('w-80 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
             <div className={cn('space-y-1')}>
               {['road', 'triathlon', 'mountain'].map((type) => {
                 const isSelected = bikeType === type
