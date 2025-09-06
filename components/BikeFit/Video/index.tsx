@@ -285,7 +285,7 @@ export default function BikeFitVideoPlayer({
             style={{
               // If video feed is hidden, keep element invisible while canvas still renders skeleton
               opacity: isActive && !isVideoHidden ? 1 : 0,
-              transition: 'opacity 300ms',
+              transition: 'opacity 500ms',
               aspectRatio: 'auto',
               transform: isFlipped ? 'scaleX(-1)' : 'scaleX(1)'
             }}
@@ -298,7 +298,7 @@ export default function BikeFitVideoPlayer({
             className="absolute inset-0 w-full h-full pointer-events-none"
             style={{
               opacity: isActive ? 1 : 0,
-              transition: 'opacity 300ms'
+              transition: 'opacity 500ms'
               // No transform here since we handle flipping internally in the drawing code
             }}
           />

@@ -5,7 +5,7 @@
 
 // === Video and MediaPipe Configuration ===
 export const VIDEO_CONFIG = {
-  FIXED_FPS: 60,
+  FIXED_FPS: 30,
   DEFAULT_RESOLUTION: '1280x720' as const,
 } as const
 
