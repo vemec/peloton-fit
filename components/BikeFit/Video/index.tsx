@@ -10,6 +10,7 @@ import { useVideoStream } from './useVideoStream'
 import { useVideoRecording } from './useVideoRecording'
 import { usePoseDetectionRealTime } from '../Analysis/usePoseDetectionRealTime'
 import { usePoseVisualization } from './usePoseVisualization'
+import Indicators from './StatusIndicatorVariants'
 import { useAngles, AngleTable } from '../Analysis'
 import { FIXED_FPS, generateScreenshotFilename } from './constants'
 import { captureCanvasFrame, downloadFile } from './utils'
@@ -38,6 +39,15 @@ export default function BikeFitVideoPlayer({
   const [skeletonMode, setSkeletonMode] = useState<SkeletonMode>(SKELETON_MODES.SIDE_FULL)
   const [isVideoHidden, setIsVideoHidden] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Derive container aspect ratio from selected resolution (fallback 16/9)
+  const [aspectW, aspectH] = React.useMemo(() => {
+    const [wStr, hStr] = (selectedResolution || '').split('x')
+    const w = Number(wStr)
+    const h = Number(hStr)
+    if (!w || !h) return [16, 9]
+    return [w, h]
+  }, [selectedResolution])
 
   // Custom hooks
   const { devices, selectedDeviceId, setSelectedDeviceId, refreshDevices } = useCameraDevices()
@@ -196,97 +206,38 @@ export default function BikeFitVideoPlayer({
   }
 
   return (
-    <div className="space-y-6">
+    <>
       {/* Main content: Video and Angle Table */}
-      <div className="space-y-6">
+      <div className="grid gap-6">
         {/* Video Display */}
-        <div className="relative bg-slate-50/30 border border-slate-200/50 rounded-3xl overflow-hidden backdrop-blur-sm min-h-[691px]">
+        <div
+          className="relative mx-auto bg-slate-50/30 border border-slate-200/50 rounded-3xl overflow-hidden backdrop-blur-sm"
+          style={{aspectRatio: `${aspectW} / ${aspectH}`, height: `min(80dvh, calc(100vw * ${aspectH} / ${aspectW}))`, maxWidth: '100%'}}
+        >
           {/* Status indicators - Top corners - Only show when video is active */}
           {isActive && (
             <>
-              <div className="absolute top-6 left-6 z-10">
-                {/* Video status indicator */}
-                <div className="relative flex items-center gap-3 bg-black/90 backdrop-blur-md rounded-full px-4 py-2 border border-white/30 shadow-2xl">
-                  <div className="relative">
-                    <div className="w-3 h-3 rounded-full bg-emerald-400 shadow-lg animate-pulse ring-2 ring-emerald-300/90 ring-offset-2 ring-offset-black/50"></div>
-                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-emerald-300 animate-ping opacity-75"></div>
-                  </div>
-                  <span className="text-emerald-100 text-sm font-medium">Cámara Activa</span>
-                </div>
-              </div>
+              {/* Camera active - top left */}
+              <Indicators.Camera />
 
-              <div className="absolute top-6 right-6 z-10">
-                {/* Recording status indicator */}
-                <div className="relative flex items-center gap-3 bg-black/90 backdrop-blur-md rounded-full px-4 py-2 border border-white/30 shadow-2xl">
-                  <div className="relative">
-                    <div className={`w-3 h-3 rounded-full shadow-lg transition-all duration-300 ${
-                      isRecording
-                        ? 'bg-red-500 animate-pulse ring-2 ring-red-400/90 ring-offset-2 ring-offset-black/50'
-                        : 'bg-gray-500 opacity-50'
-                    }`}></div>
-                    {isRecording && (
-                      <div className="absolute inset-0 w-3 h-3 rounded-full bg-red-400 animate-ping opacity-75"></div>
-                    )}
-                  </div>
-                  <span className={`text-sm font-medium transition-all duration-300 ${
-                    isRecording ? 'text-red-100' : 'text-gray-400'
-                  }`}>
-                    {isRecording ? 'Grabando' : 'Sin Grabar'}
-                  </span>
-                </div>
-              </div>
+              {/* Recording status - top right */}
+              <Indicators.Recording isRecording={isRecording} />
 
-              {/* Side detection indicator - Bottom left - Only show in side mode */}
-              {skeletonMode === SKELETON_MODES.SIDE_FULL && (
-                <div className="absolute bottom-6 left-6 z-10">
-                  <div className="relative flex items-center gap-3 bg-black/90 backdrop-blur-md rounded-full px-4 py-2 border border-white/30 shadow-2xl">
-                    <div className="relative">
-                      <div className={`w-3 h-3 rounded-full shadow-lg transition-all duration-300 ${
-                        poseDetectedSide
-                          ? 'bg-blue-400 animate-pulse ring-2 ring-blue-300/90 ring-offset-2 ring-offset-black/50'
-                          : 'bg-gray-500 opacity-50'
-                      }`}></div>
-                      {poseDetectedSide && (
-                        <div className="absolute inset-0 w-3 h-3 rounded-full bg-blue-300 animate-ping opacity-75"></div>
-                      )}
-                    </div>
-                    <span className={`text-sm font-medium transition-all duration-300 ${
-                      poseDetectedSide ? 'text-blue-100' : 'text-gray-400'
-                    }`}>
-                      {poseDetectedSide ? `Lado ${poseDetectedSide === 'left' ? 'Izquierdo' : 'Derecho'}` : 'Detectando perfil...'}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Skeleton mode indicator - Bottom left when in full mode */}
-              {skeletonMode === SKELETON_MODES.FULL && (
-                <div className="absolute bottom-6 left-6 z-10">
-                  <div className="relative flex items-center gap-3 bg-black/90 backdrop-blur-md rounded-full px-4 py-2 border border-white/30 shadow-2xl">
-                    <div className="relative">
-                      <div className="w-3 h-3 rounded-full bg-green-400 shadow-lg animate-pulse ring-2 ring-green-300/90 ring-offset-2 ring-offset-black/50"></div>
-                      <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-300 animate-ping opacity-75"></div>
-                    </div>
-                    <span className="text-green-100 text-sm font-medium">
-                      Esqueleto Completo
-                    </span>
-                  </div>
-                </div>
-              )}
+              {/* Bottom-left indicator: side detection or full skeleton */}
+              <Indicators.SkeletonMode skeletonMode={skeletonMode} poseDetectedSide={poseDetectedSide} />
             </>
           )}
 
           {/* Video element */}
           <video
             ref={videoRef}
-            className="w-full h-auto object-contain bg-slate-900/5"
+            className="absolute inset-0 w-full h-full object-contain bg-slate-900/5"
             playsInline
             muted
             style={{
               // If video feed is hidden, keep element invisible while canvas still renders skeleton
               opacity: isActive && !isVideoHidden ? 1 : 0,
               transition: 'opacity 500ms',
-              aspectRatio: 'auto',
               transform: isFlipped ? 'scaleX(-1)' : 'scaleX(1)'
             }}
             preload="none"
@@ -346,6 +297,6 @@ export default function BikeFitVideoPlayer({
           bikeType={bikeType}
         />
       </div>
-    </div>
+    </>
   )
 }
