@@ -2,6 +2,13 @@ import { useRef, useEffect, useState } from 'react'
 import type { Keypoint, DetectedSide } from '@/types/bikefit'
 import { drawBikeFitAngles } from '../Drawing/angles'
 
+interface UseAnglesProps {
+  keypoints: Keypoint[]
+  detectedSide: DetectedSide
+  videoWidth?: number
+  videoHeight?: number
+}
+
 interface UseAnglesReturn {
   angles: Record<string, number | null>
 }
@@ -9,10 +16,12 @@ interface UseAnglesReturn {
 /**
  * Hook to calculate bike fit angles from keypoints in real-time
  */
-export function useAngles(
-  keypoints: Keypoint[],
-  detectedSide: DetectedSide
-): UseAnglesReturn {
+export function useAngles({
+  keypoints,
+  detectedSide,
+  videoWidth = 640,
+  videoHeight = 480
+}: UseAnglesProps): UseAnglesReturn {
   const [angles, setAngles] = useState<Record<string, number | null>>({})
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null)
@@ -21,11 +30,13 @@ export function useAngles(
   useEffect(() => {
     if (!canvasRef.current) {
       canvasRef.current = document.createElement('canvas')
-      canvasRef.current.width = 640
-      canvasRef.current.height = 480
-      ctxRef.current = canvasRef.current.getContext('2d')!
     }
-  }, [])
+
+    // Update canvas dimensions when video dimensions change
+    canvasRef.current.width = videoWidth
+    canvasRef.current.height = videoHeight
+    ctxRef.current = canvasRef.current.getContext('2d')!
+  }, [videoWidth, videoHeight])
 
   // Calculate angles whenever keypoints or side changes
   useEffect(() => {
@@ -50,14 +61,14 @@ export function useAngles(
       keypoints,
       detectedSide as 'left' | 'right',
       { lineColor: '#000', pointColor: '#000', lineWidth: 1, pointRadius: 1, pointSize: 1 }, // dummy settings
-      640,
-      480,
+      videoWidth,
+      videoHeight,
       false
     )
 
     // Merge with default angles to ensure all expected angles are present
     setAngles({ ...defaultAngles, ...calculatedAngles })
-  }, [keypoints, detectedSide])
+  }, [keypoints, detectedSide, videoWidth, videoHeight])
 
   return { angles }
 }

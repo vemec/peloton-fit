@@ -66,7 +66,12 @@ export default function BikeFitVideoPlayer({
   )
 
   // Angles calculation hook - Get real-time angles from keypoints
-  const { angles } = useAngles(smoothedKeypoints, detectedSide)
+  const { angles } = useAngles({
+    keypoints: smoothedKeypoints,
+    detectedSide,
+    videoWidth: aspectW,
+    videoHeight: aspectH
+  })
 
   // Pose visualization hook - use smoothed keypoints for better visual quality
   usePoseVisualization({
