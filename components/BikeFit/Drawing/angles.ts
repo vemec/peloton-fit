@@ -91,10 +91,22 @@ export function drawAngleMarker(
   }
 
   try {
-    // Calculate arc parameters
-    const { b, startAngle, smallEndAngle, anticlockwise } = calculateArcParameters(
+  // Calculate arc parameters and canvas coordinates for points
+  const { a, b, c, startAngle, smallEndAngle, anticlockwise } = calculateArcParameters(
       pointA, pointB, pointC, canvasWidth, canvasHeight
     )
+
+  // Draw the two rays (lines) that form the angle
+  ctx.save()
+  ctx.strokeStyle = settings.lineColor
+  ctx.lineWidth = settings.lineWidth
+  ctx.beginPath()
+  ctx.moveTo(b.x, b.y)
+  ctx.lineTo(a.x, a.y)
+  ctx.moveTo(b.x, b.y)
+  ctx.lineTo(c.x, c.y)
+  ctx.stroke()
+  ctx.restore()
 
     // Calculate dynamic radius based on canvas size
     const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.08 // 8% of the smaller dimension
@@ -115,6 +127,25 @@ export function drawAngleMarker(
 
     // Draw arc outline
     drawArcOutline(ctx, b, radius, startAngle, smallEndAngle, anticlockwise, settings)
+
+    // Draw keypoint nodes (A, B, C)
+    ctx.save()
+    ctx.fillStyle = settings.pointColor
+    ctx.strokeStyle = DRAWING_CONFIG.OUTLINE_COLOR
+    ctx.lineWidth = DRAWING_CONFIG.OUTLINE_WIDTH
+    const r = settings.pointRadius
+
+    const drawNode = (p: { x: number; y: number }) => {
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
+    }
+
+    drawNode(a)
+    drawNode(b)
+    drawNode(c)
+    ctx.restore()
 
     // Draw label
     drawAngleLabel(ctx, b, label, angleDeg, canvasWidth, canvasHeight, isFlipped)
@@ -294,7 +325,8 @@ export function drawBikeFitAngles(
   settings: VisualSettings,
   canvasWidth: number,
   canvasHeight: number,
-  isFlipped = false
+  isFlipped = false,
+  visibleAngles?: Partial<Record<'elbow' | 'shoulder' | 'hip' | 'knee' | 'ankle', boolean>>
 ): Record<string, number | null> {
   const angles: Record<string, number | null> = {}
 
@@ -324,34 +356,58 @@ export function drawBikeFitAngles(
     foot: keypoints[indices.foot]
   }
 
+  // Helper to check if an angle should be drawn (default true when undefined)
+  const isVisible = (name: 'elbow' | 'shoulder' | 'hip' | 'knee' | 'ankle') =>
+    visibleAngles?.[name] !== false
+
   // Draw all relevant angles with proper error handling
-  angles.elbow = drawAngleIfValid(
-    ctx, shoulderKp, elbowKp, wristKp, 'Elbow',
-    settings, canvasWidth, canvasHeight, isFlipped
-  )
+  if (isVisible('elbow')) {
+    angles.elbow = drawAngleIfValid(
+      ctx, shoulderKp, elbowKp, wristKp, 'Elbow',
+      settings, canvasWidth, canvasHeight, isFlipped
+    )
+  } else {
+    angles.elbow = null
+  }
 
-  angles.shoulder = drawAngleIfValid(
-    ctx, hipKp, shoulderKp, elbowKp, 'Shoulder',
-    settings, canvasWidth, canvasHeight, isFlipped
-  )
+  if (isVisible('shoulder')) {
+    angles.shoulder = drawAngleIfValid(
+      ctx, hipKp, shoulderKp, elbowKp, 'Shoulder',
+      settings, canvasWidth, canvasHeight, isFlipped
+    )
+  } else {
+    angles.shoulder = null
+  }
 
-  angles.hip = drawAngleIfValid(
-    ctx, shoulderKp, hipKp, kneeKp, 'Hip',
-    settings, canvasWidth, canvasHeight, isFlipped
-  )
+  if (isVisible('hip')) {
+    angles.hip = drawAngleIfValid(
+      ctx, shoulderKp, hipKp, kneeKp, 'Hip',
+      settings, canvasWidth, canvasHeight, isFlipped
+    )
+  } else {
+    angles.hip = null
+  }
 
-  angles.knee = drawAngleIfValid(
-    ctx, hipKp, kneeKp, ankleKp, 'Knee',
-    settings, canvasWidth, canvasHeight, isFlipped
-  )
+  if (isVisible('knee')) {
+    angles.knee = drawAngleIfValid(
+      ctx, hipKp, kneeKp, ankleKp, 'Knee',
+      settings, canvasWidth, canvasHeight, isFlipped
+    )
+  } else {
+    angles.knee = null
+  }
 
   // Handle ankle angle with foot proxy if needed
   if (kneeKp && ankleKp) {
-    const footPoint = footKp || createFootProxy(kneeKp, ankleKp)
-    angles.ankle = drawAngleIfValid(
-      ctx, kneeKp, ankleKp, footPoint, 'Ankle',
-      settings, canvasWidth, canvasHeight, isFlipped
-    )
+    if (isVisible('ankle')) {
+      const footPoint = footKp || createFootProxy(kneeKp, ankleKp)
+      angles.ankle = drawAngleIfValid(
+        ctx, kneeKp, ankleKp, footPoint, 'Ankle',
+        settings, canvasWidth, canvasHeight, isFlipped
+      )
+    } else {
+      angles.ankle = null
+    }
   }
 
   return angles

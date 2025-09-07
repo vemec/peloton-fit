@@ -16,6 +16,7 @@ import { FIXED_FPS, generateScreenshotFilename } from './constants'
 import { captureCanvasFrame, downloadFile } from './utils'
 import { SKELETON_MODES } from '../Drawing'
 import type { BikeType, DetectedSide, VisualSettings, SkeletonMode } from '@/types/bikefit'
+import type { OverlayVisibility } from '@/types/overlay'
 
 interface BikeFitVideoPlayerProps {
   bikeType: BikeType
@@ -38,6 +39,9 @@ export default function BikeFitVideoPlayer({
   const [isFlipped, setIsFlipped] = useState(false)
   const [skeletonMode, setSkeletonMode] = useState<SkeletonMode>(SKELETON_MODES.SIDE_FULL)
   const [isVideoHidden, setIsVideoHidden] = useState(false)
+  const [overlayVisibility, setOverlayVisibility] = useState<OverlayVisibility>({
+    angles: { elbow: true, shoulder: true, hip: true, knee: true, ankle: true },
+  })
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // Derive container aspect ratio from selected resolution (fallback 16/9)
@@ -74,7 +78,8 @@ export default function BikeFitVideoPlayer({
     isActive,
     isFlipped,
   skeletonMode,
-  hideVideoBackground: isVideoHidden
+  hideVideoBackground: isVideoHidden,
+  overlayVisibility,
   })
 
   // Update detected side when pose detection changes
@@ -225,6 +230,9 @@ export default function BikeFitVideoPlayer({
 
               {/* Bottom-left indicator: side detection or full skeleton */}
               <Indicators.SkeletonMode skeletonMode={skeletonMode} poseDetectedSide={poseDetectedSide} />
+
+              {/* Bottom-right indicator: selected bike type */}
+              <Indicators.BikeType bikeType={bikeType} />
             </>
           )}
 
@@ -276,6 +284,7 @@ export default function BikeFitVideoPlayer({
           isVideoHidden={isVideoHidden}
           visualSettings={visualSettings}
           skeletonMode={skeletonMode}
+          overlayVisibility={overlayVisibility}
           onDeviceChange={setSelectedDeviceId}
           onResolutionChange={handleResolutionChange}
           onBikeTypeChange={onBikeTypeChange}
@@ -283,6 +292,7 @@ export default function BikeFitVideoPlayer({
           onToggleVideoBackground={handleToggleVideoBackground}
           onVisualSettingsChange={onVisualSettingsChange}
           onSkeletonModeChange={handleSkeletonModeChange}
+          onOverlayVisibilityChange={setOverlayVisibility}
           onStartCamera={handleStartCamera}
           onStopCamera={handleStopCamera}
           isRecording={isRecording}

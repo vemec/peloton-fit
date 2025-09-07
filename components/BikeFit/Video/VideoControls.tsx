@@ -1,8 +1,10 @@
-import { Camera, Proportions, Check, Video, VideoOff, Bike, Aperture, FlipHorizontal, Palette, ChevronUp, ChevronDown, Play, Square } from 'lucide-react'
+import { Camera, Proportions, Check, Video, VideoOff, Bike, Aperture, FlipHorizontal, Palette, ChevronUp, ChevronDown, Play, Square, Eye } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import type { CameraDevice, BikeType, VisualSettings, SkeletonMode } from '@/types/bikefit'
+import type { OverlayVisibility } from '@/types/overlay'
+import { Switch } from '@/components/ui/switch'
 import { RESOLUTIONS } from './constants'
 import BikeFitVisualCustomization from '../VisualCustomization'
 import SkeletonModeSelector from '../VisualCustomization/SkeletonModeSelector'
@@ -19,6 +21,7 @@ interface VideoControlsProps {
   isVideoHidden: boolean
   visualSettings: VisualSettings
   skeletonMode: SkeletonMode
+  overlayVisibility: OverlayVisibility
   onDeviceChange: (deviceId: string | null) => void
   onResolutionChange: (resolution: string) => void
   onBikeTypeChange: (type: BikeType) => void
@@ -26,6 +29,7 @@ interface VideoControlsProps {
   onToggleVideoBackground: () => void
   onVisualSettingsChange: (settings: VisualSettings) => void
   onSkeletonModeChange: (mode: SkeletonMode) => void
+  onOverlayVisibilityChange: (visibility: OverlayVisibility) => void
   onStartCamera: () => void
   onStopCamera: () => void
   isRecording: boolean
@@ -45,6 +49,7 @@ export default function VideoControls({
   isVideoHidden,
   visualSettings,
   skeletonMode,
+  overlayVisibility,
   onDeviceChange,
   onResolutionChange,
   onBikeTypeChange,
@@ -52,6 +57,7 @@ export default function VideoControls({
   onToggleVideoBackground,
   onVisualSettingsChange,
   onSkeletonModeChange,
+  onOverlayVisibilityChange,
   onStartCamera,
   onStopCamera,
   isRecording,
@@ -259,6 +265,46 @@ export default function VideoControls({
               settings={visualSettings}
               onSettingsChange={onVisualSettingsChange}
             />
+          </PopoverContent>
+        </Popover>
+
+        {/* Angle Visibility button */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn('w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
+              aria-label="Visibilidad de ángulos"
+              title="Mostrar/Ocultar ángulos"
+            >
+              <Eye className={cn('!w-5 !h-5 transition-all duration-200')} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className={cn('w-40 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
+            <div className={cn('space-y-3')}>
+              {(
+                [
+                  ['codo', 'elbow'],
+                  ['hombro', 'shoulder'],
+                  ['cadera', 'hip'],
+                  ['rodilla', 'knee'],
+                  ['tobillo', 'ankle'],
+                ] as const
+              ).map(([label, key]) => (
+                <label key={key} className={cn('flex items-center justify-between text-sm text-gray-700')}
+                >
+                  <span className={cn('capitalize')}>{label}</span>
+                  <Switch
+                    checked={overlayVisibility.angles[key]}
+                    onCheckedChange={(checked) => onOverlayVisibilityChange({
+                      ...overlayVisibility,
+                      angles: { ...overlayVisibility.angles, [key]: !!checked },
+                    })}
+                  />
+                </label>
+              ))}
+            </div>
           </PopoverContent>
         </Popover>
 

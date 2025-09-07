@@ -25,7 +25,11 @@ export {
   drawKeypoint,
   drawConnection,
   drawSkeleton,
+  drawSkeletonConnections,
+  drawSkeletonPoints,
   drawDetectedSideSkeleton,
+  drawDetectedSidePoints,
+  drawHandForSide,
   drawSkeletonWithMode,
 } from './skeleton'
 

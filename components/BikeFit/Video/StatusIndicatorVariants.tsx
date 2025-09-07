@@ -3,7 +3,7 @@
 import React from 'react'
 import StatusIndicator from './StatusIndicator'
 import { SKELETON_MODES } from '../Drawing'
-import type { DetectedSide, SkeletonMode } from '@/types/bikefit'
+import type { DetectedSide, SkeletonMode, BikeType } from '@/types/bikefit'
 
 type WrapperProps = {
   wrapperClass?: string
@@ -80,11 +80,56 @@ export function SkeletonModeIndicator({ wrapperClass = 'absolute bottom-6 left-6
   return null
 }
 
+// Bottom-right indicator: shows selected bike type (road/triathlon/mountain)
+export function BikeTypeIndicator({ wrapperClass = 'absolute bottom-6 right-6 z-10', bikeType }: WrapperProps & { bikeType: BikeType }) {
+  const labelMap: Record<BikeType, string> = {
+    road: 'Bicicleta: Ruta',
+    triathlon: 'Bicicleta: Triatlón',
+    mountain: 'Bicicleta: Montaña'
+  }
+
+  const colorMap: Record<BikeType, { dot: string; ping: string; text: string }> = {
+    road: {
+      dot: 'bg-indigo-400 shadow-lg animate-pulse ring-2 ring-indigo-300/90 ring-offset-2 ring-offset-black/50',
+      ping: 'bg-indigo-300',
+      text: 'text-indigo-100 text-sm font-medium'
+    },
+    triathlon: {
+      dot: 'bg-fuchsia-400 shadow-lg animate-pulse ring-2 ring-fuchsia-300/90 ring-offset-2 ring-offset-black/50',
+      ping: 'bg-fuchsia-300',
+      text: 'text-fuchsia-100 text-sm font-medium'
+    },
+    mountain: {
+      dot: 'bg-amber-400 shadow-lg animate-pulse ring-2 ring-amber-300/90 ring-offset-2 ring-offset-black/50',
+      ping: 'bg-amber-300',
+      text: 'text-amber-100 text-sm font-medium'
+    }
+  }
+
+  const label = labelMap[bikeType]
+  const colors = colorMap[bikeType]
+
+  return (
+    <StatusIndicator
+      wrapperClass={wrapperClass}
+      isActive={true}
+      ariaLive={'polite'}
+      ariaLabel={label}
+      dotActiveClasses={colors.dot}
+      pingClassName={colors.ping}
+      showPing={true}
+      activeLabel={label}
+      labelClassName={colors.text}
+    />
+  )
+}
+
 // Default export with grouped components so callers can import a single default and use properties
 const Indicators = {
   Camera: CameraIndicator,
   Recording: RecordingIndicator,
-  SkeletonMode: SkeletonModeIndicator
+  SkeletonMode: SkeletonModeIndicator,
+  BikeType: BikeTypeIndicator
 }
 
 export default Indicators

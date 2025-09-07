@@ -5,12 +5,11 @@ import type { Keypoint, VisualSettings, DetectedSide, DrawingContext, SkeletonMo
 import {
   setupCanvas,
   clearCanvas,
-  drawSkeleton,
-  drawDetectedSideSkeleton,
-  drawSkeletonWithMode,
   drawBikeFitAngles,
+  drawHandForSide,
   SKELETON_MODES
 } from '../Drawing'
+import type { OverlayVisibility } from '@/types/overlay'
 
 interface UsePoseVisualizationProps {
   canvas: HTMLCanvasElement | null
@@ -22,6 +21,7 @@ interface UsePoseVisualizationProps {
   isFlipped?: boolean
   skeletonMode?: SkeletonMode
   hideVideoBackground?: boolean
+  overlayVisibility?: OverlayVisibility
 }
 
 export function usePoseVisualization({
@@ -33,7 +33,8 @@ export function usePoseVisualization({
   isActive,
   isFlipped = false,
   skeletonMode = SKELETON_MODES.SIDE_FULL,
-  hideVideoBackground = false
+  hideVideoBackground = false,
+  overlayVisibility
 }: UsePoseVisualizationProps) {
   const drawingContextRef = useRef<DrawingContext | null>(null)
   const animationFrameRef = useRef<number | undefined>(undefined)
@@ -119,7 +120,7 @@ export function usePoseVisualization({
           ctx.restore()
         }
 
-        // Only draw pose overlay if we have valid keypoints
+  // Only draw pose overlay if we have valid keypoints
         if (hasValidKeypoints) {
           // Mirror keypoints horizontally if flipped to match the mirrored video
           const displayKeypoints: Keypoint[] = isFlipped
@@ -136,47 +137,33 @@ export function usePoseVisualization({
             ctx.scale(-1, 1)
           }
 
-          // Draw skeleton based on mode
-          if (skeletonMode === SKELETON_MODES.FULL) {
-            // Show full skeleton with all landmarks
-            drawSkeletonWithMode(
-              ctx,
-              isFlipped ? keypoints : displayKeypoints,
-              visualSettings,
-              canvasEl.width,
-              canvasEl.height,
-              SKELETON_MODES.FULL
-            )
-          } else if (detectedSide && detectedSide !== null) {
-            // Show side-specific skeleton when side is detected
-            drawDetectedSideSkeleton(
-              ctx,
-              isFlipped ? keypoints : displayKeypoints,
-              detectedSide,
-              visualSettings,
-              canvasEl.width,
-              canvasEl.height
-            )
+          // Draw only the selected angles; do not draw skeleton lines by default
+          if (detectedSide && detectedSide !== null) {
+            if (!overlayVisibility || Object.values(overlayVisibility.angles).some(Boolean)) {
+              drawBikeFitAngles(
+                ctx,
+                isFlipped ? keypoints : displayKeypoints,
+                detectedSide,
+                visualSettings,
+                canvasEl.width,
+                canvasEl.height,
+                isFlipped,
+                overlayVisibility?.angles
+              )
+            }
 
-            // Draw bike fit angles for the detected side
-            drawBikeFitAngles(
-              ctx,
-              isFlipped ? keypoints : displayKeypoints,
-              detectedSide,
-              visualSettings,
-              canvasEl.width,
-              canvasEl.height,
-              isFlipped
-            )
-          } else {
-            // Fallback to full skeleton if no side detected in side mode
-            drawSkeleton(
-              ctx,
-              isFlipped ? keypoints : displayKeypoints, // Use original keypoints when flipped since we're applying transform
-              visualSettings,
-              canvasEl.width,
-              canvasEl.height
-            )
+            // Show the hand only when the elbow angle is selected
+            const showHand = !!overlayVisibility?.angles?.elbow
+            if (showHand) {
+              drawHandForSide(
+                ctx,
+                isFlipped ? keypoints : displayKeypoints,
+                detectedSide,
+                visualSettings,
+                canvasEl.width,
+                canvasEl.height
+              )
+            }
           }
 
           // Restore context if we applied mirroring
@@ -200,7 +187,7 @@ export function usePoseVisualization({
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [keypoints, detectedSide, visualSettings, isActive, isFlipped, skeletonMode, hideVideoBackground])
+  }, [keypoints, detectedSide, visualSettings, isActive, isFlipped, skeletonMode, hideVideoBackground, overlayVisibility])
 
   // Cleanup on unmount
   useEffect(() => {

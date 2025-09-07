@@ -11,6 +11,7 @@ import {
   type PoseConnection,
   type SkeletonMode
 } from './constants'
+import { KEYPOINT_INDICES } from './constants'
 
 /**
  * Draws a single keypoint with optimized styling
@@ -170,6 +171,28 @@ export function drawSkeleton(
   drawKeypoints(ctx, keypoints, RELEVANT_KEYPOINTS.ALL, settings, canvasWidth, canvasHeight)
 }
 
+/** Draw only skeleton connections (lines) */
+export function drawSkeletonConnections(
+  ctx: CanvasRenderingContext2D,
+  keypoints: Keypoint[],
+  settings: VisualSettings,
+  canvasWidth: number,
+  canvasHeight: number
+): void {
+  drawConnections(ctx, keypoints, POSE_CONNECTIONS, settings, canvasWidth, canvasHeight)
+}
+
+/** Draw only skeleton keypoints (dots) */
+export function drawSkeletonPoints(
+  ctx: CanvasRenderingContext2D,
+  keypoints: Keypoint[],
+  settings: VisualSettings,
+  canvasWidth: number,
+  canvasHeight: number
+): void {
+  drawKeypoints(ctx, keypoints, RELEVANT_KEYPOINTS.ALL, settings, canvasWidth, canvasHeight)
+}
+
 /**
  * Draws skeleton for only the detected side
  */
@@ -189,6 +212,52 @@ export function drawDetectedSideSkeleton(
 
   // Draw keypoints for the detected side
   drawKeypoints(ctx, keypoints, sideKeypoints, settings, canvasWidth, canvasHeight)
+}
+
+/** Draw only keypoints for the detected side (no lines) */
+export function drawDetectedSidePoints(
+  ctx: CanvasRenderingContext2D,
+  keypoints: Keypoint[],
+  detectedSide: 'left' | 'right',
+  settings: VisualSettings,
+  canvasWidth: number,
+  canvasHeight: number
+): void {
+  const sideKeypoints = RELEVANT_KEYPOINTS[detectedSide.toUpperCase() as 'LEFT' | 'RIGHT']
+  drawKeypoints(ctx, keypoints, sideKeypoints, settings, canvasWidth, canvasHeight)
+}
+
+/** Draw only hand connections and keypoints for the detected side */
+export function drawHandForSide(
+  ctx: CanvasRenderingContext2D,
+  keypoints: Keypoint[],
+  detectedSide: 'left' | 'right',
+  settings: VisualSettings,
+  canvasWidth: number,
+  canvasHeight: number
+): void {
+  const isRight = detectedSide === 'right'
+
+  // Determine indices based on side
+  const WRIST = isRight ? KEYPOINT_INDICES.RIGHT_WRIST : KEYPOINT_INDICES.LEFT_WRIST
+  const PINKY = isRight ? KEYPOINT_INDICES.RIGHT_PINKY : KEYPOINT_INDICES.LEFT_PINKY
+  const INDEX = isRight ? KEYPOINT_INDICES.RIGHT_INDEX : KEYPOINT_INDICES.LEFT_INDEX
+  const THUMB = isRight ? KEYPOINT_INDICES.RIGHT_THUMB : KEYPOINT_INDICES.LEFT_THUMB
+
+  // Hand connections: wrist to fingers and pinky-index bridge
+  const handConnections: readonly PoseConnection[] = [
+    [WRIST, PINKY],
+    [WRIST, INDEX],
+    [WRIST, THUMB],
+    [PINKY, INDEX]
+  ] as const
+
+  // Draw connections
+  drawConnections(ctx, keypoints, handConnections, settings, canvasWidth, canvasHeight)
+
+  // Draw keypoints
+  const handKeypoints = [WRIST, PINKY, INDEX, THUMB] as const
+  drawKeypoints(ctx, keypoints, handKeypoints, settings, canvasWidth, canvasHeight)
 }
 
 /**
