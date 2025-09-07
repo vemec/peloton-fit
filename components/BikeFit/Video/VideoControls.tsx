@@ -268,6 +268,26 @@ export default function VideoControls({
           </PopoverContent>
         </Popover>
 
+        {/* Flip Horizontal button */}
+        <Button
+          onClick={onFlipToggle}
+          size="icon"
+          className={cn(
+            'w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed',
+            isFlipped
+              ? 'bg-blue-500 hover:bg-blue-400 focus:bg-blue-300 border-blue-400 hover:border-blue-300 focus:border-blue-200 text-white focus:ring-blue-400'
+              : 'w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed'
+          )}
+        >
+          <FlipHorizontal className={cn('!w-5 !h-5 transition-all duration-200')} />
+        </Button>
+
+        {/* Skeleton Mode Toggle */}
+        <SkeletonModeSelector
+          selectedMode={skeletonMode}
+          onModeChange={onSkeletonModeChange}
+        />
+
         {/* Angle Visibility button */}
         <Popover>
           <PopoverTrigger asChild>
@@ -307,26 +327,6 @@ export default function VideoControls({
             </div>
           </PopoverContent>
         </Popover>
-
-        {/* Flip Horizontal button */}
-        <Button
-          onClick={onFlipToggle}
-          size="icon"
-          className={cn(
-            'w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed',
-            isFlipped
-              ? 'bg-blue-500 hover:bg-blue-400 focus:bg-blue-300 border-blue-400 hover:border-blue-300 focus:border-blue-200 text-white focus:ring-blue-400'
-              : 'w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed'
-          )}
-        >
-          <FlipHorizontal className={cn('!w-5 !h-5 transition-all duration-200')} />
-        </Button>
-
-        {/* Skeleton Mode Toggle */}
-        <SkeletonModeSelector
-          selectedMode={skeletonMode}
-          onModeChange={onSkeletonModeChange}
-        />
 
         {/* Bike type selector */}
         <Popover>

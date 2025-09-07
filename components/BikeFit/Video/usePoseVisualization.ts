@@ -7,6 +7,7 @@ import {
   clearCanvas,
   drawBikeFitAngles,
   drawHandForSide,
+  drawSkeletonWithMode,
   SKELETON_MODES
 } from '../Drawing'
 import type { OverlayVisibility } from '@/types/overlay'
@@ -137,8 +138,38 @@ export function usePoseVisualization({
             ctx.scale(-1, 1)
           }
 
-          // Draw only the selected angles; do not draw skeleton lines by default
-          if (detectedSide && detectedSide !== null) {
+          // When FULL mode, draw the full skeleton; optionally overlay selected angles if side is known
+          if (skeletonMode === SKELETON_MODES.FULL) {
+            drawSkeletonWithMode(
+              ctx,
+              isFlipped ? keypoints : displayKeypoints,
+              visualSettings,
+              canvasEl.width,
+              canvasEl.height,
+              SKELETON_MODES.FULL
+            )
+
+            // In FULL mode, always draw all angles for both sides regardless of detection or toggles
+            drawBikeFitAngles(
+              ctx,
+              isFlipped ? keypoints : displayKeypoints,
+              'left',
+              visualSettings,
+              canvasEl.width,
+              canvasEl.height,
+              isFlipped
+            )
+            drawBikeFitAngles(
+              ctx,
+              isFlipped ? keypoints : displayKeypoints,
+              'right',
+              visualSettings,
+              canvasEl.width,
+              canvasEl.height,
+              isFlipped
+            )
+          } else if (detectedSide && detectedSide !== null) {
+            // Side mode: draw only selected angles (and hand if elbow is selected)
             if (!overlayVisibility || Object.values(overlayVisibility.angles).some(Boolean)) {
               drawBikeFitAngles(
                 ctx,

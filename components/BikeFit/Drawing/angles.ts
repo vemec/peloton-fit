@@ -71,7 +71,9 @@ export function drawAngleMarker(
   settings: VisualSettings,
   canvasWidth: number,
   canvasHeight: number,
-  isFlipped = false
+  isFlipped = false,
+  side: 'left' | 'right',
+  stackIndex = 0
 ): number | null {
   // Validate keypoint visibility with more permissive threshold
   if (!areKeypointsVisible([pointA, pointB, pointC])) {
@@ -91,22 +93,22 @@ export function drawAngleMarker(
   }
 
   try {
-  // Calculate arc parameters and canvas coordinates for points
-  const { a, b, c, startAngle, smallEndAngle, anticlockwise } = calculateArcParameters(
+    // Calculate arc parameters and canvas coordinates for points
+    const { a, b, c, startAngle, smallEndAngle, anticlockwise } = calculateArcParameters(
       pointA, pointB, pointC, canvasWidth, canvasHeight
     )
 
-  // Draw the two rays (lines) that form the angle
-  ctx.save()
-  ctx.strokeStyle = settings.lineColor
-  ctx.lineWidth = settings.lineWidth
-  ctx.beginPath()
-  ctx.moveTo(b.x, b.y)
-  ctx.lineTo(a.x, a.y)
-  ctx.moveTo(b.x, b.y)
-  ctx.lineTo(c.x, c.y)
-  ctx.stroke()
-  ctx.restore()
+    // Draw the two rays (lines) that form the angle
+    ctx.save()
+    ctx.strokeStyle = settings.lineColor
+    ctx.lineWidth = settings.lineWidth
+    ctx.beginPath()
+    ctx.moveTo(b.x, b.y)
+    ctx.lineTo(a.x, a.y)
+    ctx.moveTo(b.x, b.y)
+    ctx.lineTo(c.x, c.y)
+    ctx.stroke()
+    ctx.restore()
 
     // Calculate dynamic radius based on canvas size
     const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.08 // 8% of the smaller dimension
@@ -147,8 +149,8 @@ export function drawAngleMarker(
     drawNode(c)
     ctx.restore()
 
-    // Draw label
-    drawAngleLabel(ctx, b, label, angleDeg, canvasWidth, canvasHeight, isFlipped)
+  // Draw label
+  drawAngleLabel(ctx, b, label, angleDeg, canvasWidth, canvasHeight, isFlipped, side, stackIndex)
 
     return angleDeg
   } catch {
@@ -188,10 +190,13 @@ function calculateLabelPosition(
   boxWidth: number,
   boxHeight: number,
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
+  horizontal: 'left' | 'right',
+  verticalOffsetPx: number
 ): { x: number; y: number } {
-  let x = center.x + 8
-  let y = center.y - 8 - boxHeight / 2
+  // place to the side of the vertex to reduce overlap between left/right
+  let x = horizontal === 'right' ? center.x + 8 : center.x - boxWidth - 8
+  let y = center.y - 8 - boxHeight / 2 + verticalOffsetPx
 
   // Clamp to canvas bounds with proper margins
   const margin = 4
@@ -214,7 +219,9 @@ function drawAngleLabel(
   angle: number,
   canvasWidth: number,
   canvasHeight: number,
-  isFlipped: boolean
+  isFlipped: boolean,
+  side: 'left' | 'right',
+  stackIndex = 0
 ): void {
   const labelText = `${label}: `
   const angleText = `${angle.toFixed(1)}°`
@@ -229,8 +236,13 @@ function drawAngleLabel(
   const boxWidth = labelMetrics.width + angleMetrics.width + padX * 3
   const boxHeight = 18 + padY * 2
 
+  // Determine on-screen side (flipped mirrors horizontally)
+  const screenSide: 'left' | 'right' = isFlipped ? (side === 'left' ? 'right' : 'left') : side
   // Calculate optimal position
-  const { x, y } = calculateLabelPosition(center, boxWidth, boxHeight, canvasWidth, canvasHeight)
+  // Apply a small vertical stacking offset to reduce overlapping on same side
+  const verticalStep = 22 // px between stacked labels
+  const offset = (stackIndex || 0) * verticalStep
+  const { x, y } = calculateLabelPosition(center, boxWidth, boxHeight, canvasWidth, canvasHeight, screenSide, offset)
 
   ctx.save()
 
@@ -305,13 +317,15 @@ function drawAngleIfValid(
   settings: VisualSettings,
   canvasWidth: number,
   canvasHeight: number,
-  isFlipped: boolean
+  isFlipped: boolean,
+  side: 'left' | 'right',
+  stackIndex = 0
 ): number | null {
   if (!keypoint1 || !keypoint2 || !keypoint3) return null
 
   return drawAngleMarker(
     ctx, keypoint1, keypoint2, keypoint3, label,
-    settings, canvasWidth, canvasHeight, isFlipped
+    settings, canvasWidth, canvasHeight, isFlipped, side, stackIndex
   )
 }
 
@@ -360,55 +374,54 @@ export function drawBikeFitAngles(
   const isVisible = (name: 'elbow' | 'shoulder' | 'hip' | 'knee' | 'ankle') =>
     visibleAngles?.[name] !== false
 
-  // Draw all relevant angles with proper error handling
-  if (isVisible('elbow')) {
-    angles.elbow = drawAngleIfValid(
-      ctx, shoulderKp, elbowKp, wristKp, 'Elbow',
-      settings, canvasWidth, canvasHeight, isFlipped
-    )
-  } else {
-    angles.elbow = null
-  }
-
-  if (isVisible('shoulder')) {
-    angles.shoulder = drawAngleIfValid(
-      ctx, hipKp, shoulderKp, elbowKp, 'Shoulder',
-      settings, canvasWidth, canvasHeight, isFlipped
-    )
-  } else {
-    angles.shoulder = null
-  }
-
-  if (isVisible('hip')) {
-    angles.hip = drawAngleIfValid(
-      ctx, shoulderKp, hipKp, kneeKp, 'Hip',
-      settings, canvasWidth, canvasHeight, isFlipped
-    )
-  } else {
-    angles.hip = null
-  }
-
-  if (isVisible('knee')) {
-    angles.knee = drawAngleIfValid(
-      ctx, hipKp, kneeKp, ankleKp, 'Knee',
-      settings, canvasWidth, canvasHeight, isFlipped
-    )
-  } else {
-    angles.knee = null
-  }
-
-  // Handle ankle angle with foot proxy if needed
-  if (kneeKp && ankleKp) {
-    if (isVisible('ankle')) {
-      const footPoint = footKp || createFootProxy(kneeKp, ankleKp)
-      angles.ankle = drawAngleIfValid(
-        ctx, kneeKp, ankleKp, footPoint, 'Ankle',
-        settings, canvasWidth, canvasHeight, isFlipped
-      )
-    } else {
-      angles.ankle = null
+  // Prepare a draw queue for consistent ordering and label stacking per side
+  const drawQueue: Array<{
+    key: 'shoulder' | 'elbow' | 'hip' | 'knee' | 'ankle'
+    draw: (stackIndex: number) => number | null
+  }> = [
+    {
+      key: 'shoulder',
+      draw: (idx) => isVisible('shoulder')
+        ? drawAngleIfValid(ctx, hipKp, shoulderKp, elbowKp, 'Shoulder', settings, canvasWidth, canvasHeight, isFlipped, detectedSide, idx)
+        : null
+    },
+    {
+      key: 'elbow',
+      draw: (idx) => isVisible('elbow')
+        ? drawAngleIfValid(ctx, shoulderKp, elbowKp, wristKp, 'Elbow', settings, canvasWidth, canvasHeight, isFlipped, detectedSide, idx)
+        : null
+    },
+    {
+      key: 'hip',
+      draw: (idx) => isVisible('hip')
+        ? drawAngleIfValid(ctx, shoulderKp, hipKp, kneeKp, 'Hip', settings, canvasWidth, canvasHeight, isFlipped, detectedSide, idx)
+        : null
+    },
+    {
+      key: 'knee',
+      draw: (idx) => isVisible('knee')
+        ? drawAngleIfValid(ctx, hipKp, kneeKp, ankleKp, 'Knee', settings, canvasWidth, canvasHeight, isFlipped, detectedSide, idx)
+        : null
+    },
+    {
+      key: 'ankle',
+      draw: (idx) => {
+        if (!kneeKp || !ankleKp || !isVisible('ankle')) return null
+        const footPoint = footKp || createFootProxy(kneeKp, ankleKp)
+        return drawAngleIfValid(ctx, kneeKp, ankleKp, footPoint, 'Ankle', settings, canvasWidth, canvasHeight, isFlipped, detectedSide, idx)
+      }
     }
+  ]
+
+  // Iterate and apply vertical stacking offset per visible label
+  let stackIdx = 0
+  for (const item of drawQueue) {
+    const val = item.draw(stackIdx)
+    angles[item.key] = val
+    if (val !== null) stackIdx += 1
   }
+
+  // Ankle handled in queue above
 
   return angles
 }
