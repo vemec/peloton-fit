@@ -79,7 +79,7 @@ export function drawAngleMarker(
     return null
   }
 
-  // Calculate angle
+  // Calculate angle between vectors
   const angleDeg = calculateAngleBetweenPoints(
     { x: pointA.x, y: pointA.y, score: pointA.score, name: pointA.name || 'a' },
     { x: pointB.x, y: pointB.y, score: pointB.score, name: pointB.name || 'b' },
