@@ -1,3 +1,5 @@
+"use client"
+
 import React, { createContext, useContext, ReactNode } from 'react'
 import { useMediaManager } from './useMediaManager'
 import { CapturedMedia, MediaType } from '@/types/media'

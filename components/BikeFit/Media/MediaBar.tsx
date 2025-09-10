@@ -1,3 +1,5 @@
+"use client"
+
 import { CapturedMedia } from '@/types/media'
 import MediaThumbnail from './MediaThumbnail'
 import { cn } from '@/lib/utils'

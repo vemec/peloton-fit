@@ -10,3 +10,4 @@
 export { default as BikeFitVideoPlayer } from './Video'
 export { default as BikeFitVisualCustomization } from './VisualCustomization'
 export { default as BikeFitMediaManager } from './Media'
+export { AngleTool } from './AngleTool'
