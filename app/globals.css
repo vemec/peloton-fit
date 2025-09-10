@@ -120,3 +120,47 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom scrollbar hiding utilities */
+@layer utilities {
+  .scrollbar-hide {
+    /* Firefox */
+    scrollbar-width: none;
+    /* Safari and Chrome */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  /* Custom fade overlay animations */
+  .fade-overlay-enter {
+    animation: fadeSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .fade-overlay-exit {
+    animation: fadeSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+}
+
+/* Keyframes for smooth fade overlay animations */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: scaleX(0.8) translateX(var(--slide-direction, 0));
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1) translateX(0);
+  }
+}
+
+@keyframes fadeSlideOut {
+  from {
+    opacity: 1;
+    transform: scaleX(1) translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: scaleX(0.8) translateX(var(--slide-direction, 0));
+  }
+}

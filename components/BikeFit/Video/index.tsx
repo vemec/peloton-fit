@@ -13,8 +13,10 @@ import { usePoseVisualization } from './usePoseVisualization'
 import Indicators from './StatusIndicatorVariants'
 import { useAngles, AngleTable } from '../Analysis'
 import { FIXED_FPS, generateScreenshotFilename } from './constants'
-import { captureCanvasFrame, downloadFile } from './utils'
+import { captureCanvasFrame } from './utils'
 import { SKELETON_MODES } from '../Drawing'
+import { PhotoManager, usePhotos } from '../Photo'
+import PhotoBarContainer from '../Photo/PhotoBarContainer'
 import type { BikeType, DetectedSide, VisualSettings, SkeletonMode } from '@/types/bikefit'
 import type { OverlayVisibility } from '@/types/overlay'
 
@@ -35,6 +37,28 @@ export default function BikeFitVideoPlayer({
   visualSettings,
   onVisualSettingsChange
 }: BikeFitVideoPlayerProps) {
+  return (
+    <PhotoManager>
+      <BikeFitVideoPlayerContent
+        bikeType={bikeType}
+        detectedSide={detectedSide}
+        onDetectedSideChange={onDetectedSideChange}
+        onBikeTypeChange={onBikeTypeChange}
+        visualSettings={visualSettings}
+        onVisualSettingsChange={onVisualSettingsChange}
+      />
+    </PhotoManager>
+  )
+}
+
+function BikeFitVideoPlayerContent({
+  bikeType,
+  detectedSide,
+  onDetectedSideChange,
+  onBikeTypeChange,
+  visualSettings,
+  onVisualSettingsChange
+}: BikeFitVideoPlayerProps) {
   const [selectedResolution, setSelectedResolution] = useState('1280x720')
   const [isFlipped, setIsFlipped] = useState(false)
   const [skeletonMode, setSkeletonMode] = useState<SkeletonMode>(SKELETON_MODES.SIDE_FULL)
@@ -43,6 +67,9 @@ export default function BikeFitVideoPlayer({
     angles: { elbow: true, shoulder: true, hip: true, knee: true, ankle: true },
   })
   const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Photo management
+  const { addPhoto } = usePhotos()
 
   // Derive container aspect ratio from selected resolution (fallback 16/9)
   const [aspectW, aspectH] = React.useMemo(() => {
@@ -169,10 +196,13 @@ export default function BikeFitVideoPlayer({
       // Capture from canvas which includes pose overlay
       const blob = await captureCanvasFrame(canvasRef.current)
       if (blob) {
-        downloadFile(blob, generateScreenshotFilename())
+        // Add photo to the manager instead of downloading directly
+        const filename = generateScreenshotFilename()
+        addPhoto(blob, filename)
+
         // Show success
-        show.success('Imagen guardada', {
-          description: 'La foto se ha guardado con los puntos y ángulos de análisis.'
+        show.success('Foto capturada', {
+          description: 'La imagen se ha agregado a la galería con los puntos y ángulos de análisis.'
         })
       } else {
         show.error('Error al generar imagen', {
@@ -221,7 +251,7 @@ export default function BikeFitVideoPlayer({
       <div className="grid gap-6">
         {/* Video Display */}
         <div
-          className="relative mx-auto bg-slate-50/30 border border-slate-200/50 rounded-3xl overflow-hidden backdrop-blur-sm"
+          className="z-10 relative mx-auto bg-slate-50/30 border border-slate-200/50 rounded-3xl overflow-hidden backdrop-blur-sm"
           style={{aspectRatio: `${aspectW} / ${aspectH}`, height: `min(80dvh, calc(100vw * ${aspectH} / ${aspectW}))`, maxWidth: '100%'}}
         >
           {/* Status indicators - Top corners - Only show when video is active */}
@@ -277,6 +307,9 @@ export default function BikeFitVideoPlayer({
           )}
         </div>
 
+        {/* Photo Bar */}
+        <PhotoBarContainer />
+
         {/* Video Controls - Below video */}
         <VideoControls
           devices={devices}
@@ -306,7 +339,7 @@ export default function BikeFitVideoPlayer({
           onCaptureScreenshot={handleCaptureScreenshot}
         />
 
-        {/* Angle Table - Below the video */}
+        {/* Angle Table - Below everything */}
         <AngleTable
           angles={angles}
           bikeType={bikeType}
