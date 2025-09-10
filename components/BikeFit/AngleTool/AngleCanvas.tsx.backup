@@ -117,7 +117,7 @@ export function AngleCanvas({
         mockKeypoint(angle.pointA),
         mockKeypoint(angle.vertex),
         mockKeypoint(angle.pointB),
-        `${angle.angle.toFixed(1)}°`,
+        `Angle ${angle.id}`,
         visualSettings,
         canvasWidth,
         canvasHeight,
@@ -139,49 +139,20 @@ export function AngleCanvas({
     // Find the vertex of the angle being dragged for grid centering
     let draggedVertex: AnglePoint | undefined
     if (draggedPoint) {
-      const draggedAngleObj = angles.find(a => a.id === draggedPoint.angleId)
-      if (draggedAngleObj) {
-        draggedVertex = draggedAngleObj.vertex
+      const draggedAngle = angles.find(a => a.id === draggedPoint.angleId)
+      if (draggedAngle) {
+        draggedVertex = draggedAngle.vertex
       }
     } else if (draggedAngle) {
-      const angleObj = angles.find(a => a.id === draggedAngle)
-      if (angleObj) {
-        draggedVertex = angleObj.vertex
+      const angle = angles.find(a => a.id === draggedAngle)
+      if (angle) {
+        draggedVertex = angle.vertex
       }
     }
 
     drawGrid(ctx, draggedVertex)
     drawAngles(ctx)
-
-    // Draw current points being placed
-    if (currentPoints.length > 0) {
-      ctx.save()
-      ctx.fillStyle = settings.pointColor
-      ctx.strokeStyle = settings.lineColor
-      ctx.lineWidth = 2
-
-      currentPoints.forEach((point, index) => {
-        ctx.beginPath()
-        ctx.arc(point.x, point.y, settings.pointRadius, 0, Math.PI * 2)
-        ctx.fill()
-
-        // Draw line to next point if applicable
-        if (index === 0 && currentPoints.length > 1) {
-          ctx.beginPath()
-          ctx.moveTo(point.x, point.y)
-          ctx.lineTo(currentPoints[1].x, currentPoints[1].y)
-          ctx.stroke()
-        }
-        if (index === 0 && currentPoints.length > 2) {
-          ctx.beginPath()
-          ctx.moveTo(point.x, point.y)
-          ctx.lineTo(currentPoints[2].x, currentPoints[2].y)
-          ctx.stroke()
-        }
-      })
-      ctx.restore()
-    }
-  }, [drawGrid, drawAngles, canvasWidth, canvasHeight, draggedPoint, draggedAngle, angles, currentPoints, settings])
+  }, [drawGrid, drawAngles, canvasWidth, canvasHeight, draggedPoint, draggedAngle, angles])
 
   useEffect(() => {
     redraw()
@@ -224,6 +195,7 @@ export function AngleCanvas({
   }
 
   const findAngleAtArc = (x: number, y: number): string | null => {
+    console.log('Checking arc at', x, y)
     for (const angle of angles) {
       const centerX = angle.vertex.x
       const centerY = angle.vertex.y
@@ -235,11 +207,18 @@ export function AngleCanvas({
         DRAWING_CONFIG.ARC_RADIUS_MAX
       )
 
+      console.log('Angle', angle.id, 'center:', centerX, centerY, 'radius:', radius)
+
       // Check if we're near the arc
       if (isPointNearArc({ x, y }, { x: centerX, y: centerY }, radius)) {
+        console.log('Point is within arc radius for angle', angle.id)
         return angle.id
       }
     }
+    return null
+  }
+    }
+    console.log('No angle found at arc')
     return null
   }
 
@@ -263,17 +242,17 @@ export function AngleCanvas({
       if (currentPoints.length === 2) {
         // Create angle
         const [vertex, pointA, pointB] = [...currentPoints, newPoint]
-        const angleValue = calculateAngleBetweenPoints(
-          { x: pointA.x, y: pointA.y, score: 1, name: pointA.id },
-          { x: vertex.x, y: vertex.y, score: 1, name: vertex.id },
-          { x: pointB.x, y: pointB.y, score: 1, name: pointB.id }
+        const angle = calculateAngleBetweenPoints(
+          { x: pointA.x, y: pointA.y, score: 1 },
+          { x: vertex.x, y: vertex.y, score: 1 },
+          { x: pointB.x, y: pointB.y, score: 1 }
         )
 
         const newAngle: Angle = {
           vertex,
           pointA,
           pointB,
-          angle: angleValue,
+          angle,
           id: generateUniqueId('angle')
         }
 
@@ -289,6 +268,7 @@ export function AngleCanvas({
     // First check if clicking on an angle arc (highest priority for angle dragging)
     const angleId = findAngleAtArc(x, y)
     if (angleId) {
+      console.log('Dragging angle:', angleId)
       const angle = angles.find(a => a.id === angleId)
       if (angle) {
         setDraggedAngle(angleId)
@@ -303,17 +283,19 @@ export function AngleCanvas({
     // Then check if clicking on a point
     const point = findPointAt(x, y)
     if (point) {
+      console.log('Dragging point:', point)
       setDraggedPoint(point)
       return
     }
+
+    console.log('No draggable element found at', x, y)
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!draggedPoint && !draggedAngle) {
       const { x, y } = getMousePos(e)
       const pointUnderMouse = findPointAt(x, y)
-      const angleUnderMouse = findAngleAtArc(x, y)
-      const isHovering = pointUnderMouse !== null || angleUnderMouse !== null
+      const isHovering = pointUnderMouse !== null
       setIsHoveringPoint(isHovering)
       return
     }
@@ -339,9 +321,9 @@ export function AngleCanvas({
 
           // Recalculate angle
           updatedAngle.angle = calculateAngleBetweenPoints(
-            { x: updatedAngle.pointA.x, y: updatedAngle.pointA.y, score: 1, name: updatedAngle.pointA.id },
-            { x: updatedAngle.vertex.x, y: updatedAngle.vertex.y, score: 1, name: updatedAngle.vertex.id },
-            { x: updatedAngle.pointB.x, y: updatedAngle.pointB.y, score: 1, name: updatedAngle.pointB.id }
+            { x: updatedAngle.pointA.x, y: updatedAngle.pointA.y, score: 1 },
+            { x: updatedAngle.vertex.x, y: updatedAngle.vertex.y, score: 1 },
+            { x: updatedAngle.pointB.x, y: updatedAngle.pointB.y, score: 1 }
           )
 
           return updatedAngle
@@ -350,12 +332,15 @@ export function AngleCanvas({
       })
 
       onAnglesChange(updatedAngles)
+      redraw() // Force redraw after updating angles
     }
 
     if (draggedAngle && dragOffset) {
       const { x, y } = getMousePos(e)
       const angle = angles.find(a => a.id === draggedAngle)
       if (!angle) return
+
+      console.log('Dragging angle', draggedAngle, 'to position', x, y)
 
       // Calculate new position for the vertex
       const newVertexX = x - dragOffset.x
@@ -364,6 +349,8 @@ export function AngleCanvas({
       // Calculate the offset from old vertex to new vertex
       const offsetX = newVertexX - angle.vertex.x
       const offsetY = newVertexY - angle.vertex.y
+
+      console.log('Moving angle by offset', offsetX, offsetY)
 
       // Move all points of the angle by the same offset
       const updatedAngles = angles.map(a => {
@@ -379,6 +366,7 @@ export function AngleCanvas({
       })
 
       onAnglesChange(updatedAngles)
+      redraw() // Force redraw after updating angles
     }
   }
 
