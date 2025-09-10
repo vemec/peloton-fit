@@ -1,4 +1,4 @@
-import { Camera, Proportions, Check, Video, VideoOff, Bike, Aperture, FlipHorizontal, Palette, ChevronUp, ChevronDown, Play, Square, Eye } from 'lucide-react'
+import { Camera, Proportions, Check, Video, VideoOff, Bike, Aperture, FlipHorizontal, Palette, ChevronUp, ChevronDown, Play, Square, Eye, ClockFading } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -67,6 +67,9 @@ export default function VideoControls({
 }: VideoControlsProps) {
   const [recordingTime, setRecordingTime] = useState(0)
   const [cameraSelectorOpen, setCameraSelectorOpen] = useState(false)
+  const [delaySelectorOpen, setDelaySelectorOpen] = useState(false)
+  const [screenshotDelay, setScreenshotDelay] = useState(0)
+  const [countdown, setCountdown] = useState(0)
 
   // Timer for recording
   useEffect(() => {
@@ -86,6 +89,28 @@ export default function VideoControls({
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const handleCaptureScreenshot = () => {
+    if (screenshotDelay > 0) {
+      let remaining = screenshotDelay
+      setCountdown(remaining)
+
+      const countdownTimer = () => {
+        remaining -= 1
+        setCountdown(remaining)
+
+        if (remaining <= 0) {
+          onCaptureScreenshot()
+        } else {
+          setTimeout(countdownTimer, 1000)
+        }
+      }
+
+      setTimeout(countdownTimer, 1000)
+    } else {
+      onCaptureScreenshot()
+    }
   }
 
   return (
@@ -238,15 +263,59 @@ export default function VideoControls({
           <div className={cn('px-4 py-2 font-mono text-sm min-w-[60px] text-center text-slate-200')}>
             {formatTime(recordingTime)}
           </div>
-          {/* Capture Screenshot button */}
+        </div>
+
+        {/* Delay Selector button */}
+        <div className={cn('flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-0 gap-1 transition-all duration-300 shadow-lg')}>
+        {/* Capture Screenshot button */}
           <Button
-            onClick={onCaptureScreenshot}
-            disabled={!isActive}
+            onClick={handleCaptureScreenshot}
+            disabled={!isActive || countdown > 0}
             size="icon"
-            className={cn('w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
+            className={cn(
+              'w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed',
+              countdown > 0 && 'bg-red-500 hover:bg-red-400 focus:bg-red-300 border-red-400 text-white disabled:opacity-100 font-mono'
+            )}
           >
-            <Aperture className={cn('!w-5 !h-5 transition-all duration-200')} />
+            {countdown > 0 ? (
+              <span className={cn('text-lg font-bold')}>{countdown}</span>
+            ) : (
+              <Aperture className={cn('!w-5 !h-5 transition-all duration-200')} />
+            )}
           </Button>
+          <Popover open={delaySelectorOpen} onOpenChange={setDelaySelectorOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn('w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
+              >
+                <ClockFading className={cn('!w-5 !h-5 transition-all duration-200')} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className={cn('w-40 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
+              <div className={cn('space-y-1')}>
+                {[0, 3, 5, 10, 15].map(delay => {
+                  const isSelected = screenshotDelay === delay
+                  return (
+                    <button
+                      key={delay}
+                      onClick={() => setScreenshotDelay(delay)}
+                      className={cn(
+                        'w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3',
+                        isSelected ? 'bg-blue-50 text-blue-900' : 'text-gray-700 hover:bg-gray-50'
+                      )}
+                    >
+                      <span className={cn('text-sm font-medium')}>
+                        {delay === 0 ? 'Sin delay' : `${delay}s`}
+                      </span>
+                      {isSelected && <Check className={cn('w-4 h-4 text-blue-600 ml-auto')} />}
+                    </button>
+                  )
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Visual Customization button */}
