@@ -9,3 +9,4 @@
 // Main components
 export { default as BikeFitVideoPlayer } from './Video'
 export { default as BikeFitVisualCustomization } from './VisualCustomization'
+export { default as BikeFitMediaManager } from './Media'

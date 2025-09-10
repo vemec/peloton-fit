@@ -2,7 +2,11 @@ import { useState, useRef, useCallback } from 'react'
 import { downloadFile } from './utils'
 import { generateVideoFilename } from './constants'
 
-export function useVideoRecording() {
+interface UseVideoRecordingOptions {
+  onRecordingComplete?: (blob: Blob, filename: string) => void
+}
+
+export function useVideoRecording(options?: UseVideoRecordingOptions) {
   const [isRecording, setIsRecording] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
 
@@ -26,7 +30,15 @@ export function useVideoRecording() {
 
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunks, { type: 'video/webm' })
-        downloadFile(blob, generateVideoFilename())
+        const filename = generateVideoFilename()
+
+        // If a callback is provided, use it; otherwise download directly
+        if (options?.onRecordingComplete) {
+          options.onRecordingComplete(blob, filename)
+        } else {
+          // Fallback to download for backward compatibility
+          downloadFile(blob, filename)
+        }
       }
 
       mediaRecorderRef.current = mediaRecorder
@@ -35,7 +47,7 @@ export function useVideoRecording() {
     } catch (error) {
       console.error('Error starting recording:', error)
     }
-  }, [isRecording])
+  }, [isRecording, options])
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {

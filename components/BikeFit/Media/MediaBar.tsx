@@ -1,21 +1,21 @@
-import { CapturedPhoto } from '@/types/photo'
-import PhotoThumbnail from './PhotoThumbnail'
+import { CapturedMedia } from '@/types/media'
+import MediaThumbnail from './MediaThumbnail'
 import { cn } from '@/lib/utils'
 import { useRef, useEffect, useState } from 'react'
 
-interface PhotoBarProps {
-  photos: CapturedPhoto[]
-  onDownload: (photo: CapturedPhoto) => void
-  onDelete: (photoId: string) => void
-  onSelect: (photo: CapturedPhoto) => void
+interface MediaBarProps {
+  media: CapturedMedia[]
+  onDownload: (media: CapturedMedia) => void
+  onDelete: (mediaId: string) => void
+  onSelect: (media: CapturedMedia) => void
 }
 
-export default function PhotoBar({
-  photos,
+export default function MediaBar({
+  media,
   onDownload,
   onDelete,
   onSelect
-}: PhotoBarProps) {
+}: MediaBarProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [showLeftFade, setShowLeftFade] = useState(false)
   const [showRightFade, setShowRightFade] = useState(false)
@@ -52,16 +52,16 @@ export default function PhotoBar({
       // Show right fade if not at the end (with tolerance)
       setShowRightFade(scrollLeft < scrollWidth - clientWidth - 10)
     }, 50) // 50ms debounce
-  }  // Auto-scroll to the end when new photos are added and update fade visibility
+  }  // Auto-scroll to the end when new media is added and update fade visibility
   useEffect(() => {
-    if (scrollContainerRef.current && photos.length > 0) {
+    if (scrollContainerRef.current && media.length > 0) {
       const container = scrollContainerRef.current
 
       // Check if container is already at maximum width and has overflow
       const hasOverflow = container.scrollWidth > container.clientWidth
 
       if (hasOverflow) {
-        // Scroll to the end to show the latest photo
+        // Scroll to the end to show the latest media
         container.scrollTo({
           left: container.scrollWidth,
           behavior: 'smooth'
@@ -71,7 +71,7 @@ export default function PhotoBar({
       // Update fade visibility after potential scroll
       setTimeout(updateFadeVisibility, 100)
     }
-  }, [photos.length]) // Only trigger when the number of photos changes
+  }, [media.length]) // Only trigger when the number of media items changes
 
   // Set up scroll listener to update fade visibility
   useEffect(() => {
@@ -92,10 +92,10 @@ export default function PhotoBar({
       }
       container.removeEventListener('scroll', updateFadeVisibility)
     }
-  }, [photos.length]) // Re-setup when photos change
+  }, [media.length]) // Re-setup when media changes
 
-  // Don't render if no photos
-  if (photos.length === 0) {
+  // Don't render if no media
+  if (media.length === 0) {
     return null
   }
 
@@ -115,10 +115,10 @@ export default function PhotoBar({
           'scrollbar-hide' // Hide scrollbar for cleaner look
         )}
       >
-        {[...photos].map((photo) => (
-          <PhotoThumbnail
-            key={photo.id}
-            photo={photo}
+        {[...media].map((mediaItem) => (
+          <MediaThumbnail
+            key={mediaItem.id}
+            media={mediaItem}
             onDownload={onDownload}
             onDelete={onDelete}
             onSelect={onSelect}

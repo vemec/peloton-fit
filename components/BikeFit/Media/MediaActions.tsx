@@ -1,22 +1,24 @@
 import { Download, CircleX } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { PhotoActionsProps } from '@/types/photo'
+import { MediaActionsProps } from '@/types/media'
 import { cn } from '@/lib/utils'
 
-export default function PhotoActions({
-  photo,
+export default function MediaActions({
+  media,
   onDownload,
   onDelete
-}: PhotoActionsProps) {
+}: MediaActionsProps) {
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onDownload(photo)
+    onDownload(media)
   }
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onDelete(photo.id)
+    onDelete(media.id)
   }
+
+  const mediaTypeLabel = media.type === 'photo' ? 'foto' : 'video'
 
   return (
     <div className={cn(
@@ -36,7 +38,7 @@ export default function PhotoActions({
           'border border-white/20 hover:border-white/30',
           'transition-all duration-200 cursor-pointer'
         )}
-        aria-label="Descargar foto"
+        aria-label={`Descargar ${mediaTypeLabel}`}
       >
         <Download className="w-4 h-4" />
       </Button>
@@ -51,7 +53,7 @@ export default function PhotoActions({
           'border border-red-300/20 hover:border-red-300/30',
           'transition-all duration-200 cursor-pointer'
         )}
-        aria-label="Eliminar foto"
+        aria-label={`Eliminar ${mediaTypeLabel}`}
       >
         <CircleX className="w-4 h-4" />
       </Button>

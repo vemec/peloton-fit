@@ -15,8 +15,7 @@ import { useAngles, AngleTable } from '../Analysis'
 import { FIXED_FPS, generateScreenshotFilename } from './constants'
 import { captureCanvasFrame } from './utils'
 import { SKELETON_MODES } from '../Drawing'
-import { PhotoManager, usePhotos } from '../Photo'
-import PhotoBarContainer from '../Photo/PhotoBarContainer'
+import { MediaManager, useMedia, MediaBarContainer } from '../Media'
 import type { BikeType, DetectedSide, VisualSettings, SkeletonMode } from '@/types/bikefit'
 import type { OverlayVisibility } from '@/types/overlay'
 
@@ -38,7 +37,7 @@ export default function BikeFitVideoPlayer({
   onVisualSettingsChange
 }: BikeFitVideoPlayerProps) {
   return (
-    <PhotoManager>
+    <MediaManager>
       <BikeFitVideoPlayerContent
         bikeType={bikeType}
         detectedSide={detectedSide}
@@ -47,7 +46,7 @@ export default function BikeFitVideoPlayer({
         visualSettings={visualSettings}
         onVisualSettingsChange={onVisualSettingsChange}
       />
-    </PhotoManager>
+    </MediaManager>
   )
 }
 
@@ -68,8 +67,8 @@ function BikeFitVideoPlayerContent({
   })
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  // Photo management
-  const { addPhoto } = usePhotos()
+  // Media management
+  const { addMedia } = useMedia()
 
   // Derive container aspect ratio from selected resolution (fallback 16/9)
   const [aspectW, aspectH] = React.useMemo(() => {
@@ -80,10 +79,21 @@ function BikeFitVideoPlayerContent({
     return [w, h]
   }, [selectedResolution])
 
+  // Video recording callback
+  const handleVideoRecordingComplete = React.useCallback((blob: Blob, filename: string) => {
+    addMedia(blob, filename, 'video')
+    // Show success notification
+    show.success('Video grabado', {
+      description: 'El video se ha agregado a la galería con los puntos y ángulos de análisis.'
+    })
+  }, [addMedia])
+
   // Custom hooks
   const { devices, selectedDeviceId, setSelectedDeviceId, refreshDevices } = useCameraDevices()
   const { videoRef, isActive, error, startCamera, stopCamera } = useVideoStream()
-  const { isRecording, startRecording, stopRecording } = useVideoRecording()
+  const { isRecording, startRecording, stopRecording } = useVideoRecording({
+    onRecordingComplete: handleVideoRecordingComplete
+  })
 
   // Pose detection hook - Real-time MediaPipe processing with adaptive FPS
   const { smoothedKeypoints, detectedSide: poseDetectedSide } = usePoseDetectionRealTime(
@@ -198,7 +208,7 @@ function BikeFitVideoPlayerContent({
       if (blob) {
         // Add photo to the manager instead of downloading directly
         const filename = generateScreenshotFilename()
-        addPhoto(blob, filename)
+        addMedia(blob, filename, 'photo')
 
         // Show success
         show.success('Foto capturada', {
@@ -307,8 +317,8 @@ function BikeFitVideoPlayerContent({
           )}
         </div>
 
-        {/* Photo Bar */}
-        <PhotoBarContainer />
+        {/* Media Bar */}
+        <MediaBarContainer />
 
         {/* Video Controls - Below video */}
         <VideoControls
