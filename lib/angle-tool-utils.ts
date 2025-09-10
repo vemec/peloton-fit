@@ -86,6 +86,26 @@ export function isPointNearArc(
 }
 
 /**
+ * Check if a point is within the arc area (including inside the arc)
+ * This provides a larger detection area for better UX when dragging angles
+ * @param point Point to check
+ * @param center Center of the arc
+ * @param radius Radius of the arc
+ * @param tolerance Additional tolerance for interaction
+ * @returns Whether the point is within the arc area
+ */
+export function isPointInArcArea(
+  point: { x: number; y: number },
+  center: { x: number; y: number },
+  radius: number,
+  tolerance = 25
+): boolean {
+  const distance = calculateDistance(point, center)
+  // Allow detection from center to radius + tolerance for easier arc dragging
+  return distance <= radius + tolerance && distance >= Math.max(radius - tolerance, 0)
+}
+
+/**
  * Generate a unique ID for angle tool elements
  * @param prefix Prefix for the ID
  * @returns Unique ID string
