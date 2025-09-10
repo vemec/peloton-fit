@@ -1,9 +1,5 @@
 import Image from 'next/image'
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { CapturedMedia } from '@/types/media'
 import { cn } from '@/lib/utils'
 
@@ -12,24 +8,18 @@ interface MediaViewerProps {
   onClose: () => void
 }
 
-export default function MediaViewer({
-  media,
-  onClose
-}: MediaViewerProps) {
+export default function MediaViewer({ media, onClose }: MediaViewerProps) {
   const isVideo = media.type === 'video'
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          'max-w-[90vw] max-h-[90vh]',
-          'bg-transparent border-none p-6 shadow-none',
-          'focus:outline-none',
-          'flex items-center justify-center'
+          'max-w-[90vw] max-h-[90vh] bg-transparent border-none p-6',
+          'flex items-center justify-center focus:outline-none'
         )}
         showCloseButton={false}
       >
-        {/* Media container */}
         <div className="relative">
           {isVideo ? (
             <video
@@ -38,36 +28,24 @@ export default function MediaViewer({
               autoPlay
               muted
               playsInline
-              className={cn(
-                'max-w-[80vw] max-h-[75vh] w-auto h-auto',
-                'object-contain rounded-xl',
-                'shadow-2xl border-white/20 border-2'
-              )}
+              className="max-w-[80vw] max-h-[75vh] w-auto h-auto object-contain rounded-xl shadow-2xl border-2 border-white/20"
             />
           ) : (
             <Image
               src={media.url}
-              alt={`${media.type === 'photo' ? 'Foto' : 'Video'} capturado el ${media.timestamp.toLocaleString()}`}
+              alt={`${media.type === 'photo' ? 'Foto' : 'Video'} - ${media.timestamp.toLocaleString()}`}
               width={1920}
               height={1080}
-              className={cn(
-                'max-w-[80vw] max-h-[75vh] w-auto h-auto',
-                'object-contain rounded-xl',
-                'shadow-2xl border-white/20 border-2'
-              )}
+              className="max-w-[80vw] max-h-[75vh] w-auto h-auto object-contain rounded-xl shadow-2xl border-2 border-white/20"
               priority
             />
           )}
 
-          {/* Media info overlay */}
-          <DialogTitle className={cn(
-            'absolute bottom-4 left-4',
-            'bg-black/70 backdrop-blur-sm rounded-xl p-3',
-            'text-white text-sm'
-          )}>
-            <div className="font-medium">File: {media.filename}</div>
+          {/* Media info */}
+          <DialogTitle className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm rounded-xl p-3 text-white text-sm">
+            <div className="font-medium">Archivo: {media.filename}</div>
             <div className="text-white/70 text-xs">
-              Type: {media.type} | Date: {media.timestamp.toLocaleString()}
+              Tipo: {media.type} | Fecha: {media.timestamp.toLocaleString()}
             </div>
           </DialogTitle>
         </div>

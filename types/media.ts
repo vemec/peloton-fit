@@ -9,14 +9,6 @@ export interface CapturedMedia {
   filename: string
   timestamp: Date
   type: MediaType
-  thumbnail?: string
-  duration?: number // For videos
-}
-
-export interface MediaManagerState {
-  media: CapturedMedia[]
-  selectedMedia: CapturedMedia | null
-  isMediaViewerOpen: boolean
 }
 
 export interface MediaActionsProps {

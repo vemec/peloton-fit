@@ -17,49 +17,38 @@ export default function MediaThumbnail({
   onDelete,
   onSelect
 }: MediaThumbnailProps) {
-  const handleClick = () => {
-    onSelect(media)
-  }
-
   const isVideo = media.type === 'video'
 
   return (
     <div
-      onClick={handleClick}
+      onClick={() => onSelect(media)}
       className={cn(
         'relative group cursor-pointer',
-        'rounded-lg overflow-hidden border-2 border-black hover:border-white/70',
+        'w-32 h-20 min-w-[130px]',
+        'rounded-lg overflow-hidden',
+        'border-2 border-black hover:border-white/70',
         'transition-all duration-200',
-        'shadow-sm hover:shadow-md',
-        'w-24 h-20 min-w-[130px]'
+        'shadow-sm hover:shadow-md'
       )}
     >
       {isVideo ? (
         <video
           src={media.url}
-          className={cn(
-            'w-full h-full object-cover',
-            'transition-transform duration-200',
-            'group-hover:scale-105'
-          )}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
           muted
           playsInline
         />
       ) : (
         <Image
           src={media.url}
-          alt={`${media.type === 'photo' ? 'Foto' : 'Video'} capturado ${media.timestamp.toLocaleTimeString()}`}
+          alt={`${media.type === 'photo' ? 'Foto' : 'Video'} - ${media.timestamp.toLocaleTimeString()}`}
           fill
-          className={cn(
-            'object-cover',
-            'transition-transform duration-200',
-            'group-hover:scale-105'
-          )}
-          sizes="96px"
+          className="object-cover group-hover:scale-105 transition-transform duration-200"
+          sizes="130px"
         />
       )}
 
-      {/* Video play icon overlay */}
+      {/* Video play icon */}
       {isVideo && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
           <PlayIcon className="w-6 h-6 text-white/80" />

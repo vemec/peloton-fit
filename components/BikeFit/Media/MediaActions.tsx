@@ -18,27 +18,19 @@ export default function MediaActions({
     onDelete(media.id)
   }
 
-  const mediaTypeLabel = media.type === 'photo' ? 'foto' : 'video'
-
   return (
     <div className={cn(
-      'absolute inset-0 bg-black/40 backdrop-blur-sm',
+      'absolute inset-0 bg-black/40 backdrop-blur-sm rounded-lg',
       'flex items-center justify-center gap-2',
       'opacity-0 group-hover:opacity-100',
-      'transition-opacity duration-200 ease-in-out',
-      'rounded-lg'
+      'transition-opacity duration-200'
     )}>
       <Button
         onClick={handleDownload}
         size="icon"
         variant="ghost"
-        className={cn(
-          'w-8 h-8 bg-white/20 hover:bg-white/30',
-          'backdrop-blur-sm text-white hover:text-white',
-          'border border-white/20 hover:border-white/30',
-          'transition-all duration-200 cursor-pointer'
-        )}
-        aria-label={`Descargar ${mediaTypeLabel}`}
+        className="w-8 h-8 bg-white/20 hover:bg-white/30 text-white"
+        aria-label={`Descargar ${media.type === 'photo' ? 'foto' : 'video'}`}
       >
         <Download className="w-4 h-4" />
       </Button>
@@ -47,13 +39,8 @@ export default function MediaActions({
         onClick={handleDelete}
         size="icon"
         variant="ghost"
-        className={cn(
-          'w-8 h-8 bg-red-500/20 hover:bg-red-500/30',
-          'backdrop-blur-sm text-white hover:text-white',
-          'border border-red-300/20 hover:border-red-300/30',
-          'transition-all duration-200 cursor-pointer'
-        )}
-        aria-label={`Eliminar ${mediaTypeLabel}`}
+        className="w-8 h-8 bg-red-500/20 hover:bg-red-500/30 text-white"
+        aria-label={`Eliminar ${media.type === 'photo' ? 'foto' : 'video'}`}
       >
         <CircleX className="w-4 h-4" />
       </Button>

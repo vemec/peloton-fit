@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react'
+import React, { createContext, useContext, ReactNode } from 'react'
 import { useMediaManager } from './useMediaManager'
 import { CapturedMedia, MediaType } from '@/types/media'
 
@@ -24,36 +24,15 @@ export const useMedia = () => {
 }
 
 interface MediaManagerProps {
-  children?: React.ReactNode
+  children: ReactNode
 }
 
 export default function MediaManager({ children }: MediaManagerProps) {
-  const {
-    state,
-    addMedia,
-    deleteMedia,
-    downloadMedia,
-    openMediaViewer,
-    closeMediaViewer
-  } = useMediaManager()
-
-  const contextValue: MediaContextType = {
-    addMedia,
-    deleteMedia,
-    downloadMedia,
-    openMediaViewer,
-    closeMediaViewer,
-    media: state.media,
-    selectedMedia: state.selectedMedia,
-    isMediaViewerOpen: state.isMediaViewerOpen
-  }
+  const mediaManager = useMediaManager()
 
   return (
-    <MediaContext.Provider value={contextValue}>
+    <MediaContext.Provider value={mediaManager}>
       {children}
     </MediaContext.Provider>
   )
 }
-
-// Export the hook for external use
-export { useMediaManager }
