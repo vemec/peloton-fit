@@ -258,7 +258,7 @@ function BikeFitVideoPlayerContent({
   return (
     <>
       {/* Main content: Video and Angle Table */}
-      <div className="grid gap-6">
+      <div className="grid gap-5">
         {/* Video Display */}
         <div
           className="z-10 relative mx-auto bg-slate-50/30 border border-slate-200/50 rounded-3xl overflow-hidden backdrop-blur-sm"
@@ -303,7 +303,6 @@ function BikeFitVideoPlayerContent({
             style={{
               opacity: isActive ? 1 : 0,
               transition: 'opacity 500ms'
-              // No transform here since we handle flipping internally in the drawing code
             }}
           />
 

@@ -29,7 +29,7 @@ export default function MediaActions({
         onClick={handleDownload}
         size="icon"
         variant="ghost"
-        className="w-8 h-8 bg-white/20 hover:bg-white/30 text-white"
+        className="w-8 h-8 bg-white/20 hover:bg-white/30 text-white cursor-pointer"
         aria-label={`Descargar ${media.type === 'photo' ? 'foto' : 'video'}`}
       >
         <Download className="w-4 h-4" />
@@ -39,7 +39,7 @@ export default function MediaActions({
         onClick={handleDelete}
         size="icon"
         variant="ghost"
-        className="w-8 h-8 bg-red-500/20 hover:bg-red-500/30 text-white"
+        className="w-8 h-8 bg-red-500/20 hover:bg-red-500/30 text-white cursor-pointer"
         aria-label={`Eliminar ${media.type === 'photo' ? 'foto' : 'video'}`}
       >
         <CircleX className="w-4 h-4" />
