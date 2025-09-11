@@ -38,10 +38,10 @@ export function calculateAngleBetweenPoints(
   let angleRad: number
 
   if (signed) {
-    // Ángulo con signo en [-π, π]
+    // Signed angle in [-π, π]
     angleRad = Math.atan2(cross, dot)
   } else {
-    // Ángulo absoluto en [0, π]
+    // Absolute angle in [0, π]
     const cos = dot / (magBA * magBC)
     const clampedCos = Math.min(1, Math.max(-1, cos)) // evita NaN por redondeo
     angleRad = Math.acos(clampedCos)

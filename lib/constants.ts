@@ -87,10 +87,10 @@ export const FILE_NAMING = {
 
 // === Error Messages ===
 export const ERROR_MESSAGES = {
-  CAMERA_ACCESS: 'No se pudo acceder a la cámara. Verifica los permisos.',
-  CAMERA_SELECTION: 'Elige un dispositivo de video antes de continuar',
-  MEDIAPIPE_LOAD: 'Error al cargar MediaPipe. Recarga la página.',
-  POSE_DETECTION: 'Error en la detección de pose. Verifica la iluminación.',
+  CAMERA_ACCESS: 'Could not access the camera. Check permissions.',
+  CAMERA_SELECTION: 'Choose a video device before continuing',
+  MEDIAPIPE_LOAD: 'Error loading MediaPipe. Reload the page.',
+  POSE_DETECTION: 'Error in pose detection. Check the lighting.',
 } as const
 
 // === Validation Thresholds ===

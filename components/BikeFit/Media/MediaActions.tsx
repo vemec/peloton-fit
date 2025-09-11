@@ -30,7 +30,7 @@ export default function MediaActions({
         size="icon"
         variant="ghost"
         className="w-8 h-8 bg-white/20 hover:bg-white/30 text-white cursor-pointer"
-        aria-label={`Descargar ${media.type === 'photo' ? 'foto' : 'video'}`}
+        aria-label={`Download ${media.type === 'photo' ? 'photo' : 'video'}`}
       >
         <Download className="w-4 h-4" />
       </Button>
@@ -40,7 +40,7 @@ export default function MediaActions({
         size="icon"
         variant="ghost"
         className="w-8 h-8 bg-red-500/20 hover:bg-red-500/30 text-white cursor-pointer"
-        aria-label={`Eliminar ${media.type === 'photo' ? 'foto' : 'video'}`}
+        aria-label={`Delete ${media.type === 'photo' ? 'photo' : 'video'}`}
       >
         <CircleX className="w-4 h-4" />
       </Button>

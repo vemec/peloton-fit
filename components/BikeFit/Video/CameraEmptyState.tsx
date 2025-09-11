@@ -30,29 +30,29 @@ export default function CameraEmptyState({
               )}
             </div>
             <h1 id="emptystate-title" className="text-2xl font-semibold text-slate-900">
-              {error ? 'Error de Cámara' : 'Comenzá tu análisis de Bike Fit'}
+              {error ? 'Camera Error' : 'Start your Bike Fit analysis'}
             </h1>
             <p className="text-slate-600 text-sm leading-relaxed max-w-2xl mx-auto">
               {error
                 ? error
-                : 'Usá tu cámara para analizar tu postura en tiempo real. Colocate de lado en tu bicicleta y seguí los pasos.'}
+                : 'Use your camera to analyze your posture in real time. Position yourself sideways on your bicycle and follow the steps.'}
             </p>
           </header>
 
           {/* Steps */}
           {!error && (
             <section className="space-y-4">
-              <h2 className="text-sm font-medium text-slate-700 text-center">Pasos para comenzar</h2>
+              <h2 className="text-sm font-medium text-slate-700 text-center">Steps to get started</h2>
                 <ol className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <li className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/60 text-center">
                     <div className="mx-auto w-9 h-9 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mb-2">1</div>
-                    <div className="font-medium text-slate-700 text-sm">Elegí tu cámara</div>
-                    <p className="text-xs text-slate-500">Seleccioná el dispositivo de video en los controles.</p>
+                    <div className="font-medium text-slate-700 text-sm">Choose your camera</div>
+                    <p className="text-xs text-slate-500">Select the video device in the controls.</p>
                   </li>
                   <li className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/60 text-center">
                     <div className="mx-auto w-9 h-9 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mb-2">2</div>
-                    <div className="font-medium text-slate-700 text-sm">Ubicate en la bicicleta</div>
-                    <p className="text-xs text-slate-500">Colocate de lado, con la cámara al nivel del torso.</p>
+                    <div className="font-medium text-slate-700 text-sm">Position yourself on the bicycle</div>
+                    <p className="text-xs text-slate-500">Position yourself sideways, with the camera at torso level.</p>
                   </li>
                   <li className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/60 text-center">
                     <div className="mx-auto w-9 h-9 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mb-2">3</div>
@@ -72,7 +72,7 @@ export default function CameraEmptyState({
                 className="bg-white/70 hover:bg-white/90"
                 aria-live="polite"
               >
-                Reintentar Conexión
+                Retry Connection
               </Button>
             ) : (
               <Button
@@ -83,12 +83,12 @@ export default function CameraEmptyState({
                 className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-2 border-purple-400/40 hover:border-purple-300/60 focus:border-purple-200/70 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:ring-offset-2 focus:ring-offset-white shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <Play className="!w-6 !h-6" aria-hidden="true" />
-                <span className="sr-only">Iniciar cámara</span>
+                <span className="sr-only">Start camera</span>
               </Button>
             )}
           </div>
           {!error && (
-            <p className="text-center text-xs text-slate-500 -mt-2">Dura pocos segundos y podés repetirlo las veces que quieras.</p>
+            <p className="text-center text-xs text-slate-500 -mt-2">It takes just a few seconds and you can repeat it as many times as you want.</p>
           )}
 
           {/* Info row */}
@@ -97,32 +97,32 @@ export default function CameraEmptyState({
               <div role="alert" className="rounded-xl border border-amber-300/70 bg-amber-50/80 text-amber-900 p-4 md:col-span-2">
                 <p className="text-sm font-medium flex items-center gap-2">
                   <ShieldAlert className="w-4 h-4" aria-hidden="true" />
-                  Verifica permisos de cámara y selecciona un dispositivo disponible.
+                  Check camera permissions and select an available device.
                 </p>
                 <ul className="mt-2 text-xs list-disc list-inside space-y-1">
-                  <li>Otorga permisos al navegador para usar la cámara.</li>
-                  <li>Cierra otras apps que estén usando la cámara.</li>
-                  <li>En los controles, elige un dispositivo de video.</li>
+                  <li>Grant permissions to the browser to use the camera.</li>
+                  <li>Close other apps that are using the camera.</li>
+                  <li>In the controls, choose a video device.</li>
                 </ul>
               </div>
             ) : (
               <>
                 <div className="rounded-xl border border-slate-200/60 bg-slate-50/60 p-4">
-                  <h3 className="text-sm font-semibold text-slate-700">Antes de empezar, asegurate de…</h3>
+                  <h3 className="text-sm font-semibold text-slate-700">Before starting, make sure…</h3>
                   <ul className="mt-3 text-sm text-slate-600 space-y-2">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> Buena iluminación <span className="text-slate-500">(sin contraluces)</span></li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> Fondo despejado <span className="text-slate-500">(sin objetos que tapen)</span></li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> Cámara a la altura del torso</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> Ropa que contraste con el fondo</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> Good lighting <span className="text-slate-500">(no backlighting)</span></li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> Clear background <span className="text-slate-500">(no objects blocking)</span></li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> Camera at torso height</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> Clothing that contrasts with the background</li>
                   </ul>
                 </div>
                 <div className="rounded-xl border border-slate-200/60 bg-slate-50/60 p-4">
-                  <h3 className="text-sm font-semibold text-slate-700">Consejos</h3>
+                  <h3 className="text-sm font-semibold text-slate-700">Tips</h3>
                   <ul className="mt-3 text-sm text-slate-600 space-y-2 list-disc list-inside">
-                    <li>Mantené toda la bicicleta dentro del cuadro.</li>
-                    <li>Evitá luces detrás tuyo (contraluces).</li>
-                    <li>Apoyá la bici en un rodillo o pared para más estabilidad.</li>
-                    <li>Usá ropa ajustada o sin pliegues para mayor precisión.</li>
+                    <li>Keep the entire bicycle within the frame.</li>
+                    <li>Avoid lights behind you (backlighting).</li>
+                    <li>Support the bike on a roller or wall for more stability.</li>
+                    <li>Use fitted clothing or without folds for greater precision.</li>
                   </ul>
                 </div>
               </>

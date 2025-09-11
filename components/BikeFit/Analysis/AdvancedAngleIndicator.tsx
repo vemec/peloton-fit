@@ -34,34 +34,34 @@ const getColorClasses = {
 // Label mapping for different angle types
 const getLabelMapping = () => ({
   knee: {
-    pedalDown: 'Extensión Óptima',
-    pedalUp: 'Flexión Óptima',
-    extensionLabel: 'Extensión (6h)',
-    flexionLabel: 'Flexión (12h)'
+    pedalDown: 'Optimal Extension',
+    pedalUp: 'Optimal Flexion',
+    extensionLabel: 'Extension (6h)',
+    flexionLabel: 'Flexion (12h)'
   },
   hip: {
-    pedalDown: 'Extensión Atrás',
-    pedalUp: 'Flexión Arriba',
-    extensionLabel: 'Extensión Atrás',
-    flexionLabel: 'Flexión Arriba'
+    pedalDown: 'Back Extension',
+    pedalUp: 'Up Flexion',
+    extensionLabel: 'Back Extension',
+    flexionLabel: 'Up Flexion'
   },
   ankle: {
-    pedalDown: 'Plantarflexión',
-    pedalUp: 'Dorsiflexión',
-    extensionLabel: 'Plantarflexión (6h)',
-    flexionLabel: 'Dorsiflexión (12h)'
+    pedalDown: 'Plantarflexion',
+    pedalUp: 'Dorsiflexion',
+    extensionLabel: 'Plantarflexion (6h)',
+    flexionLabel: 'Dorsiflexion (12h)'
   },
   shoulder: {
-    pedalDown: 'Extensión Atrás',
-    pedalUp: 'Flexión Adelante',
-    extensionLabel: 'Extensión Atrás',
-    flexionLabel: 'Flexión Adelante'
+    pedalDown: 'Back Extension',
+    pedalUp: 'Forward Flexion',
+    extensionLabel: 'Back Extension',
+    flexionLabel: 'Forward Flexion'
   },
   elbow: {
-    pedalDown: 'Extensión Brazo',
-    pedalUp: 'Flexión Aero',
-    extensionLabel: 'Extensión Brazo',
-    flexionLabel: 'Flexión Aero'
+    pedalDown: 'Arm Extension',
+    pedalUp: 'Aero Flexion',
+    extensionLabel: 'Arm Extension',
+    flexionLabel: 'Aero Flexion'
   }
 })
 
@@ -134,7 +134,7 @@ export function AdvancedAngleIndicator({
         <div data-slot="physiological-range" className="transition-all duration-300 flex justify-between text-xs text-gray-500">
           <span>~{physiological!.min}°</span>
           <span className="text-center">
-            Rango fisiológico total: ~{physiological!.max - physiological!.min}°
+            Total physiological range: ~{physiological!.max - physiological!.min}°
           </span>
           <span>~{physiological!.max}°</span>
         </div>
@@ -201,12 +201,12 @@ export function AdvancedAngleIndicator({
         <div data-slot="mobility-range" className="transition-all duration-300 text-xs text-gray-500 text-center">
           {hasMovementZone(angleName) && movementZone ? (
             <>
-              {isPedalingAngle(angleName) ? 'Zona de pedaleo' : 'Zona de ciclismo'}: ~{Math.abs(movementZone.max - movementZone.min)}°
+              {isPedalingAngle(angleName) ? 'Pedaling zone' : 'Cycling zone'}: ~{Math.abs(movementZone.max - movementZone.min)}°
               ({movementZone.min}° - {movementZone.max}°)
             </>
           ) : (
             <>
-              Rango de movilidad en bici: ~{Math.abs(pedalDown!.max - pedalUp!.min)}°
+              Bike mobility range: ~{Math.abs(pedalDown!.max - pedalUp!.min)}°
               ({pedalUp!.min}° - {pedalDown!.max}°)
             </>
           )}

@@ -27,7 +27,7 @@ export default function AngleTable({ angles, bikeType }: AngleTableProps) {
     <div className='w-full max-w-7xl mx-auto grid gap-3'>
       <div className="text-xl font-bold flex items-center gap-3 text-gray-800">
         <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
-        Análisis de Ángulos
+        Angle Analysis
         <Badge
           variant="secondary"
           className={cn(
@@ -39,7 +39,7 @@ export default function AngleTable({ angles, bikeType }: AngleTableProps) {
               : "bg-gray-100 text-gray-600 border-gray-200"
           )}
         >
-          {detectedCount} de {allAngles.length} detectados
+          {detectedCount} of {allAngles.length} detected
         </Badge>
       </div>
       {/* Grid layout for 2 columns */}

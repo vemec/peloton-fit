@@ -40,24 +40,24 @@ const getColorClasses = {
 // Label mapping for different angle types
 const getLabelMapping = () => ({
   knee: {
-    pedalDown: 'Extensión Óptima',
-    pedalUp: 'Flexión Óptima'
+    pedalDown: 'Optimal Extension',
+    pedalUp: 'Optimal Flexion'
   },
   hip: {
-    pedalDown: 'Extensión Atrás',
-    pedalUp: 'Flexión Arriba'
+    pedalDown: 'Back Extension',
+    pedalUp: 'Up Flexion'
   },
   ankle: {
-    pedalDown: 'Plantarflexión',
-    pedalUp: 'Dorsiflexión'
+    pedalDown: 'Plantarflexion',
+    pedalUp: 'Dorsiflexion'
   },
   shoulder: {
-    pedalDown: 'Extensión Atrás',
-    pedalUp: 'Flexión Adelante'
+    pedalDown: 'Back Extension',
+    pedalUp: 'Forward Flexion'
   },
   elbow: {
-    pedalDown: 'Extensión Brazo',
-    pedalUp: 'Flexión Aero'
+    pedalDown: 'Arm Extension',
+    pedalUp: 'Aero Flexion'
   }
 })
 
@@ -79,11 +79,11 @@ export default function AngleCard({
 }: AngleCardProps) {
   // Define display names mapping
   const displayNames = {
-    knee: 'Rodilla',
-    hip: 'Cadera',
-    ankle: 'Tobillo',
-    shoulder: 'Hombro',
-    elbow: 'Codo'
+    knee: 'Knee',
+    hip: 'Hip',
+    ankle: 'Ankle',
+    shoulder: 'Shoulder',
+    elbow: 'Elbow'
   }
 
   // Calculate if angle is detected
@@ -98,7 +98,7 @@ export default function AngleCard({
 
   // Determine zone status for advanced indicator
   const getZoneStatus = () => {
-    if (!isDetected || !range) return { zone: 'disabled', color: 'gray', label: 'No detectado' }
+    if (!isDetected || !range) return { zone: 'disabled', color: 'gray', label: 'Not detected' }
 
     // Check if we have advanced ranges (with physiological data)
     const hasAdvancedRanges = range.pedalDown && range.pedalUp && range.physiological
@@ -109,7 +109,7 @@ export default function AngleCard({
       return {
         zone: status,
         color: status === 'optimal' ? 'emerald' : status === 'warning' ? 'amber' : 'red',
-        label: status === 'optimal' ? 'Óptimo' : status === 'warning' ? 'Advertencia' : 'Extremo'
+        label: status === 'optimal' ? 'Optimal' : status === 'warning' ? 'Warning' : 'Extreme'
       }
     }
 
@@ -123,12 +123,12 @@ export default function AngleCard({
       return { zone: 'pedal-up', color: 'green', label: labels.pedalUp }
     }
     if (value! >= range.optimal.min && value! <= range.optimal.max) {
-      return { zone: 'cycling-range', color: 'emerald', label: 'Rango Ciclismo' }
+      return { zone: 'cycling-range', color: 'emerald', label: 'Cycling Range' }
     }
     if (value! >= physiological!.min && value! <= physiological!.max) {
-      return { zone: 'physiological', color: 'amber', label: 'Rango Fisiológico' }
+      return { zone: 'physiological', color: 'amber', label: 'Physiological Range' }
     }
-    return { zone: 'extreme', color: 'red', label: 'Fuera de Rango' }
+    return { zone: 'extreme', color: 'red', label: 'Out of Range' }
   }
 
   const status = getZoneStatus()
@@ -141,7 +141,7 @@ export default function AngleCard({
           variant="outline"
           className={cn("text-xs text-gray-400 font-medium px-2 py-1")}
         >
-          No detectado
+          Not detected
         </Badge>
       )
     }

@@ -1,27 +1,27 @@
 # 🚴 BikeFit AI - Real-time Posture Analysis
 
-BikeFit AI es una aplicación web desarrollada con **Next.js + TypeScript** que permite a ciclistas y triatletas analizar su postura en tiempo real mientras pedalean.
+BikeFit AI is a web application developed with **Next.js + TypeScript** that allows cyclists and triathletes to analyze their posture in real time while pedaling.
 
-Utilizando la cámara del dispositivo y modelos de visión por computadora, la app detecta los puntos clave del cuerpo (muñeca, codo, hombro, cadera, rodilla, tobillo, punta del pie y talón), calcula ángulos de referencia y los muestra en pantalla para ayudar a optimizar la posición.
-
----
-
-## ✨ Funcionalidades
-- Detección en tiempo real de puntos clave del cuerpo
-- Cálculo de ángulos de rodilla, cadera y hombro
-- Visualización en pantalla con overlay del esqueleto
-- UI limpia con **Tailwind**, **shadcn/ui** y **lucide-react**
-- Historial de sesiones (pendiente de implementar)
+Using the device's camera and computer vision models, the app detects key body points (wrist, elbow, shoulder, hip, knee, ankle, toe, and heel), calculates reference angles, and displays them on screen to help optimize position.
 
 ---
 
-## 🛠️ Tecnologías principales
+## ✨ Features
+- Real-time detection of body keypoints
+- Calculation of knee, hip, and shoulder angles
+- On-screen visualization with skeleton overlay
+- Clean UI with **Tailwind**, **shadcn/ui**, and **lucide-react**
+- Session history (pending implementation)
+
+---
+
+## 🛠️ Main Technologies
 - [Next.js](https://nextjs.org/) (App Router)
 - [TypeScript](https://www.typescriptlang.org/)
 - [TailwindCSS](https://tailwindcss.com/)
 - [shadcn/ui](https://ui.shadcn.com/)
 - [lucide-react](https://lucide.dev/)
-- [TensorFlow.js](https://www.tensorflow.org/js) o [MediaPipe Pose](https://developers.google.com/mediapipe/solutions/vision/pose) para detección de poses
+- [TensorFlow.js](https://www.tensorflow.org/js) or [MediaPipe Pose](https://developers.google.com/mediapipe/solutions/vision/pose) for pose detection
 
 
 ## Getting Started
