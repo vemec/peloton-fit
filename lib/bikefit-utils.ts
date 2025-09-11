@@ -16,23 +16,42 @@ import { VALIDATION_THRESHOLDS } from './constants'
 export function calculateAngleBetweenPoints(
   pointA: Keypoint,
   pointB: Keypoint,
-  pointC: Keypoint
+  pointC: Keypoint,
+  options: { decimals?: number; signed?: boolean } = {}
 ): number {
-  const vectorBA = { x: pointA.x - pointB.x, y: pointA.y - pointB.y }
-  const vectorBC = { x: pointC.x - pointB.x, y: pointC.y - pointB.y }
+  const { decimals = 2, signed = false } = options
 
-  const dotProduct = vectorBA.x * vectorBC.x + vectorBA.y * vectorBC.y
-  const magnitudeBA = Math.sqrt(vectorBA.x ** 2 + vectorBA.y ** 2)
-  const magnitudeBC = Math.sqrt(vectorBC.x ** 2 + vectorBC.y ** 2)
+  // Vectores BA y BC
+  const vBA = { x: pointA.x - pointB.x, y: pointA.y - pointB.y }
+  const vBC = { x: pointC.x - pointB.x, y: pointC.y - pointB.y }
 
-  if (magnitudeBA === 0 || magnitudeBC === 0) return 0
+  // Magnitudes
+  const magBA = Math.hypot(vBA.x, vBA.y)
+  const magBC = Math.hypot(vBC.x, vBC.y)
 
-  const cosAngle = dotProduct / (magnitudeBA * magnitudeBC)
-  const clampedCosAngle = Math.max(-1, Math.min(1, cosAngle))
-  const angleRadians = Math.acos(clampedCosAngle)
-  const angleDegrees = (angleRadians * 180) / Math.PI
+  if (magBA === 0 || magBC === 0) return NaN // mejor que devolver 0: marca ángulo indefinido
 
-  return Math.round(angleDegrees * 10) / 10 // Return with 1 decimal place
+  // Producto punto y cruz
+  const dot = vBA.x * vBC.x + vBA.y * vBC.y
+  const cross = vBA.x * vBC.y - vBA.y * vBC.x
+
+  let angleRad: number
+
+  if (signed) {
+    // Ángulo con signo en [-π, π]
+    angleRad = Math.atan2(cross, dot)
+  } else {
+    // Ángulo absoluto en [0, π]
+    const cos = dot / (magBA * magBC)
+    const clampedCos = Math.min(1, Math.max(-1, cos)) // evita NaN por redondeo
+    angleRad = Math.acos(clampedCos)
+  }
+
+  const angleDeg = (angleRad * 180) / Math.PI
+
+  // Redondeo configurable
+  const factor = Math.pow(10, decimals)
+  return Math.round(angleDeg * factor) / factor
 }
 
 /**

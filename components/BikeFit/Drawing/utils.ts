@@ -80,16 +80,6 @@ export function drawRoundedRect(
 }
 
 /**
- * Normalizes angle delta to (-PI, PI] range
- */
-export function normalizeAngleDelta(delta: number): number {
-  let normalized = delta
-  while (normalized <= -Math.PI) normalized += Math.PI * 2
-  while (normalized > Math.PI) normalized -= Math.PI * 2
-  return normalized
-}
-
-/**
  * Converts normalized coordinates to canvas coordinates
  */
 export function normalizedToCanvas(

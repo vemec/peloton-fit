@@ -15,7 +15,6 @@ export {
   setupCanvas,
   clearCanvas,
   drawRoundedRect,
-  normalizeAngleDelta,
   normalizedToCanvas,
   type DrawingContext,
 } from './utils'

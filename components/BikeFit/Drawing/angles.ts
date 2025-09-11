@@ -2,7 +2,6 @@ import { calculateAngleBetweenPoints, hexToRgba, isKeypointValid } from '@/lib/b
 import type { Keypoint, VisualSettings } from '@/types/bikefit'
 import {
   drawRoundedRect,
-  normalizeAngleDelta,
   normalizedToCanvas
 } from './utils'
 import { DRAWING_CONFIG, KEYPOINT_INDICES } from './constants'
@@ -41,22 +40,36 @@ function calculateArcParameters(
   canvasWidth: number,
   canvasHeight: number
 ) {
+  // Convertir puntos normalizados a coordenadas de canvas
   const a = normalizedToCanvas(pointA, canvasWidth, canvasHeight)
   const b = normalizedToCanvas(pointB, canvasWidth, canvasHeight)
   const c = normalizedToCanvas(pointC, canvasWidth, canvasHeight)
 
+  // Vectores BA y BC
   const v1x = a.x - b.x
   const v1y = a.y - b.y
   const v2x = c.x - b.x
   const v2y = c.y - b.y
 
+  // Ángulos inicial y final
   const startAngle = Math.atan2(v1y, v1x)
   const endAngle = Math.atan2(v2y, v2x)
-  const delta = normalizeAngleDelta(endAngle - startAngle)
-  const smallEndAngle = startAngle + delta
-  const anticlockwise = delta < 0
 
-  return { a, b, c, startAngle, smallEndAngle, anticlockwise }
+  // Diferencia de ángulos normalizada a [0, 2π)
+  let delta = endAngle - startAngle
+  if (delta < 0) delta += 2 * Math.PI
+
+  // Determinar dirección del arco (horario/antihorario) usando cross product
+  const cross = v1x * v2y - v1y * v2x
+  const anticlockwise = cross < 0
+
+  return {
+    center: b,            // punto central (vértice B)
+    startAngle,
+    endAngle,
+    delta,
+    anticlockwise,
+  }
 }
 
 /**
@@ -86,18 +99,25 @@ export function drawAngleMarker(
     { x: pointC.x, y: pointC.y, score: pointC.score, name: pointC.name || 'c' }
   )
 
+  console.log(angleDeg);
+
   // Skip invalid angles
   if (!isFinite(angleDeg) || angleDeg < 0 || angleDeg > 180) {
     return null
   }
 
   try {
-    // Calculate arc parameters and canvas coordinates for points
-    const { a, b, c, startAngle, smallEndAngle, anticlockwise } = calculateArcParameters(
+    // Convertir puntos normalizados a coordenadas de canvas
+    const a = normalizedToCanvas(pointA, canvasWidth, canvasHeight)
+    const b = normalizedToCanvas(pointB, canvasWidth, canvasHeight)
+    const c = normalizedToCanvas(pointC, canvasWidth, canvasHeight)
+
+    // Calcular parámetros del arco
+    const { center, startAngle, endAngle, anticlockwise } = calculateArcParameters(
       pointA, pointB, pointC, canvasWidth, canvasHeight
     )
 
-    // Draw the two rays (lines) that form the angle
+    // Dibujar los dos rayos (líneas)
     ctx.save()
     ctx.strokeStyle = settings.lineColor
     ctx.lineWidth = settings.lineWidth
@@ -109,27 +129,27 @@ export function drawAngleMarker(
     ctx.stroke()
     ctx.restore()
 
-    // Calculate dynamic radius based on canvas size
-    const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.08 // 8% of the smaller dimension
+    // Calcular radio dinámico
+    const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.08
     const radius = Math.min(
       Math.max(baseRadius, DRAWING_CONFIG.ARC_RADIUS_MIN),
       DRAWING_CONFIG.ARC_RADIUS_MAX
     )
 
-    // Draw filled sector
+    // Dibujar sector relleno
     ctx.save()
     ctx.beginPath()
-    ctx.moveTo(b.x, b.y)
-    ctx.arc(b.x, b.y, radius, startAngle, smallEndAngle, anticlockwise)
+    ctx.moveTo(center.x, center.y)
+    ctx.arc(center.x, center.y, radius, startAngle, endAngle, anticlockwise)
     ctx.closePath()
     ctx.fillStyle = hexToRgba(settings.lineColor, DRAWING_CONFIG.SECTOR_ALPHA)
     ctx.fill()
     ctx.restore()
 
-    // Draw arc outline
-    drawArcOutline(ctx, b, radius, startAngle, smallEndAngle, anticlockwise, settings)
+    // Dibujar contorno del arco
+    drawArcOutline(ctx, center, radius, startAngle, endAngle, anticlockwise, settings)
 
-    // Draw keypoint nodes (A, B, C)
+    // Dibujar nodos A, B, C
     ctx.save()
     ctx.fillStyle = settings.pointColor
     ctx.strokeStyle = DRAWING_CONFIG.OUTLINE_COLOR
@@ -148,10 +168,10 @@ export function drawAngleMarker(
     drawNode(c)
     ctx.restore()
 
-    if(side === 'left') side = 'right'
-    else if(side === 'right') side = 'left'
+    if (side === 'left') side = 'right'
+    else if (side === 'right') side = 'left'
 
-    // Draw label
+    // Dibujar etiqueta
     drawAngleLabel(ctx, b, label, angleDeg, canvasWidth, canvasHeight, isFlipped, side)
 
     return angleDeg
