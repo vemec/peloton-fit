@@ -1,6 +1,7 @@
 import { calculateAngleBetweenPoints, hexToRgba, isKeypointValid } from '@/lib/bikefit-utils'
 import type { Keypoint, VisualSettings } from '@/types/bikefit'
 import { drawRoundedRect } from './utils'
+import { normalizedToCanvas } from './utils'
 import { DRAWING_CONFIG, KEYPOINT_INDICES } from './constants'
 
 /**
@@ -31,9 +32,9 @@ function areKeypointsVisible(
  * Calculates arc drawing parameters for angle visualization
  */
 function calculateArcParameters(
-  pointA: Keypoint,
-  pointB: Keypoint,
-  pointC: Keypoint
+  pointA: { x: number; y: number },
+  pointB: { x: number; y: number },
+  pointC: { x: number; y: number }
 ) {
   // Use pixel coordinates directly
   const a = { x: pointA.x, y: pointA.y }
@@ -88,11 +89,17 @@ export function drawAngleMarker(
     return null
   }
 
-  // Calculate angle between vectors using pixel coordinates directly
+  // Convert normalized coordinates to canvas pixels first (only if needed)
+  const needsConversion = pointA.x <= 1 && pointA.y <= 1 && pointB.x <= 1 && pointB.y <= 1 && pointC.x <= 1 && pointC.y <= 1
+  const aPixel = needsConversion ? normalizedToCanvas(pointA, canvasWidth, canvasHeight) : { x: pointA.x, y: pointA.y }
+  const bPixel = needsConversion ? normalizedToCanvas(pointB, canvasWidth, canvasHeight) : { x: pointB.x, y: pointB.y }
+  const cPixel = needsConversion ? normalizedToCanvas(pointC, canvasWidth, canvasHeight) : { x: pointC.x, y: pointC.y }
+
+  // Calculate angle between vectors using pixel coordinates
   const angleDeg = calculateAngleBetweenPoints(
-    { x: pointA.x, y: pointA.y, score: pointA.score, name: pointA.name || 'a' },
-    { x: pointB.x, y: pointB.y, score: pointB.score, name: pointB.name || 'b' },
-    { x: pointC.x, y: pointC.y, score: pointC.score, name: pointC.name || 'c' }
+    { x: aPixel.x, y: aPixel.y, score: pointA.score, name: pointA.name || 'a' },
+    { x: bPixel.x, y: bPixel.y, score: pointB.score, name: pointB.name || 'b' },
+    { x: cPixel.x, y: cPixel.y, score: pointC.score, name: pointC.name || 'c' }
   )
 
   // Skip invalid angles
@@ -101,14 +108,14 @@ export function drawAngleMarker(
   }
 
   try {
-    // Use pixel coordinates directly for drawing
-    const a = { x: pointA.x, y: pointA.y }
-    const b = { x: pointB.x, y: pointB.y }
-    const c = { x: pointC.x, y: pointC.y }
+    // Use converted pixel coordinates for drawing
+    const a = aPixel
+    const b = bPixel
+    const c = cPixel
 
     // Calcular parámetros del arco
     const { center, startAngle, endAngle, anticlockwise } = calculateArcParameters(
-      pointA, pointB, pointC
+      { x: a.x, y: a.y }, { x: b.x, y: b.y }, { x: c.x, y: c.y }
     )
 
     // Dibujar los dos rayos (líneas)

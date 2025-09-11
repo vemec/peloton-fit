@@ -331,6 +331,7 @@ function BikeFitVideoPlayerContent({
           isVideoHidden={isVideoHidden}
           visualSettings={visualSettings}
           skeletonMode={skeletonMode}
+          detectedSide={detectedSide}
           overlayVisibility={overlayVisibility}
           onDeviceChange={setSelectedDeviceId}
           onResolutionChange={handleResolutionChange}

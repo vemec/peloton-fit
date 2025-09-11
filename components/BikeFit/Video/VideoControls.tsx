@@ -1,8 +1,8 @@
-import { Camera, Proportions, Check, Video, VideoOff, Bike, Aperture, FlipHorizontal, Palette, ChevronUp, ChevronDown, Play, Square, Eye, ClockFading } from 'lucide-react'
+import { Camera, Proportions, Check, Video, VideoOff, Bike, Aperture, FlipHorizontal, Palette, ChevronUp, ChevronDown, Play, Square, Eye, EyeClosed, ClockFading } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import type { CameraDevice, BikeType, VisualSettings, SkeletonMode } from '@/types/bikefit'
+import type { CameraDevice, BikeType, VisualSettings, SkeletonMode, DetectedSide } from '@/types/bikefit'
 import type { OverlayVisibility } from '@/types/overlay'
 import { Switch } from '@/components/ui/switch'
 import { RESOLUTIONS } from './constants'
@@ -21,6 +21,7 @@ interface VideoControlsProps {
   isVideoHidden: boolean
   visualSettings: VisualSettings
   skeletonMode: SkeletonMode
+  detectedSide: DetectedSide
   overlayVisibility: OverlayVisibility
   onDeviceChange: (deviceId: string | null) => void
   onResolutionChange: (resolution: string) => void
@@ -49,6 +50,7 @@ export default function VideoControls({
   isVideoHidden,
   visualSettings,
   skeletonMode,
+  detectedSide,
   overlayVisibility,
   onDeviceChange,
   onResolutionChange,
@@ -67,9 +69,28 @@ export default function VideoControls({
 }: VideoControlsProps) {
   const [recordingTime, setRecordingTime] = useState(0)
   const [cameraSelectorOpen, setCameraSelectorOpen] = useState(false)
+  const [angleViewSelectorOpen, setAngleViewSelectorOpen] = useState(false)
   const [delaySelectorOpen, setDelaySelectorOpen] = useState(false)
   const [screenshotDelay, setScreenshotDelay] = useState(0)
   const [countdown, setCountdown] = useState(0)
+
+  // Estado para controlar si todos los ángulos están visibles
+  const allAnglesVisible = Object.values(overlayVisibility.angles).every(Boolean)
+
+  // Función para alternar todos los ángulos
+  const toggleAllAngles = () => {
+    const newVisibility = allAnglesVisible ? false : true
+    onOverlayVisibilityChange({
+      ...overlayVisibility,
+      angles: {
+        elbow: newVisibility,
+        shoulder: newVisibility,
+        hip: newVisibility,
+        knee: newVisibility,
+        ankle: newVisibility,
+      },
+    })
+  }
 
   // Timer for recording
   useEffect(() => {
@@ -358,44 +379,63 @@ export default function VideoControls({
         />
 
         {/* Angle Visibility button */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn('w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
-              aria-label="Visibilidad de ángulos"
-              title="Mostrar/Ocultar ángulos"
-            >
+        <div className={cn('flex items-center bg-slate-700/50 hover:bg-slate-600/60 rounded-full p-0 gap-1 transition-all duration-300 shadow-lg')}>
+          <Popover open={angleViewSelectorOpen} onOpenChange={setAngleViewSelectorOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn('w-10 h-10 rounded-full bg-transparent hover:bg-transparent text-slate-200 hover:text-white cursor-pointer transition-all duration-300 ease-in-out')}
+                size="icon"
+                aria-label="Visibilidad de ángulos"
+              >
+                {angleViewSelectorOpen ? (
+                  <ChevronDown className={cn('!w-5 !h-5 text-slate-300')} />
+                ) : (
+                  <ChevronUp className={cn('!w-5 !h-5 text-slate-300')} />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className={cn('w-40 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
+              <div className={cn('space-y-3')}>
+                {(
+                  [
+                    ['codo', 'elbow'],
+                    ['hombro', 'shoulder'],
+                    ['cadera', 'hip'],
+                    ['rodilla', 'knee'],
+                    ['tobillo', 'ankle'],
+                  ] as const
+                ).map(([label, key]) => (
+                  <label key={key} className={cn('flex items-center justify-between text-sm text-gray-700')}
+                  >
+                    <span className={cn('capitalize')}>{label}</span>
+                    <Switch
+                      checked={overlayVisibility.angles[key]}
+                      onCheckedChange={(checked) => onOverlayVisibilityChange({
+                        ...overlayVisibility,
+                        angles: { ...overlayVisibility.angles, [key]: !!checked },
+                      })}
+                    />
+                  </label>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <Button
+            onClick={toggleAllAngles}
+            variant="ghost"
+            size="icon"
+            className={cn('w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-900 focus:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-slate-900 focus:border-slate-100 cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed')}
+            aria-label="Visibilidad de ángulos"
+            title="Mostrar/Ocultar ángulos"
+          >
+            {allAnglesVisible ? (
               <Eye className={cn('!w-5 !h-5 transition-all duration-200')} />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className={cn('w-40 p-3 bg-white rounded-xl shadow-xl border border-gray-200')}>
-            <div className={cn('space-y-3')}>
-              {(
-                [
-                  ['codo', 'elbow'],
-                  ['hombro', 'shoulder'],
-                  ['cadera', 'hip'],
-                  ['rodilla', 'knee'],
-                  ['tobillo', 'ankle'],
-                ] as const
-              ).map(([label, key]) => (
-                <label key={key} className={cn('flex items-center justify-between text-sm text-gray-700')}
-                >
-                  <span className={cn('capitalize')}>{label}</span>
-                  <Switch
-                    checked={overlayVisibility.angles[key]}
-                    onCheckedChange={(checked) => onOverlayVisibilityChange({
-                      ...overlayVisibility,
-                      angles: { ...overlayVisibility.angles, [key]: !!checked },
-                    })}
-                  />
-                </label>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
+            ) : (
+              <EyeClosed className={cn('!w-5 !h-5 transition-all duration-200')} />
+            )}
+          </Button>
+        </div>
 
         {/* Bike type selector */}
         <Popover>
