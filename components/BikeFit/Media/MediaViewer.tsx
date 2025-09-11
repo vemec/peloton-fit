@@ -40,14 +40,17 @@ export default function MediaViewer({ media, onClose }: MediaViewerProps) {
               className="max-w-[80vw] max-h-[75vh] w-auto h-auto object-contain rounded-xl shadow-2xl border-2 border-white/20"
             />
           ) : (
-            <Image
-              src={media.url}
-              alt={`Foto capturada el ${media.timestamp.toLocaleString()}`}
-              width={1920}
-              height={1080}
-              className="max-w-[80vw] max-h-[75vh] w-auto h-auto object-contain rounded-xl shadow-2xl border-2 border-white/20"
-              priority
-            />
+            <>
+              <Image
+                src={media.url}
+                alt={`Foto capturada el ${media.timestamp.toLocaleString()}`}
+                width={1920}
+                height={1080}
+                className="max-w-[80vw] max-h-[75vh] w-auto h-auto object-contain rounded-xl shadow-2xl border-2 border-white/20"
+                priority
+              />
+              Hola
+            </>
           )}
 
           {/* Controls: Download + Close */}

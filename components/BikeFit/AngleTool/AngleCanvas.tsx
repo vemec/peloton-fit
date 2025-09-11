@@ -4,7 +4,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react'
 import { calculateAngleBetweenPoints } from '@/lib/bikefit-utils'
 import { drawAngleMarker } from '@/components/BikeFit/Drawing/angles'
 import { clearCanvas } from '@/components/BikeFit/Drawing/utils'
-import { GridDrawer } from '@/components/BikeFit/Drawing'
+import { RadialGrid, CanvasGrid } from '@/components/BikeFit/Drawing'
 import {
   snapToRadialGrid,
   calculateDistance,
@@ -48,8 +48,8 @@ export function AngleCanvas({
   // Use default visual settings for consistency
   const visualSettings: VisualSettings = DEFAULT_VISUAL_SETTINGS
 
-  const drawGrid = useCallback((ctx: CanvasRenderingContext2D, vertex?: AnglePoint) => {
-    GridDrawer.draw({
+  const drawRadialGrid = useCallback((ctx: CanvasRenderingContext2D, vertex?: AnglePoint) => {
+    RadialGrid.draw({
       ctx,
       vertex,
       isShiftPressed,
@@ -111,58 +111,12 @@ export function AngleCanvas({
   }, [angles, settings, visualSettings, canvasWidth, canvasHeight, hoveredAngle])
 
   const drawCanvasGrid = useCallback((ctx: CanvasRenderingContext2D) => {
-    if (!settings.canvasGrid.enabled) return
-
-    const { color, lineType, size, position, angle } = settings.canvasGrid
-    // Make grid 2x larger than canvas to handle rotation and movement
-    const gridWidth = canvasWidth * 2
-    const gridHeight = canvasHeight * 2
-    const cellWidth = gridWidth / size
-    const cellHeight = gridHeight / size
-
-    ctx.save()
-    ctx.strokeStyle = color
-    ctx.lineWidth = 1
-
-    // Set line style
-    switch (lineType) {
-      case 'solid':
-        ctx.setLineDash([])
-        break
-      case 'dashed':
-        ctx.setLineDash([5, 5])
-        break
-      case 'dotted':
-        ctx.setLineDash([2, 2])
-        break
-    }
-
-    // Apply rotation around the grid center
-    const centerX = position.x + gridWidth / 2
-    const centerY = position.y + gridHeight / 2
-    ctx.translate(centerX, centerY)
-    ctx.rotate((angle * Math.PI) / 180)
-    ctx.translate(-centerX, -centerY)
-
-    // Draw vertical lines
-    for (let i = 0; i <= size; i++) {
-      const x = position.x + i * cellWidth
-      ctx.beginPath()
-      ctx.moveTo(x, position.y)
-      ctx.lineTo(x, position.y + gridHeight)
-      ctx.stroke()
-    }
-
-    // Draw horizontal lines
-    for (let i = 0; i <= size; i++) {
-      const y = position.y + i * cellHeight
-      ctx.beginPath()
-      ctx.moveTo(position.x, y)
-      ctx.lineTo(position.x + gridWidth, y)
-      ctx.stroke()
-    }
-
-    ctx.restore()
+    CanvasGrid.draw({
+      ctx,
+      canvasGrid: settings.canvasGrid,
+      canvasWidth,
+      canvasHeight
+    })
   }, [settings.canvasGrid, canvasWidth, canvasHeight])
 
   const redraw = useCallback(() => {
@@ -188,7 +142,7 @@ export function AngleCanvas({
       }
     }
 
-    drawGrid(ctx, draggedVertex)
+    drawRadialGrid(ctx, draggedVertex)
     drawCanvasGrid(ctx)
     drawAngles(ctx)
 
@@ -236,7 +190,7 @@ export function AngleCanvas({
 
       ctx.restore()
     }
-  }, [drawGrid, drawAngles, drawCanvasGrid, canvasWidth, canvasHeight, draggedPoint, draggedAngle, angles, currentPoints, settings, mousePosition])
+  }, [drawRadialGrid, drawAngles, drawCanvasGrid, canvasWidth, canvasHeight, draggedPoint, draggedAngle, angles, currentPoints, settings, mousePosition])
 
   useEffect(() => {
     redraw()

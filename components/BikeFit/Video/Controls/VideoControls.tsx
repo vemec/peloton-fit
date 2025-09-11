@@ -1,7 +1,6 @@
 import React from 'react'
 import type { CameraDevice, BikeType, VisualSettings, SkeletonMode, DetectedSide } from '@/types/bikefit'
 import type { OverlayVisibility } from '@/types/overlay'
-import SkeletonModeSelector from '../../VisualCustomization/SkeletonModeSelector'
 import { cn } from '@/lib/utils'
 import {
   CameraSelectorButton,
@@ -11,6 +10,7 @@ import {
   ScreenshotButton,
   VisualCustomizationButton,
   FlipHorizontalButton,
+  SkeletonModeSelectorButton,
   AngleVisibilityButton,
   BikeTypeSelectorButton
 } from './Buttons'
@@ -115,7 +115,7 @@ export default function VideoControls({
           onFlipToggle={onFlipToggle}
         />
 
-        <SkeletonModeSelector
+        <SkeletonModeSelectorButton
           selectedMode={skeletonMode}
           onModeChange={onSkeletonModeChange}
         />

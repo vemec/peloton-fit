@@ -1,6 +1,6 @@
 import type { AnglePoint } from '@/types/angle-tool'
 
-interface GridDrawerProps {
+interface RadialGridProps {
   ctx: CanvasRenderingContext2D
   vertex?: AnglePoint
   isShiftPressed: boolean
@@ -9,7 +9,7 @@ interface GridDrawerProps {
   canvasHeight: number
 }
 
-export class GridDrawer {
+export class RadialGrid {
   static draw({
     ctx,
     vertex,
@@ -17,7 +17,7 @@ export class GridDrawer {
     gridStep,
     canvasWidth,
     canvasHeight
-  }: GridDrawerProps): void {
+  }: RadialGridProps): void {
     if (!isShiftPressed || !vertex) return
 
     // Use vertex as center if provided, otherwise use canvas center

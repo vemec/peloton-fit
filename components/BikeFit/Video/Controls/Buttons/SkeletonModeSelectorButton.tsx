@@ -1,19 +1,19 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { PersonStanding } from 'lucide-react'
-import { SKELETON_MODES } from '../Drawing'
+import { SKELETON_MODES } from '../../../Drawing'
 import type { SkeletonMode } from '@/types/bikefit'
 import { cn, getBaseButtonClasses } from '@/lib/utils'
 
-interface SkeletonModeSelectorProps {
+interface SkeletonModeSelectorButtonProps {
   selectedMode: SkeletonMode
   onModeChange: (mode: SkeletonMode) => void
 }
 
-export default function SkeletonModeSelector({
+export default function SkeletonModeSelectorButton({
   selectedMode,
   onModeChange,
-}: SkeletonModeSelectorProps) {
+}: SkeletonModeSelectorButtonProps) {
   const isFullMode = selectedMode === SKELETON_MODES.FULL
 
   const handleToggle = () => {

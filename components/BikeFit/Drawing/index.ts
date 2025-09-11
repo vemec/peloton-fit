@@ -67,7 +67,8 @@ export {
 } from './constants'
 
 // === Grid Drawing ===
-export { GridDrawer } from './GridDrawer'
+export { RadialGrid } from './RadialGrid'
+export { CanvasGrid } from './CanvasGrid'
 
 // === Legacy Compatibility ===
 // Maintained for backward compatibility with existing code

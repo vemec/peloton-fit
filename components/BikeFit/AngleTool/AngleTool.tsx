@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { AngleCanvas } from './AngleCanvas'
-import { AngleControls } from './AngleControls'
+import { AngleControls } from './Controls'
 import type { Angle, AngleToolSettings } from '@/types/angle-tool'
 import { DEFAULT_VISUAL_SETTINGS } from '@/lib/constants'
 
@@ -81,16 +81,15 @@ export function AngleTool({ canvasWidth = 800, canvasHeight = 600 }: AngleToolPr
             Canvas Disabled
           </div>
         )}
+        <AngleControls
+          angles={angles}
+          onAnglesChange={setAngles}
+          settings={settings}
+          onSettingsChange={setSettings}
+          isCanvasActive={isCanvasActive}
+          onToggleCanvas={handleToggleCanvas}
+        />
       </div>
-
-      <AngleControls
-        angles={angles}
-        onAnglesChange={setAngles}
-        settings={settings}
-        onSettingsChange={setSettings}
-        isCanvasActive={isCanvasActive}
-        onToggleCanvas={handleToggleCanvas}
-      />
     </div>
   )
 }
