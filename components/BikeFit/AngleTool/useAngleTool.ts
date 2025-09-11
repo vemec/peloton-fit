@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect, useCallback } from 'react'
 import type { Angle, AngleToolSettings } from '@/types/angle-tool'
 import { DEFAULT_VISUAL_SETTINGS } from '@/lib/constants'
