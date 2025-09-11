@@ -233,8 +233,12 @@ function BikeFitVideoPlayerContent({
 
   const handleSkeletonModeChange = (mode: SkeletonMode) => {
     setSkeletonMode(mode)
+    const modeDescriptions = {
+      [SKELETON_MODES.FULL]: 'Full body skeleton (both sides)',
+      [SKELETON_MODES.SIDE_FULL]: 'Single side skeleton (detected side only)'
+    }
     show.success('Skeleton mode changed', {
-      description: `Now showing: ${mode}`
+      description: modeDescriptions[mode] || `Now showing: ${mode}`
     })
   }
 

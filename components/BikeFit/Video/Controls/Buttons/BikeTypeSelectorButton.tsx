@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import type { BikeType } from '@/types/bikefit'
 import { cn, getBaseButtonClasses } from '@/lib/utils'
+import { show } from '@/lib/toast'
 
 interface BikeTypeSelectorButtonProps {
   bikeType: BikeType
@@ -14,6 +15,14 @@ export default function BikeTypeSelectorButton({
   bikeType,
   onBikeTypeChange
 }: BikeTypeSelectorButtonProps) {
+  const handleBikeTypeChange = (type: BikeType) => {
+    onBikeTypeChange(type)
+    const displayName = type === 'road' ? 'Road Bike' : type === 'triathlon' ? 'Triathlon Bike' : 'Mountain Bike'
+    show.success('Bike type changed', {
+      description: `Switched to ${displayName} analysis mode`
+    })
+  }
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -33,7 +42,7 @@ export default function BikeTypeSelectorButton({
             return (
               <button
                 key={type}
-                onClick={() => onBikeTypeChange(type as BikeType)}
+                onClick={() => handleBikeTypeChange(type as BikeType)}
                 className={cn(
                   'w-full p-3 rounded-lg transition-all duration-200 text-left flex items-center gap-3',
                   isSelected ? 'bg-blue-50 text-blue-900' : 'text-gray-700 hover:bg-gray-50'

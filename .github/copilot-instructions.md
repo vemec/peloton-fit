@@ -19,6 +19,7 @@ You provide accurate, factual, thoughtful answers, and are a genius at reasoning
 - **Testable Code:** Design code to be easily testable.
 - **Package Management:** This project uses **npm** for managing dependencies. All package installations and scripts should use `npm` instead of `pnpm` or `yarn`.
 - **Documentation:** All principal documentation should be created in the `docs` folder.
+- **Language:** Always write UI text, labels, site content, and code comments in English.
 
 ## React Specific Guidelines
 
