@@ -3,6 +3,7 @@
  * Extracted and optimized for reusability
  */
 
+import uuid4 from 'uuid4'
 import type { AnglePoint } from '@/types/angle-tool'
 
 /**
@@ -107,9 +108,8 @@ export function isPointInArcArea(
 
 /**
  * Generate a unique ID for angle tool elements
- * @param prefix Prefix for the ID
- * @returns Unique ID string
+ * @returns Unique ID string using UUID v4
  */
-export function generateUniqueId(prefix = 'angle'): string {
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+export function generateUniqueId(): string {
+  return uuid4()
 }

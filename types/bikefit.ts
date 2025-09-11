@@ -9,7 +9,6 @@ export interface VisualSettings {
   pointColor: string
   lineWidth: number
   pointRadius: number
-  pointSize: number // alias for pointRadius for consistency
 }
 
 export interface Keypoint {

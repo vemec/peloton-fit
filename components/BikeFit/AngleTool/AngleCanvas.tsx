@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react'
 import { calculateAngleBetweenPoints } from '@/lib/bikefit-utils'
 import { drawAngleMarker } from '@/components/BikeFit/Drawing/angles'
 import { clearCanvas } from '@/components/BikeFit/Drawing/utils'
+import { GridDrawer } from '@/components/BikeFit/Drawing'
 import {
   snapToRadialGrid,
   calculateDistance,
@@ -76,38 +77,14 @@ export function AngleCanvas({
   }, [])
 
   const drawGrid = useCallback((ctx: CanvasRenderingContext2D, vertex?: AnglePoint) => {
-    if (!isShiftPressed || !vertex) return
-
-    // Use vertex as center if provided, otherwise use canvas center
-    const centerX = vertex ? vertex.x : canvasWidth / 2
-    const centerY = vertex ? vertex.y : canvasHeight / 2
-    const maxRadius = Math.min(canvasWidth, canvasHeight) / 2 - 20
-
-    ctx.save()
-    ctx.strokeStyle = 'rgba(200, 200, 200, 0.3)'
-    ctx.lineWidth = 1
-    ctx.setLineDash([2, 2])
-
-    for (let angle = 0; angle < 360; angle += settings.gridStep) {
-      const radian = (angle * Math.PI) / 180
-      const isMajor = angle % 20 === 0
-      const radius = isMajor ? maxRadius : maxRadius * 0.8
-
-      ctx.beginPath()
-      ctx.moveTo(centerX, centerY)
-      ctx.lineTo(centerX + Math.cos(radian) * radius, centerY + Math.sin(radian) * radius)
-      ctx.stroke()
-
-      if (isMajor) {
-        const labelX = centerX + Math.cos(radian) * (radius + 15)
-        const labelY = centerY + Math.sin(radian) * (radius + 15)
-        ctx.fillStyle = 'rgba(100, 100, 100, 0.8)'
-        ctx.font = '12px Arial'
-        ctx.textAlign = 'center'
-        ctx.fillText(`${angle}°`, labelX, labelY)
-      }
-    }
-    ctx.restore()
+    GridDrawer.draw({
+      ctx,
+      vertex,
+      isShiftPressed,
+      gridStep: settings.gridStep,
+      canvasWidth,
+      canvasHeight
+    })
   }, [isShiftPressed, settings.gridStep, canvasWidth, canvasHeight])
 
   const drawAngles = useCallback((ctx: CanvasRenderingContext2D) => {
@@ -178,7 +155,7 @@ export function AngleCanvas({
         mockKeypoint(angle.pointA),
         mockKeypoint(angle.vertex), // This should be the vertex (pointB in drawAngleMarker's signature)
         mockKeypoint(angle.pointB),
-        `Angle ${angle.id.split('_')[1]}`, // Use simple descriptive label, let drawAngleMarker calculate and show the angle
+        `Angle ${angle.id.slice(-4)}`,
         visualSettings,
         canvasWidth,
         canvasHeight,
@@ -339,7 +316,7 @@ export function AngleCanvas({
     // THIRD: Only create new points if we're not in an arc area or existing point
     if (currentPoints.length < 3) {
       console.log('✅ Creating new point at', x, y, '- Current points:', currentPoints.length)
-      const newPoint: AnglePoint = { x, y, id: generateUniqueId('point') }
+      const newPoint: AnglePoint = { x, y, id: generateUniqueId() }
       setCurrentPoints(prev => [...prev, newPoint])
 
       if (currentPoints.length === 2) {
@@ -359,7 +336,7 @@ export function AngleCanvas({
           pointA,
           pointB,
           angle: angleValue,
-          id: generateUniqueId('angle')
+          id: generateUniqueId()
         }
 
         console.log('🎉 Created new angle with value:', angleValue.toFixed(1) + '°')

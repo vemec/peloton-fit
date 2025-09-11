@@ -67,6 +67,9 @@ export {
   type SkeletonMode,
 } from './constants'
 
+// === Grid Drawing ===
+export { GridDrawer } from './GridDrawer'
+
 // === Legacy Compatibility ===
 // Maintained for backward compatibility with existing code
 export { setupCanvas as setupCanvasContext } from './utils'

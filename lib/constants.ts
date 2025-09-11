@@ -40,8 +40,7 @@ export const DEFAULT_VISUAL_SETTINGS = {
   lineColor: '#10b981',
   pointColor: '#3b82f6',
   lineWidth: 4,
-  pointRadius: 4,
-  pointSize: 7,
+  pointRadius: 6,
 } as const
 
 export const VISUAL_RANGES = {
