@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { CapturedMedia } from '@/types/media'
 import { downloadFile } from '@/components/BikeFit/Video/utils'
+import { AngleTool } from '@/components/BikeFit'
 import { cn } from '@/lib/utils'
 
 interface MediaViewerProps {
@@ -24,8 +25,8 @@ export default function MediaViewer({ media, onClose }: MediaViewerProps) {
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          'max-w-[90vw] max-h-[90vh] bg-transparent border-none p-6',
-          'flex items-center justify-center focus:outline-none'
+          'min-w-[70vw] min-h-[75vh] bg-white border-none',
+          ' focus:outline-none'
         )}
         showCloseButton={false}
       >
@@ -41,15 +42,18 @@ export default function MediaViewer({ media, onClose }: MediaViewerProps) {
             />
           ) : (
             <>
+              <AngleTool
+                canvasWidth={1280}
+                canvasHeight={724}
+              />
               <Image
                 src={media.url}
                 alt={`Foto capturada el ${media.timestamp.toLocaleString()}`}
                 width={1920}
                 height={1080}
-                className="max-w-[80vw] max-h-[75vh] w-auto h-auto object-contain rounded-xl shadow-2xl border-2 border-white/20"
+                className="max-w-[80vw] max-h-[75vh] w-auto h-auto object-contain rounded-xl"
                 priority
               />
-              Hola
             </>
           )}
 

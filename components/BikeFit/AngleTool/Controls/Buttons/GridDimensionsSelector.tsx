@@ -79,37 +79,6 @@ export function GridDimensionsSelector({
               </div>
             </div>
           </div>
-
-          {/* Preview */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Preview</label>
-            <div className="border border-gray-300 rounded-md p-3 bg-gray-50">
-              <svg width="100%" height="60" className="w-full">
-                <defs>
-                  <pattern
-                    id="dimensions-preview-grid"
-                    width={size * 2}
-                    height={size * 2}
-                    patternUnits="userSpaceOnUse"
-                    patternTransform={`rotate(${angle})`}
-                  >
-                    <path
-                      d={`M ${size * 2} 0 L 0 0 0 ${size * 2}`}
-                      fill="none"
-                      stroke="#6b7280"
-                      strokeWidth="1"
-                    />
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#dimensions-preview-grid)" />
-                {/* Center indicator */}
-                <circle cx="50%" cy="50%" r="3" fill="#ef4444" />
-                <text x="50%" y="50%" textAnchor="middle" dy="20" className="text-xs fill-gray-600">
-                  {size}×{size}
-                </text>
-              </svg>
-            </div>
-          </div>
         </div>
       </PopoverContent>
     </Popover>
