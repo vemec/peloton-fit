@@ -119,9 +119,9 @@ function BikeFitVideoPlayerContent({
     visualSettings,
     isActive,
     isFlipped,
-  skeletonMode,
-  hideVideoBackground: isVideoHidden,
-  overlayVisibility,
+    skeletonMode,
+    hideVideoBackground: isVideoHidden,
+    overlayVisibility,
   })
 
   // Update detected side when pose detection changes
