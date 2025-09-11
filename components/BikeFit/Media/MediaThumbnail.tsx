@@ -28,7 +28,6 @@ export default function MediaThumbnail({
         'rounded-lg overflow-hidden',
         'border-2 border-black hover:border-white/70',
         'transition-all duration-200',
-        'shadow-sm hover:shadow-md'
       )}
     >
       {isVideo ? (
