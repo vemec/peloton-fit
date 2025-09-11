@@ -40,6 +40,7 @@ export function AngleCanvas({
   const [draggedPoint, setDraggedPoint] = useState<{ angleId: string; pointId: string } | null>(null)
   const [draggedAngle, setDraggedAngle] = useState<string | null>(null)
   const [isHoveringPoint, setIsHoveringPoint] = useState(false)
+  const [hoveredAngle, setHoveredAngle] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null)
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null)
   const [isDraggingGrid, setIsDraggingGrid] = useState(false)
@@ -103,10 +104,11 @@ export function AngleCanvas({
         canvasWidth,
         canvasHeight,
         false,
-        'left'
+        'left',
+        hoveredAngle === angle.id // Pass hover state
       )
     })
-  }, [angles, settings, visualSettings, canvasWidth, canvasHeight])
+  }, [angles, settings, visualSettings, canvasWidth, canvasHeight, hoveredAngle])
 
   const drawCanvasGrid = useCallback((ctx: CanvasRenderingContext2D) => {
     if (!settings.canvasGrid.enabled) return
@@ -187,8 +189,8 @@ export function AngleCanvas({
     }
 
     drawGrid(ctx, draggedVertex)
-    drawAngles(ctx)
     drawCanvasGrid(ctx)
+    drawAngles(ctx)
 
     // Draw current points being placed
     if (currentPoints.length > 0) {
@@ -272,21 +274,8 @@ export function AngleCanvas({
       for (const point of points) {
         const distance = calculateDistance({ x, y }, point)
 
-        // Check if we're clicking in the arc area - if so, don't detect points
-        const centerX = angle.vertex.x
-        const centerY = angle.vertex.y
-        const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.10
-        const radius = Math.min(Math.max(baseRadius, DRAWING_CONFIG.ARC_RADIUS_MIN), DRAWING_CONFIG.ARC_RADIUS_MAX)
-
-        // Use smaller tolerance to allow point detection near arcs
-        const tolerance = 15
-
-        // If clicking in the arc area, don't detect individual points
-        if (isPointInArcArea({ x, y }, { x: centerX, y: centerY }, radius, tolerance)) {
-          continue
-        }
-
-        if (distance <= settings.pointRadius + 2) {
+        // Check if we're in the dead zone around the point (4px safe zone)
+        if (distance <= settings.pointRadius + 4) {
           return { angleId: angle.id, pointId: point.id }
         }
       }
@@ -299,6 +288,15 @@ export function AngleCanvas({
       const centerX = angle.vertex.x
       const centerY = angle.vertex.y
 
+      // Check if we're in the dead zone around any point (4px safe zone)
+      const points = [angle.vertex, angle.pointA, angle.pointB]
+      for (const point of points) {
+        const distance = calculateDistance({ x, y }, point)
+        if (distance <= settings.pointRadius + 2) {
+          return null // Don't detect arc in dead zone
+        }
+      }
+
       // Calculate dynamic radius based on canvas size (same as in drawAngleMarker)
       const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.1
       const radius = Math.min(
@@ -306,8 +304,8 @@ export function AngleCanvas({
         DRAWING_CONFIG.ARC_RADIUS_MAX
       )
 
-      // Use smaller tolerance for better point/arc separation
-      const tolerance = 15 // Smaller tolerance to allow point detection near arcs
+      // Use larger tolerance for better arc dragging (15px more outside)
+      const tolerance = 30
 
       // Check if we're in the arc area (more forgiving than just the arc border)
       if (isPointInArcArea({ x, y }, { x: centerX, y: centerY }, radius, tolerance)) {
@@ -432,6 +430,7 @@ export function AngleCanvas({
       const gridUnderMouse = settings.isDragGridMode && isMouseOverGrid(x, y)
       const isHovering = pointUnderMouse !== null || angleUnderMouse !== null || gridUnderMouse
       setIsHoveringPoint(isHovering)
+      setHoveredAngle(angleUnderMouse)
 
       // Update mouse position for dotted line preview when creating new angles
       if (currentPoints.length > 0 && currentPoints.length < 3) {
@@ -442,6 +441,9 @@ export function AngleCanvas({
 
       return
     }
+
+    // Reset hover state when dragging
+    setHoveredAngle(null)
 
     if (draggedPoint) {
       const { x, y } = getMousePos(e)
@@ -526,7 +528,7 @@ export function AngleCanvas({
 
   const getCursorStyle = () => {
     if (draggedPoint || draggedAngle || isDraggingGrid) return 'grabbing'
-    if (isHoveringPoint) return 'grab'
+    if (isHoveringPoint || hoveredAngle) return 'grab'
     if (settings.isDragGridMode) return 'move'
     return 'crosshair'
   }
@@ -538,6 +540,11 @@ export function AngleCanvas({
     setDragOffset(null)
   }
 
+  const handleMouseLeave = () => {
+    setHoveredAngle(null)
+    setIsHoveringPoint(false)
+  }
+
   return (
     <canvas
       ref={canvasRef}
@@ -547,6 +554,7 @@ export function AngleCanvas({
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
       style={{ border: '1px solid #ccc', cursor: getCursorStyle() }}
     />
   )

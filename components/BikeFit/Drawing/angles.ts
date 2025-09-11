@@ -80,7 +80,8 @@ export function drawAngleMarker(
   canvasWidth: number,
   canvasHeight: number,
   isFlipped = false,
-  side: 'left' | 'right'
+  side: 'left' | 'right',
+  isHovered = false
 ): number | null {
   // Validate keypoint visibility with more permissive threshold
   if (!areKeypointsVisible([pointA, pointB, pointC])) {
@@ -93,8 +94,6 @@ export function drawAngleMarker(
     { x: pointB.x, y: pointB.y, score: pointB.score, name: pointB.name || 'b' },
     { x: pointC.x, y: pointC.y, score: pointC.score, name: pointC.name || 'c' }
   )
-
-  console.log(angleDeg);
 
   // Skip invalid angles
   if (!isFinite(angleDeg) || angleDeg < 0 || angleDeg > 180) {
@@ -142,7 +141,7 @@ export function drawAngleMarker(
     ctx.restore()
 
     // Dibujar contorno del arco
-    drawArcOutline(ctx, center, radius, startAngle, endAngle, anticlockwise, settings)
+    drawArcOutline(ctx, center, radius, startAngle, endAngle, anticlockwise, settings, isHovered)
 
     // Dibujar nodos A, B, C
     ctx.save()
@@ -185,14 +184,16 @@ function drawArcOutline(
   startAngle: number,
   endAngle: number,
   anticlockwise: boolean,
-  settings: VisualSettings
+  settings: VisualSettings,
+  isHovered = false
 ): void {
   const arcLineWidth = Math.max(
     DRAWING_CONFIG.ARC_LINE_MIN_WIDTH,
     Math.round(settings.lineWidth * DRAWING_CONFIG.ARC_LINE_WIDTH_RATIO)
   )
 
-  ctx.strokeStyle = settings.lineColor
+  // Use a different color when hovering
+  ctx.strokeStyle = isHovered ? '#fbbf24' : settings.lineColor // Yellow color for hover
   ctx.lineWidth = arcLineWidth
   ctx.beginPath()
   ctx.arc(center.x, center.y, radius, startAngle, endAngle, anticlockwise)
@@ -336,7 +337,7 @@ function drawAngleIfValid(
 
   return drawAngleMarker(
     ctx, keypoint1, keypoint2, keypoint3, label,
-    settings, canvasWidth, canvasHeight, isFlipped, side
+    settings, canvasWidth, canvasHeight, isFlipped, side, false
   )
 }
 

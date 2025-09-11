@@ -91,7 +91,7 @@ export const DRAWING_CONFIG = {
   ARC_RADIUS: 65,
   ARC_RADIUS_MIN: 50, // Minimum arc radius for small screens
   ARC_RADIUS_MAX: 100, // Maximum arc radius for large screens
-  ARC_LINE_WIDTH_RATIO: 0.3,
+  ARC_LINE_WIDTH_RATIO: 0.5,
   ARC_LINE_MIN_WIDTH: 1,
 
   // Visibility thresholds
@@ -107,7 +107,7 @@ export const DRAWING_CONFIG = {
   OUTLINE_COLOR: 'rgba(255, 255, 255, 1)',
   OUTLINE_WIDTH: 2,
   BACKGROUND_ALPHA: 0.55,
-  SECTOR_ALPHA: 0.25,
+  SECTOR_ALPHA: 0.3,
 } as const
 
 // Keypoint indices mapping for easier reference - Complete MediaPipe Pose model
