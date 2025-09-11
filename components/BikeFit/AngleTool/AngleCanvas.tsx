@@ -39,6 +39,7 @@ export function AngleCanvas({
   const [draggedAngle, setDraggedAngle] = useState<string | null>(null)
   const [isHoveringPoint, setIsHoveringPoint] = useState(false)
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null)
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null)
 
   // Use default visual settings for consistency
   const visualSettings: VisualSettings = DEFAULT_VISUAL_SETTINGS
@@ -135,7 +136,7 @@ export function AngleCanvas({
       ctx.save()
       ctx.fillStyle = settings.pointColor
       ctx.strokeStyle = settings.lineColor
-      ctx.lineWidth = 2
+      ctx.lineWidth = settings.lineWidth
 
       currentPoints.forEach((point, index) => {
         ctx.beginPath()
@@ -156,9 +157,25 @@ export function AngleCanvas({
           ctx.stroke()
         }
       })
+
+      // Draw dotted line from last point to mouse position when creating new angle
+      if (mousePosition && currentPoints.length > 0 && currentPoints.length < 3) {
+        const lastPoint = currentPoints[currentPoints.length - 1]
+        ctx.setLineDash([5, 5]) // Dotted line pattern
+        ctx.strokeStyle = settings.lineColor
+        ctx.lineWidth = settings.lineWidth
+        ctx.globalAlpha = 0.7 // Make it slightly transparent
+        ctx.beginPath()
+        ctx.moveTo(lastPoint.x, lastPoint.y)
+        ctx.lineTo(mousePosition.x, mousePosition.y)
+        ctx.stroke()
+        ctx.setLineDash([]) // Reset to solid line
+        ctx.globalAlpha = 1.0 // Reset opacity
+      }
+
       ctx.restore()
     }
-  }, [drawGrid, drawAngles, canvasWidth, canvasHeight, draggedPoint, draggedAngle, angles, currentPoints, settings])
+  }, [drawGrid, drawAngles, canvasWidth, canvasHeight, draggedPoint, draggedAngle, angles, currentPoints, settings, mousePosition])
 
   useEffect(() => {
     redraw()
@@ -188,14 +205,14 @@ export function AngleCanvas({
         const radius = Math.min(Math.max(baseRadius, DRAWING_CONFIG.ARC_RADIUS_MIN), DRAWING_CONFIG.ARC_RADIUS_MAX)
 
         // Use smaller tolerance to allow point detection near arcs
-        const tolerance = 30
+        const tolerance = 15
 
         // If clicking in the arc area, don't detect individual points
         if (isPointInArcArea({ x, y }, { x: centerX, y: centerY }, radius, tolerance)) {
           continue
         }
 
-        if (distance <= settings.pointRadius + 5) {
+        if (distance <= settings.pointRadius + 2) {
           return { angleId: angle.id, pointId: point.id }
         }
       }
@@ -209,7 +226,7 @@ export function AngleCanvas({
       const centerY = angle.vertex.y
 
       // Calculate dynamic radius based on canvas size (same as in drawAngleMarker)
-      const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.08
+      const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.1
       const radius = Math.min(
         Math.max(baseRadius, DRAWING_CONFIG.ARC_RADIUS_MIN),
         DRAWING_CONFIG.ARC_RADIUS_MAX
@@ -267,6 +284,7 @@ export function AngleCanvas({
 
         onAnglesChange([...angles, newAngle])
         setCurrentPoints([])
+        setMousePosition(null) // Reset mouse position when angle is complete
       }
     }
   }
@@ -297,12 +315,21 @@ export function AngleCanvas({
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const { x, y } = getMousePos(e)
+
     if (!draggedPoint && !draggedAngle) {
-      const { x, y } = getMousePos(e)
       const pointUnderMouse = findPointAt(x, y)
       const angleUnderMouse = findAngleAtArc(x, y)
       const isHovering = pointUnderMouse !== null || angleUnderMouse !== null
       setIsHoveringPoint(isHovering)
+
+      // Update mouse position for dotted line preview when creating new angles
+      if (currentPoints.length > 0 && currentPoints.length < 3) {
+        setMousePosition({ x, y })
+      } else {
+        setMousePosition(null)
+      }
+
       return
     }
 
