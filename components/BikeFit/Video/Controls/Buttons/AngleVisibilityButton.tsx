@@ -43,7 +43,7 @@ export default function AngleVisibilityButton({
             variant="ghost"
             className={cn('w-10 h-10 rounded-full bg-transparent hover:bg-transparent text-slate-200 hover:text-white cursor-pointer transition-all duration-300 ease-in-out')}
             size="icon"
-            aria-label="Visibilidad de ángulos"
+            aria-label="Angle visibility"
           >
             {angleViewSelectorOpen ? (
               <ChevronDown className={cn('!w-5 !h-5 text-slate-300')} />
@@ -56,11 +56,11 @@ export default function AngleVisibilityButton({
           <div className={cn('space-y-3')}>
             {(
               [
-                ['codo', 'elbow'],
-                ['hombro', 'shoulder'],
-                ['cadera', 'hip'],
-                ['rodilla', 'knee'],
-                ['tobillo', 'ankle'],
+                ['Elbow', 'elbow'],
+                ['Shoulder', 'shoulder'],
+                ['Hip', 'hip'],
+                ['Knee', 'knee'],
+                ['Ankle', 'ankle'],
               ] as const
             ).map(([label, key]) => (
               <label key={key} className={cn('flex items-center justify-between text-sm text-gray-700')}
@@ -83,8 +83,8 @@ export default function AngleVisibilityButton({
         variant="ghost"
         size="icon"
         className={cn(getBaseButtonClasses())}
-        aria-label="Visibilidad de ángulos"
-        title="Mostrar/Ocultar ángulos"
+        aria-label="Angle visibility"
+        title="Show/Hide angles"
       >
         {allAnglesVisible ? (
           <Eye className={cn('!w-5 !h-5 transition-all duration-200')} />

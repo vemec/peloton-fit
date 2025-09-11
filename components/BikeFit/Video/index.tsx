@@ -83,8 +83,8 @@ function BikeFitVideoPlayerContent({
   const handleVideoRecordingComplete = React.useCallback((blob: Blob, filename: string) => {
     addMedia(blob, filename, 'video')
     // Show success notification
-    show.success('Video grabado', {
-      description: 'El video se ha agregado a la galería con los puntos y ángulos de análisis.'
+    show.success('Video recorded', {
+      description: 'The video has been added to the gallery with analysis points and angles.'
     })
   }, [addMedia])
 
@@ -140,8 +140,8 @@ function BikeFitVideoPlayerContent({
   useEffect(() => {
     if (isActive) {
       toast.dismiss('camera-start')
-      toast.success('Cámara conectada', {
-        description: 'La cámara está activa. Puedes grabar o tomar fotos.'
+      toast.success('Camera connected', {
+        description: 'The camera is active. You can record or take photos.'
       })
     }
   }, [isActive])
@@ -150,19 +150,19 @@ function BikeFitVideoPlayerContent({
   useEffect(() => {
     if (error) {
       toast.dismiss('camera-start')
-      toast.error('Error al conectar la cámara', {
-        description: (error as string) || 'No se pudo acceder a la cámara. Verifica permisos y dispositivo.'
+      toast.error('Error connecting camera', {
+        description: (error as string) || 'Could not access camera. Check permissions and device.'
       })
     }
   }, [error])
 
   const handleStartCamera = () => {
     if (selectedDeviceId) {
-      show.loading('Conectando cámara...', { id: 'camera-start' })
+      show.loading('Connecting camera...', { id: 'camera-start' })
       startCamera(selectedDeviceId, selectedResolution)
     } else {
-      show.error('Selecciona una cámara', {
-        description: 'Elige un dispositivo de video antes de continuar.'
+      show.error('Select a camera', {
+        description: 'Choose a video device before continuing.'
       })
     }
   }
@@ -170,34 +170,34 @@ function BikeFitVideoPlayerContent({
   const handleStartRecording = () => {
     if (canvasRef.current) {
       startRecording(canvasRef.current, FIXED_FPS)
-      show.success('Grabación iniciada', {
-        description: 'El video incluirá el análisis de postura en tiempo real.'
+      show.success('Recording started', {
+        description: 'The video will include real-time posture analysis.'
       })
     } else {
-      show.error('No se puede grabar', {
-        description: 'Activa la cámara antes de iniciar la grabación.'
+      show.error('Cannot record', {
+        description: 'Activate the camera before starting recording.'
       })
     }
   }
 
   const handleStopCamera = () => {
     stopCamera()
-    show.info('Cámara desconectada', {
-      description: 'La sesión de análisis ha finalizado.'
+    show.info('Camera disconnected', {
+      description: 'The analysis session has ended.'
     })
   }
 
   const handleStopRecording = () => {
     stopRecording()
-    show.success('Grabación completada', {
-      description: 'El video con el análisis de postura se ha guardado.'
+    show.success('Recording completed', {
+      description: 'The video with posture analysis has been saved.'
     })
   }
 
     const handleCaptureScreenshot = async () => {
     if (!isActive || !canvasRef.current) {
-      toast.error('No se puede capturar imagen', {
-        description: 'Asegúrate de que la cámara esté activa antes de tomar una foto'
+      toast.error('Cannot capture image', {
+        description: 'Make sure the camera is active before taking a photo'
       })
       return
     }
@@ -211,17 +211,17 @@ function BikeFitVideoPlayerContent({
         addMedia(blob, filename, 'photo')
 
         // Show success
-        show.success('Foto capturada', {
-          description: 'La imagen se ha agregado a la galería con los puntos y ángulos de análisis.'
+        show.success('Photo captured', {
+          description: 'The image has been added to the gallery with analysis points and angles.'
         })
       } else {
-        show.error('Error al generar imagen', {
-          description: 'No se pudo generar la imagen. Intenta nuevamente.'
+        show.error('Error generating image', {
+          description: 'Could not generate the image. Try again.'
         })
       }
     } catch (err) {
-      show.error('Error inesperado', {
-        description: 'No se pudo completar la captura de imagen.'
+      show.error('Unexpected error', {
+        description: 'Could not complete image capture.'
       })
       console.error('Error capturing screenshot:', err)
     }
@@ -233,8 +233,8 @@ function BikeFitVideoPlayerContent({
 
   const handleSkeletonModeChange = (mode: SkeletonMode) => {
     setSkeletonMode(mode)
-    show.success('Modo de esqueleto cambiado', {
-      description: `Ahora mostrando: ${mode}`
+    show.success('Skeleton mode changed', {
+      description: `Now showing: ${mode}`
     })
   }
 
@@ -248,8 +248,8 @@ function BikeFitVideoPlayerContent({
       stopCamera()
       setTimeout(() => {
         startCamera(selectedDeviceId, resolution)
-        show.success('Resolución actualizada', {
-          description: `Calidad de video: ${resolution}`
+        show.success('Resolution updated', {
+          description: `Video quality: ${resolution}`
         })
       }, 100)
     }

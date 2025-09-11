@@ -15,11 +15,11 @@ export function CameraIndicator({ wrapperClass = 'absolute top-6 left-6 z-10' }:
       wrapperClass={wrapperClass}
       isActive={true}
       ariaLive={'polite'}
-      ariaLabel={'Cámara activa'}
+      ariaLabel={'Camera active'}
       dotActiveClasses={'bg-emerald-400 shadow-lg animate-pulse ring-2 ring-emerald-300/90 ring-offset-2 ring-offset-black/50'}
       pingClassName={'bg-emerald-300'}
       showPing={true}
-      activeLabel={'Cámara Activa'}
+      activeLabel={'Camera Active'}
       labelClassName={'text-emerald-100 text-sm font-medium'}
     />
   )
@@ -31,13 +31,13 @@ export function RecordingIndicator({ wrapperClass = 'absolute top-6 right-6 z-10
       wrapperClass={wrapperClass}
       isActive={isRecording}
       ariaLive={isRecording ? 'assertive' : 'polite'}
-      ariaLabel={isRecording ? 'Grabando' : 'Sin grabar'}
+      ariaLabel={isRecording ? 'Recording' : 'Not recording'}
       dotActiveClasses={'bg-red-500 animate-pulse ring-2 ring-red-400/90 ring-offset-2 ring-offset-black/50'}
       dotInactiveClasses={'bg-gray-500 opacity-50'}
       pingClassName={'bg-red-400'}
       showPing={true}
-      activeLabel={'Grabando'}
-      inactiveLabel={'Sin Grabar'}
+      activeLabel={'Recording'}
+      inactiveLabel={'Not Recording'}
       labelClassName={isRecording ? 'text-red-100 text-sm font-medium' : 'text-gray-400 text-sm font-medium'}
     />
   )
@@ -51,13 +51,13 @@ export function SkeletonModeIndicator({ wrapperClass = 'absolute bottom-6 left-6
         wrapperClass={wrapperClass}
         isActive={!!poseDetectedSide}
         ariaLive={'polite'}
-        ariaLabel={poseDetectedSide ? `Lado ${poseDetectedSide}` : 'Detectando perfil'}
+        ariaLabel={poseDetectedSide ? `Side ${poseDetectedSide}` : 'Detecting profile'}
         dotActiveClasses={'bg-blue-400 animate-pulse ring-2 ring-blue-300/90 ring-offset-2 ring-offset-black/50'}
         dotInactiveClasses={'bg-gray-500 opacity-50'}
         pingClassName={'bg-blue-300'}
         showPing={true}
-        activeLabel={poseDetectedSide ? `Lado ${poseDetectedSide === 'left' ? 'Izquierdo' : 'Derecho'}` : 'Detectando perfil...'}
-        inactiveLabel={'Detectando perfil...'}
+        activeLabel={poseDetectedSide ? `Side ${poseDetectedSide === 'left' ? 'Left' : 'Right'}` : 'Detecting profile...'}
+        inactiveLabel={'Detecting profile...'}
         labelClassName={poseDetectedSide ? 'text-blue-100 text-sm font-medium' : 'text-gray-400 text-sm font-medium'}
       />
     )
@@ -68,11 +68,11 @@ export function SkeletonModeIndicator({ wrapperClass = 'absolute bottom-6 left-6
         wrapperClass={wrapperClass}
         isActive={true}
         ariaLive={'polite'}
-        ariaLabel={'Esqueleto completo'}
+        ariaLabel={'Full skeleton'}
         dotActiveClasses={'bg-green-400 shadow-lg animate-pulse ring-2 ring-green-300/90 ring-offset-2 ring-offset-black/50'}
         pingClassName={'bg-green-300'}
         showPing={true}
-        activeLabel={'Esqueleto Completo'}
+        activeLabel={'Full Skeleton'}
         labelClassName={'text-green-100 text-sm font-medium'}
       />
     )
@@ -83,9 +83,9 @@ export function SkeletonModeIndicator({ wrapperClass = 'absolute bottom-6 left-6
 // Bottom-right indicator: shows selected bike type (road/triathlon/mountain)
 export function BikeTypeIndicator({ wrapperClass = 'absolute bottom-6 right-6 z-10', bikeType }: WrapperProps & { bikeType: BikeType }) {
   const labelMap: Record<BikeType, string> = {
-    road: 'Bicicleta: Ruta',
-    triathlon: 'Bicicleta: Triatlón',
-    mountain: 'Bicicleta: Montaña'
+    road: 'Bike: Road',
+    triathlon: 'Bike: Triathlon',
+    mountain: 'Bike: Mountain'
   }
 
   const colorMap: Record<BikeType, { dot: string; ping: string; text: string }> = {

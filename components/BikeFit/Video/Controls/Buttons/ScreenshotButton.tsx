@@ -77,7 +77,7 @@ export default function ScreenshotButton({
                   )}
                 >
                   <span className={cn('text-sm font-medium')}>
-                    {delay === 0 ? 'Sin delay' : `${delay}s`}
+                    {delay === 0 ? 'No delay' : `${delay}s`}
                   </span>
                   {isSelected && <Check className={cn('w-4 h-4 text-blue-600 ml-auto')} />}
                 </button>
