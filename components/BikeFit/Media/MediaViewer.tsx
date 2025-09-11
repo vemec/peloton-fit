@@ -25,8 +25,8 @@ export default function MediaViewer({ media, onClose }: MediaViewerProps) {
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          'min-w-[70vw] min-h-[75vh] bg-white border-none',
-          ' focus:outline-none'
+          'max-w-[80vw] max-h-[75vh] bg-white border-none',
+          'flex items-center justify-center focus:outline-none'
         )}
         showCloseButton={false}
       >
@@ -51,7 +51,7 @@ export default function MediaViewer({ media, onClose }: MediaViewerProps) {
                 alt={`Foto capturada el ${media.timestamp.toLocaleString()}`}
                 width={1920}
                 height={1080}
-                className="max-w-[80vw] max-h-[75vh] w-auto h-auto object-contain rounded-xl"
+                className="max-w-[80vw] max-h-[75vh] w-auto h-auto object-contain rounded-x"
                 priority
               />
             </>
