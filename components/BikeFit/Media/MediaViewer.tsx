@@ -25,11 +25,18 @@ export default function MediaViewer({ media, onClose }: MediaViewerProps) {
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          'max-w-[80vw] max-h-[75vh] bg-white border-none',
-          'flex items-center justify-center focus:outline-none'
+          'min-w-[1344px] bg-white border-none p-8',
+          'grid items-center justify-center focus:outline-none'
         )}
-        showCloseButton={false}
+        showCloseButton={true}
       >
+        {/* Media info */}
+        <DialogTitle className="bg-black/70 backdrop-blur-sm rounded-xl p-3 text-white text-sm">
+          <div className="font-medium">Archivo: {media.filename}</div>
+          <div className="text-white/70 text-xs">
+            Tipo: {media.type} | Fecha: {media.timestamp.toLocaleString()}
+          </div>
+        </DialogTitle>
         <div className="relative">
           {isVideo ? (
             <video
@@ -51,7 +58,7 @@ export default function MediaViewer({ media, onClose }: MediaViewerProps) {
                 alt={`Foto capturada el ${media.timestamp.toLocaleString()}`}
                 width={1920}
                 height={1080}
-                className="max-w-[80vw] max-h-[75vh] w-auto h-auto object-contain rounded-x"
+                className="max-w-[80vw] max-h-[75vh] w-auto h-auto object-contain rounded-xl"
                 priority
               />
             </>
@@ -78,14 +85,6 @@ export default function MediaViewer({ media, onClose }: MediaViewerProps) {
               <X className="w-4 h-4" />
             </Button>
           </div>
-
-          {/* Media info */}
-          <DialogTitle className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm rounded-xl p-3 text-white text-sm">
-            <div className="font-medium">Archivo: {media.filename}</div>
-            <div className="text-white/70 text-xs">
-              Tipo: {media.type} | Fecha: {media.timestamp.toLocaleString()}
-            </div>
-          </DialogTitle>
         </div>
       </DialogContent>
     </Dialog>
