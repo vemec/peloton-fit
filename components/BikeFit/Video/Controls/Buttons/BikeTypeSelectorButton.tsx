@@ -29,7 +29,7 @@ export default function BikeTypeSelectorButton({
         <div className={cn('space-y-1')}>
           {['road', 'triathlon', 'mountain'].map((type) => {
             const isSelected = bikeType === type
-            const displayName = type === 'road' ? 'Bicicleta de Ruta' : type === 'triathlon' ? 'Bicicleta de Triatlón' : 'Bicicleta de Montaña'
+            const displayName = type === 'road' ? 'Road Bike' : type === 'triathlon' ? 'Triathlon Bike' : 'Mountain Bike'
             return (
               <button
                 key={type}
