@@ -189,9 +189,6 @@ function BikeFitVideoPlayerContent({
 
   const handleStopRecording = () => {
     stopRecording()
-    show.success('Recording completed', {
-      description: 'The video with posture analysis has been saved.'
-    })
   }
 
     const handleCaptureScreenshot = async () => {
