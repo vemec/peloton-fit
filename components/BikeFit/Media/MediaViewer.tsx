@@ -2,12 +2,12 @@
 
 import Image from 'next/image'
 import { Download } from 'lucide-react'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { CapturedMedia } from '@/types/media'
 import { downloadFile } from '@/components/BikeFit/Video/utils'
 import { AngleCanvas, AngleControls, useAngleTool } from '@/components/BikeFit'
-import { cn } from '@/lib/utils'
+import { cn, getBaseButtonClasses } from '@/lib/utils'
 
 interface MediaViewerProps {
   media: CapturedMedia
@@ -41,13 +41,12 @@ export default function MediaViewer({ media, onClose }: MediaViewerProps) {
         )}
         showCloseButton={true}
       >
-        {/* Media info */}
-        <DialogTitle className="inline-block w-auto max-w-[95vw] bg-black/70 backdrop-blur-sm rounded-xl p-3 text-white text-sm">
-          <div className="font-medium">File: {media.filename}</div>
-          <div className="text-white/70 text-xs">
+        <DialogHeader>
+          <DialogTitle>File: {media.filename}</DialogTitle>
+          <DialogDescription>
             Type: {media.type} | Date: {media.timestamp.toLocaleString()}
-          </div>
-        </DialogTitle>
+          </DialogDescription>
+        </DialogHeader>
         <div className="relative">
           <div className='grid gap-6'>
             <div className="absolute top-0" style={{ width: 1280, height: 724 }}>
@@ -99,13 +98,12 @@ export default function MediaViewer({ media, onClose }: MediaViewerProps) {
             <Button
               onClick={handleDownload}
               size="icon"
-              variant="ghost"
-              className="w-8 h-8 bg-white/90 hover:bg-white text-black shadow-sm cursor-pointer"
-              aria-label="Download media"
+              aria-label="Clear All Angles"
+              title="Clear All Angles"
+              className={getBaseButtonClasses()}
             >
-              <Download className="w-4 h-4" />
+              <Download className={cn('!w-5 !h-5 transition-all duration-200')} />
             </Button>
-            {/* Close button removed: Dialog already provides a close control */}
           </div>
         </div>
       </DialogContent>
