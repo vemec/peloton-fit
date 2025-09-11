@@ -20,6 +20,7 @@ interface AngleCanvasProps {
   angles: Angle[]
   onAnglesChange: (angles: Angle[]) => void
   settings: AngleToolSettings
+  onSettingsChange: (settings: AngleToolSettings) => void
   isShiftPressed: boolean
   canvasWidth: number
   canvasHeight: number
@@ -29,6 +30,7 @@ export function AngleCanvas({
   angles,
   onAnglesChange,
   settings,
+  onSettingsChange,
   isShiftPressed,
   canvasWidth,
   canvasHeight
@@ -40,6 +42,7 @@ export function AngleCanvas({
   const [isHoveringPoint, setIsHoveringPoint] = useState(false)
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null)
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null)
+  const [isDraggingGrid, setIsDraggingGrid] = useState(false)
 
   // Use default visual settings for consistency
   const visualSettings: VisualSettings = DEFAULT_VISUAL_SETTINGS
@@ -105,6 +108,61 @@ export function AngleCanvas({
     })
   }, [angles, settings, visualSettings, canvasWidth, canvasHeight])
 
+  const drawCanvasGrid = useCallback((ctx: CanvasRenderingContext2D) => {
+    if (!settings.canvasGrid.enabled) return
+
+    const { color, lineType, size, position, angle } = settings.canvasGrid
+    // Make grid 2x larger than canvas to handle rotation and movement
+    const gridWidth = canvasWidth * 2
+    const gridHeight = canvasHeight * 2
+    const cellWidth = gridWidth / size
+    const cellHeight = gridHeight / size
+
+    ctx.save()
+    ctx.strokeStyle = color
+    ctx.lineWidth = 1
+
+    // Set line style
+    switch (lineType) {
+      case 'solid':
+        ctx.setLineDash([])
+        break
+      case 'dashed':
+        ctx.setLineDash([5, 5])
+        break
+      case 'dotted':
+        ctx.setLineDash([2, 2])
+        break
+    }
+
+    // Apply rotation around the grid center
+    const centerX = position.x + gridWidth / 2
+    const centerY = position.y + gridHeight / 2
+    ctx.translate(centerX, centerY)
+    ctx.rotate((angle * Math.PI) / 180)
+    ctx.translate(-centerX, -centerY)
+
+    // Draw vertical lines
+    for (let i = 0; i <= size; i++) {
+      const x = position.x + i * cellWidth
+      ctx.beginPath()
+      ctx.moveTo(x, position.y)
+      ctx.lineTo(x, position.y + gridHeight)
+      ctx.stroke()
+    }
+
+    // Draw horizontal lines
+    for (let i = 0; i <= size; i++) {
+      const y = position.y + i * cellHeight
+      ctx.beginPath()
+      ctx.moveTo(position.x, y)
+      ctx.lineTo(position.x + gridWidth, y)
+      ctx.stroke()
+    }
+
+    ctx.restore()
+  }, [settings.canvasGrid, canvasWidth, canvasHeight])
+
   const redraw = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -130,6 +188,7 @@ export function AngleCanvas({
 
     drawGrid(ctx, draggedVertex)
     drawAngles(ctx)
+    drawCanvasGrid(ctx)
 
     // Draw current points being placed
     if (currentPoints.length > 0) {
@@ -175,11 +234,26 @@ export function AngleCanvas({
 
       ctx.restore()
     }
-  }, [drawGrid, drawAngles, canvasWidth, canvasHeight, draggedPoint, draggedAngle, angles, currentPoints, settings, mousePosition])
+  }, [drawGrid, drawAngles, drawCanvasGrid, canvasWidth, canvasHeight, draggedPoint, draggedAngle, angles, currentPoints, settings, mousePosition])
 
   useEffect(() => {
     redraw()
   }, [redraw])
+
+  // Handle Escape key to cancel angle creation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && currentPoints.length > 0) {
+        setCurrentPoints([])
+        setMousePosition(null)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [currentPoints.length])
 
   const getMousePos = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
@@ -243,11 +317,36 @@ export function AngleCanvas({
     return null
   }
 
+  const isMouseOverGrid = (x: number, y: number): boolean => {
+    if (!settings.canvasGrid.enabled) return false
+
+    const { position, angle } = settings.canvasGrid
+    const gridWidth = canvasWidth * 2
+    const gridHeight = canvasHeight * 2
+
+    // Check if point is within grid bounds (considering rotation)
+    const centerX = position.x + gridWidth / 2
+    const centerY = position.y + gridHeight / 2
+
+    const dx = x - centerX
+    const dy = y - centerY
+    const cos = Math.cos((-angle * Math.PI) / 180)
+    const sin = Math.sin((-angle * Math.PI) / 180)
+    const rotatedX = dx * cos - dy * sin
+    const rotatedY = dx * sin + dy * cos
+
+    return rotatedX >= -gridWidth / 2 && rotatedX <= gridWidth / 2 &&
+           rotatedY >= -gridHeight / 2 && rotatedY <= gridHeight / 2
+  }
+
   const snapToGrid = (x: number, y: number, vertex: AnglePoint): { x: number; y: number } => {
     return snapToRadialGrid(x, y, vertex, settings.gridStep, isShiftPressed)
   }
 
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Don't create points when in drag grid mode
+    if (settings.isDragGridMode) return
+
     const { x, y } = getMousePos(e)
 
     if (draggedPoint || draggedAngle) return // Ignore clicks during drag
@@ -312,6 +411,16 @@ export function AngleCanvas({
       }
       return
     }
+
+    // Priority 3: Check if clicking on the canvas grid (only in drag mode)
+    if (settings.isDragGridMode && isMouseOverGrid(x, y)) {
+      setIsDraggingGrid(true)
+      setDragOffset({
+        x: x - settings.canvasGrid.position.x,
+        y: y - settings.canvasGrid.position.y
+      })
+      return
+    }
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -320,7 +429,8 @@ export function AngleCanvas({
     if (!draggedPoint && !draggedAngle) {
       const pointUnderMouse = findPointAt(x, y)
       const angleUnderMouse = findAngleAtArc(x, y)
-      const isHovering = pointUnderMouse !== null || angleUnderMouse !== null
+      const gridUnderMouse = settings.isDragGridMode && isMouseOverGrid(x, y)
+      const isHovering = pointUnderMouse !== null || angleUnderMouse !== null || gridUnderMouse
       setIsHoveringPoint(isHovering)
 
       // Update mouse position for dotted line preview when creating new angles
@@ -398,17 +508,33 @@ export function AngleCanvas({
         onAnglesChange(updatedAngles)
       }
     }
+
+    if (isDraggingGrid && dragOffset) {
+      const newX = x - dragOffset.x
+      const newY = y - dragOffset.y
+
+      // Update grid position
+      onSettingsChange({
+        ...settings,
+        canvasGrid: {
+          ...settings.canvasGrid,
+          position: { x: newX, y: newY }
+        }
+      })
+    }
   }
 
   const getCursorStyle = () => {
-    if (draggedPoint || draggedAngle) return 'grabbing'
+    if (draggedPoint || draggedAngle || isDraggingGrid) return 'grabbing'
     if (isHoveringPoint) return 'grab'
+    if (settings.isDragGridMode) return 'move'
     return 'crosshair'
   }
 
   const handleMouseUp = () => {
     setDraggedPoint(null)
     setDraggedAngle(null)
+    setIsDraggingGrid(false)
     setDragOffset(null)
   }
 

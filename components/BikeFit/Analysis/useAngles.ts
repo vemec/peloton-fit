@@ -60,7 +60,7 @@ export function useAngles({
       ctxRef.current,
       keypoints,
       detectedSide as 'left' | 'right',
-      { lineColor: '#000', pointColor: '#000', lineWidth: 1, pointRadius: 1, pointSize: 1 }, // dummy settings
+      { lineColor: '#000', pointColor: '#000', lineWidth: 1, pointRadius: 1 }, // dummy settings
       videoWidth,
       videoHeight,
       false

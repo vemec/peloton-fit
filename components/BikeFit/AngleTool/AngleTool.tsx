@@ -16,7 +16,16 @@ const DEFAULT_SETTINGS: AngleToolSettings = {
   pointColor: DEFAULT_VISUAL_SETTINGS.pointColor,
   lineWidth: DEFAULT_VISUAL_SETTINGS.lineWidth,
   pointRadius: DEFAULT_VISUAL_SETTINGS.pointRadius,
-  gridStep: 5
+  gridStep: 5,
+  canvasGrid: {
+    enabled: false,
+    color: '#cccccc',
+    lineType: 'solid',
+    size: 10,
+    position: { x: -400, y: -300 }, // Center the larger grid (assuming 800x600 canvas)
+    angle: 0
+  },
+  isDragGridMode: false
 }
 
 export function AngleTool({ canvasWidth = 800, canvasHeight = 600 }: AngleToolProps) {
@@ -59,6 +68,7 @@ export function AngleTool({ canvasWidth = 800, canvasHeight = 600 }: AngleToolPr
             angles={angles}
             onAnglesChange={setAngles}
             settings={settings}
+            onSettingsChange={setSettings}
             isShiftPressed={isShiftPressed}
             canvasWidth={canvasWidth}
             canvasHeight={canvasHeight}
