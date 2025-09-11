@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import show from '@/lib/toast'
-import VideoControls from './VideoControls'
+import VideoControls from './Controls'
 import CameraEmptyState from './CameraEmptyState'
 import { useCameraDevices } from './hooks'
 import { useVideoStream } from './useVideoStream'

@@ -1,3 +1,5 @@
+'use client'
+
 import Image from 'next/image'
 import { Download, X } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
