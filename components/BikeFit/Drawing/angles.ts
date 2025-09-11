@@ -1,9 +1,6 @@
 import { calculateAngleBetweenPoints, hexToRgba, isKeypointValid } from '@/lib/bikefit-utils'
 import type { Keypoint, VisualSettings } from '@/types/bikefit'
-import {
-  drawRoundedRect,
-  normalizedToCanvas
-} from './utils'
+import { drawRoundedRect } from './utils'
 import { DRAWING_CONFIG, KEYPOINT_INDICES } from './constants'
 
 /**
@@ -36,14 +33,12 @@ function areKeypointsVisible(
 function calculateArcParameters(
   pointA: Keypoint,
   pointB: Keypoint,
-  pointC: Keypoint,
-  canvasWidth: number,
-  canvasHeight: number
+  pointC: Keypoint
 ) {
-  // Convertir puntos normalizados a coordenadas de canvas
-  const a = normalizedToCanvas(pointA, canvasWidth, canvasHeight)
-  const b = normalizedToCanvas(pointB, canvasWidth, canvasHeight)
-  const c = normalizedToCanvas(pointC, canvasWidth, canvasHeight)
+  // Use pixel coordinates directly
+  const a = { x: pointA.x, y: pointA.y }
+  const b = { x: pointB.x, y: pointB.y }
+  const c = { x: pointC.x, y: pointC.y }
 
   // Vectores BA y BC
   const v1x = a.x - b.x
@@ -92,7 +87,7 @@ export function drawAngleMarker(
     return null
   }
 
-  // Calculate angle between vectors
+  // Calculate angle between vectors using pixel coordinates directly
   const angleDeg = calculateAngleBetweenPoints(
     { x: pointA.x, y: pointA.y, score: pointA.score, name: pointA.name || 'a' },
     { x: pointB.x, y: pointB.y, score: pointB.score, name: pointB.name || 'b' },
@@ -107,14 +102,14 @@ export function drawAngleMarker(
   }
 
   try {
-    // Convertir puntos normalizados a coordenadas de canvas
-    const a = normalizedToCanvas(pointA, canvasWidth, canvasHeight)
-    const b = normalizedToCanvas(pointB, canvasWidth, canvasHeight)
-    const c = normalizedToCanvas(pointC, canvasWidth, canvasHeight)
+    // Use pixel coordinates directly for drawing
+    const a = { x: pointA.x, y: pointA.y }
+    const b = { x: pointB.x, y: pointB.y }
+    const c = { x: pointC.x, y: pointC.y }
 
     // Calcular parámetros del arco
     const { center, startAngle, endAngle, anticlockwise } = calculateArcParameters(
-      pointA, pointB, pointC, canvasWidth, canvasHeight
+      pointA, pointB, pointC
     )
 
     // Dibujar los dos rayos (líneas)

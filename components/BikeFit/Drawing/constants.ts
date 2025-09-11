@@ -89,7 +89,7 @@ export const SIDE_CONNECTIONS = {
 export const DRAWING_CONFIG = {
   // Angle visualization
   ARC_RADIUS: 65,
-  ARC_RADIUS_MIN: 40, // Minimum arc radius for small screens
+  ARC_RADIUS_MIN: 50, // Minimum arc radius for small screens
   ARC_RADIUS_MAX: 100, // Maximum arc radius for large screens
   ARC_LINE_WIDTH_RATIO: 0.3,
   ARC_LINE_MIN_WIDTH: 1,
