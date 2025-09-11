@@ -19,12 +19,6 @@ export {
   calculateAngleBetweenPoints,
   hexToRgba,
   isKeypointValid,
-  calculateDistance,
-  normalizeAngle,
-  isAngleWithinTolerance,
-  createKeypointProxy,
-  filterValidKeypoints,
-  smoothKeypoints
 } from './bikefit-utils'
 
 // === Angle Analysis ===
