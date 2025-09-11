@@ -1,3 +1,5 @@
+/* Legacy view, do not use or modify */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
@@ -729,7 +731,7 @@ function PoseViewer() {
 
       running = true
       if (status !== 'running') setStatus('running')
-  console.log('[Process] starting loop with settings', currentSettings)
+        console.log('[Process] starting loop with settings', currentSettings)
 
       try {
         const Pose = (window as unknown as any).Pose

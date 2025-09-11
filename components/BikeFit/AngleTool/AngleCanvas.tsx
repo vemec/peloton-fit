@@ -288,7 +288,7 @@ export function AngleCanvas({
       const centerX = angle.vertex.x
       const centerY = angle.vertex.y
 
-      // Check if we're in the dead zone around any point (4px safe zone)
+      // Check if we're in the dead zone around any point (2px safe zone)
       const points = [angle.vertex, angle.pointA, angle.pointB]
       for (const point of points) {
         const distance = calculateDistance({ x, y }, point)
@@ -298,7 +298,7 @@ export function AngleCanvas({
       }
 
       // Calculate dynamic radius based on canvas size (same as in drawAngleMarker)
-      const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.1
+      const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.01
       const radius = Math.min(
         Math.max(baseRadius, DRAWING_CONFIG.ARC_RADIUS_MIN),
         DRAWING_CONFIG.ARC_RADIUS_MAX

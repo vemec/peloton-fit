@@ -41,6 +41,11 @@ export const DEFAULT_VISUAL_SETTINGS = {
   pointColor: '#3b82f6',
   lineWidth: 4,
   pointRadius: 6,
+  gridColor: '#cccccc',
+  gridLineType: 'solid' as const,
+  gridSize: 10,
+  gridAngle: 0,
+  gridStep: 5,
 } as const
 
 export const VISUAL_RANGES = {

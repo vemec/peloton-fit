@@ -16,14 +16,14 @@ const DEFAULT_SETTINGS: AngleToolSettings = {
   pointColor: DEFAULT_VISUAL_SETTINGS.pointColor,
   lineWidth: DEFAULT_VISUAL_SETTINGS.lineWidth,
   pointRadius: DEFAULT_VISUAL_SETTINGS.pointRadius,
-  gridStep: 5,
+  gridStep: DEFAULT_VISUAL_SETTINGS.gridStep,
   canvasGrid: {
     enabled: false,
-    color: '#cccccc',
-    lineType: 'solid',
-    size: 10,
+    color: DEFAULT_VISUAL_SETTINGS.gridColor,
+    lineType: DEFAULT_VISUAL_SETTINGS.gridLineType,
+    size: DEFAULT_VISUAL_SETTINGS.gridSize,
     position: { x: -400, y: -300 }, // Center the larger grid (assuming 800x600 canvas)
-    angle: 0
+    angle: DEFAULT_VISUAL_SETTINGS.gridAngle
   },
   isDragGridMode: false
 }
