@@ -7,7 +7,7 @@ import { clearCanvas } from '@/components/BikeFit/Drawing/utils'
 import {
   snapToRadialGrid,
   calculateDistance,
-  isPointNearArc,
+  isPointInArcArea,
   generateUniqueId,
 } from '@/lib/angle-tool-utils'
 import type { AnglePoint, Angle, AngleToolSettings } from '@/types/angle-tool'
@@ -41,6 +41,39 @@ export function AngleCanvas({
 
   // Use default visual settings for consistency
   const visualSettings: VisualSettings = DEFAULT_VISUAL_SETTINGS
+
+  // Debug function to test angle calculations
+  const debugAngleCalculation = useCallback((pointA: AnglePoint, vertex: AnglePoint, pointB: AnglePoint) => {
+    const angle1 = calculateAngleBetweenPoints(
+      { x: pointA.x, y: pointA.y, score: 1, name: pointA.id },
+      { x: vertex.x, y: vertex.y, score: 1, name: vertex.id },
+      { x: pointB.x, y: pointB.y, score: 1, name: pointB.id }
+    )
+
+    // Test with manual calculation
+    const vectorVA = { x: pointA.x - vertex.x, y: pointA.y - vertex.y }
+    const vectorVB = { x: pointB.x - vertex.x, y: pointB.y - vertex.y }
+    const dotProduct = vectorVA.x * vectorVB.x + vectorVA.y * vectorVB.y
+    const magnitudeVA = Math.sqrt(vectorVA.x ** 2 + vectorVA.y ** 2)
+    const magnitudeVB = Math.sqrt(vectorVB.x ** 2 + vectorVB.y ** 2)
+    const cosAngle = dotProduct / (magnitudeVA * magnitudeVB)
+    const angleRadians = Math.acos(Math.max(-1, Math.min(1, cosAngle)))
+    const manualAngle = (angleRadians * 180) / Math.PI
+
+    console.log('🔍 Angle calculation debug:', {
+      points: { pointA, vertex, pointB },
+      vectors: { vectorVA, vectorVB },
+      dotProduct,
+      magnitudes: { magnitudeVA, magnitudeVB },
+      cosAngle,
+      angleRadians,
+      utilityResult: angle1,
+      manualResult: manualAngle,
+      difference: Math.abs(angle1 - manualAngle)
+    })
+
+    return angle1
+  }, [])
 
   const drawGrid = useCallback((ctx: CanvasRenderingContext2D, vertex?: AnglePoint) => {
     if (!isShiftPressed || !vertex) return
@@ -106,18 +139,46 @@ export function AngleCanvas({
 
       // Draw angle arc and label using existing function
       const mockKeypoint = (point: AnglePoint) => ({
-        x: point.x / canvasWidth,
-        y: point.y / canvasHeight,
+        x: point.x / canvasWidth,  // Normalized for drawAngleMarker
+        y: point.y / canvasHeight, // Normalized for drawAngleMarker
         score: 1,
         name: point.id
+      })
+
+      // For angle calculation, we need the PIXEL coordinates, not normalized
+      const pixelCoords = {
+        pointA: { x: angle.pointA.x, y: angle.pointA.y },
+        vertex: { x: angle.vertex.x, y: angle.vertex.y },
+        pointB: { x: angle.pointB.x, y: angle.pointB.y }
+      }
+
+      // Debug: Calculate angle with pixel coordinates (the correct way)
+      const debugPointA = mockKeypoint(angle.pointA)
+      const debugVertex = mockKeypoint(angle.vertex)
+      const debugPointB = mockKeypoint(angle.pointB)
+
+      const angleFromAngleCanvas = debugAngleCalculation(angle.pointA, angle.vertex, angle.pointB)
+      const angleFromPixelCoords = calculateAngleBetweenPoints(
+        pixelCoords.pointA,
+        pixelCoords.vertex,
+        pixelCoords.pointB
+      )
+
+      console.log('🔍 ANGLE COMPARISON:', {
+        angleId: angle.id,
+        storedAngle: angle.angle.toFixed(1),
+        angleFromAngleCanvas: angleFromAngleCanvas.toFixed(1),
+        angleFromPixelCoords: angleFromPixelCoords.toFixed(1),
+        originalCoords: { pointA: angle.pointA, vertex: angle.vertex, pointB: angle.pointB },
+        mockCoords: { pointA: debugPointA, vertex: debugVertex, pointB: debugPointB }
       })
 
       drawAngleMarker(
         ctx,
         mockKeypoint(angle.pointA),
-        mockKeypoint(angle.vertex),
+        mockKeypoint(angle.vertex), // This should be the vertex (pointB in drawAngleMarker's signature)
         mockKeypoint(angle.pointB),
-        `${angle.angle.toFixed(1)}°`,
+        `Angle ${angle.id.split('_')[1]}`, // Use simple descriptive label, let drawAngleMarker calculate and show the angle
         visualSettings,
         canvasWidth,
         canvasHeight,
@@ -125,7 +186,7 @@ export function AngleCanvas({
         'left'
       )
     })
-  }, [angles, settings, visualSettings, canvasWidth, canvasHeight])
+  }, [angles, settings, visualSettings, canvasWidth, canvasHeight, debugAngleCalculation])
 
   const redraw = useCallback(() => {
     const canvas = canvasRef.current
@@ -204,14 +265,17 @@ export function AngleCanvas({
       for (const point of points) {
         const distance = calculateDistance({ x, y }, point)
 
-        // Check if we're clicking near the arc - if so, don't detect points
+        // Check if we're clicking in the arc area - if so, don't detect points
         const centerX = angle.vertex.x
         const centerY = angle.vertex.y
         const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.08
         const radius = Math.min(Math.max(baseRadius, DRAWING_CONFIG.ARC_RADIUS_MIN), DRAWING_CONFIG.ARC_RADIUS_MAX)
 
-        // If clicking near the arc, don't detect individual points
-        if (isPointNearArc({ x, y }, { x: centerX, y: centerY }, radius)) {
+        // Use expanded arc area to prevent point detection - matches findAngleAtArc tolerance
+        const tolerance = 30
+
+        // If clicking in the arc area, don't detect individual points
+        if (isPointInArcArea({ x, y }, { x: centerX, y: centerY }, radius, tolerance)) {
           continue
         }
 
@@ -235,8 +299,11 @@ export function AngleCanvas({
         DRAWING_CONFIG.ARC_RADIUS_MAX
       )
 
-      // Check if we're near the arc
-      if (isPointNearArc({ x, y }, { x: centerX, y: centerY }, radius)) {
+      // Use expanded arc area detection for better drag UX
+      const tolerance = 30 // Larger tolerance for easier arc detection and dragging
+
+      // Check if we're in the arc area (more forgiving than just the arc border)
+      if (isPointInArcArea({ x, y }, { x: centerX, y: centerY }, radius, tolerance)) {
         return angle.id
       }
     }
@@ -250,24 +317,42 @@ export function AngleCanvas({
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const { x, y } = getMousePos(e)
 
-    if (draggedPoint || draggedAngle) return // Ignore clicks during drag
+    if (draggedPoint || draggedAngle) {
+      console.log('🚫 Ignoring click during drag operation')
+      return // Ignore clicks during drag
+    }
 
-    // Check if clicking on an existing point - if so, don't create new points
+    // FIRST: Check if clicking on an angle arc - if so, don't create new points
+    const angleAtArc = findAngleAtArc(x, y)
+    if (angleAtArc) {
+      console.log('🚫 Click on arc detected, preventing point creation for angle:', angleAtArc)
+      return // Prevent point creation when clicking on arc
+    }
+
+    // SECOND: Check if clicking on an existing point - if so, don't create new points
     const existingPoint = findPointAt(x, y)
-    if (existingPoint) return
+    if (existingPoint) {
+      console.log('🚫 Click on existing point detected, preventing point creation:', existingPoint)
+      return
+    }
 
+    // THIRD: Only create new points if we're not in an arc area or existing point
     if (currentPoints.length < 3) {
+      console.log('✅ Creating new point at', x, y, '- Current points:', currentPoints.length)
       const newPoint: AnglePoint = { x, y, id: generateUniqueId('point') }
       setCurrentPoints(prev => [...prev, newPoint])
 
       if (currentPoints.length === 2) {
         // Create angle
         const [vertex, pointA, pointB] = [...currentPoints, newPoint]
-        const angleValue = calculateAngleBetweenPoints(
-          { x: pointA.x, y: pointA.y, score: 1, name: pointA.id },
-          { x: vertex.x, y: vertex.y, score: 1, name: vertex.id },
-          { x: pointB.x, y: pointB.y, score: 1, name: pointB.id }
-        )
+        const angleValue = debugAngleCalculation(pointA, vertex, pointB)
+
+        console.log('🔢 Angle calculation details:', {
+          pointA: { x: pointA.x, y: pointA.y, id: pointA.id },
+          vertex: { x: vertex.x, y: vertex.y, id: vertex.id },
+          pointB: { x: pointB.x, y: pointB.y, id: pointB.id },
+          calculatedAngle: angleValue
+        })
 
         const newAngle: Angle = {
           vertex,
@@ -277,6 +362,7 @@ export function AngleCanvas({
           id: generateUniqueId('angle')
         }
 
+        console.log('🎉 Created new angle with value:', angleValue.toFixed(1) + '°')
         onAnglesChange([...angles, newAngle])
         setCurrentPoints([])
       }
@@ -286,9 +372,10 @@ export function AngleCanvas({
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const { x, y } = getMousePos(e)
 
-    // First check if clicking on an angle arc (highest priority for angle dragging)
+    // PRIORITY 1: Check if clicking on an angle arc (highest priority for angle dragging)
     const angleId = findAngleAtArc(x, y)
     if (angleId) {
+      console.log('🎯 Starting angle drag for:', angleId)
       const angle = angles.find(a => a.id === angleId)
       if (angle) {
         setDraggedAngle(angleId)
@@ -296,16 +383,20 @@ export function AngleCanvas({
           x: x - angle.vertex.x,
           y: y - angle.vertex.y
         })
+        console.log('✅ Angle drag initialized with offset:', { x: x - angle.vertex.x, y: y - angle.vertex.y })
       }
       return
     }
 
-    // Then check if clicking on a point
+    // PRIORITY 2: Check if clicking on a point (only if not in arc area)
     const point = findPointAt(x, y)
     if (point) {
+      console.log('🎯 Starting point drag for:', point)
       setDraggedPoint(point)
       return
     }
+
+    console.log('❌ No draggable element found at', x, y)
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -338,11 +429,15 @@ export function AngleCanvas({
           }
 
           // Recalculate angle
-          updatedAngle.angle = calculateAngleBetweenPoints(
-            { x: updatedAngle.pointA.x, y: updatedAngle.pointA.y, score: 1, name: updatedAngle.pointA.id },
-            { x: updatedAngle.vertex.x, y: updatedAngle.vertex.y, score: 1, name: updatedAngle.vertex.id },
-            { x: updatedAngle.pointB.x, y: updatedAngle.pointB.y, score: 1, name: updatedAngle.pointB.id }
-          )
+          updatedAngle.angle = debugAngleCalculation(updatedAngle.pointA, updatedAngle.vertex, updatedAngle.pointB)
+
+          console.log('🔢 Recalculated angle details:', {
+            angleId: updatedAngle.id,
+            pointA: { x: updatedAngle.pointA.x, y: updatedAngle.pointA.y, id: updatedAngle.pointA.id },
+            vertex: { x: updatedAngle.vertex.x, y: updatedAngle.vertex.y, id: updatedAngle.vertex.id },
+            pointB: { x: updatedAngle.pointB.x, y: updatedAngle.pointB.y, id: updatedAngle.pointB.id },
+            newAngle: updatedAngle.angle
+          })
 
           return updatedAngle
         }
@@ -365,20 +460,25 @@ export function AngleCanvas({
       const offsetX = newVertexX - angle.vertex.x
       const offsetY = newVertexY - angle.vertex.y
 
-      // Move all points of the angle by the same offset
-      const updatedAngles = angles.map(a => {
-        if (a.id === draggedAngle) {
-          return {
-            ...a,
-            vertex: { ...a.vertex, x: a.vertex.x + offsetX, y: a.vertex.y + offsetY },
-            pointA: { ...a.pointA, x: a.pointA.x + offsetX, y: a.pointA.y + offsetY },
-            pointB: { ...a.pointB, x: a.pointB.x + offsetX, y: a.pointB.y + offsetY }
-          }
-        }
-        return a
-      })
+      // Only update if there's significant movement to avoid jitter
+      if (Math.abs(offsetX) > 0.5 || Math.abs(offsetY) > 0.5) {
+        console.log('🔄 Dragging angle', draggedAngle, 'by offset:', { offsetX: offsetX.toFixed(1), offsetY: offsetY.toFixed(1) })
 
-      onAnglesChange(updatedAngles)
+        // Move all points of the angle by the same offset
+        const updatedAngles = angles.map(a => {
+          if (a.id === draggedAngle) {
+            return {
+              ...a,
+              vertex: { ...a.vertex, x: a.vertex.x + offsetX, y: a.vertex.y + offsetY },
+              pointA: { ...a.pointA, x: a.pointA.x + offsetX, y: a.pointA.y + offsetY },
+              pointB: { ...a.pointB, x: a.pointB.x + offsetX, y: a.pointB.y + offsetY }
+            }
+          }
+          return a
+        })
+
+        onAnglesChange(updatedAngles)
+      }
     }
   }
 
@@ -389,6 +489,13 @@ export function AngleCanvas({
   }
 
   const handleMouseUp = () => {
+    if (draggedPoint) {
+      console.log('🏁 Finished dragging point:', draggedPoint)
+    }
+    if (draggedAngle) {
+      console.log('🏁 Finished dragging angle:', draggedAngle)
+    }
+
     setDraggedPoint(null)
     setDraggedAngle(null)
     setDragOffset(null)
