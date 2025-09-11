@@ -158,15 +158,15 @@ export function AngleCanvas({
         }
       })
 
-      // Draw dotted line from last point to mouse position when creating new angle
+      // Draw dotted line from first point (vertex) to mouse position when creating new angle
       if (mousePosition && currentPoints.length > 0 && currentPoints.length < 3) {
-        const lastPoint = currentPoints[currentPoints.length - 1]
+        const firstPoint = currentPoints[0] // Always use the first point (vertex)
         ctx.setLineDash([5, 5]) // Dotted line pattern
         ctx.strokeStyle = settings.lineColor
         ctx.lineWidth = settings.lineWidth
         ctx.globalAlpha = 0.7 // Make it slightly transparent
         ctx.beginPath()
-        ctx.moveTo(lastPoint.x, lastPoint.y)
+        ctx.moveTo(firstPoint.x, firstPoint.y)
         ctx.lineTo(mousePosition.x, mousePosition.y)
         ctx.stroke()
         ctx.setLineDash([]) // Reset to solid line
