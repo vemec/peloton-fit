@@ -75,6 +75,13 @@ export function AngleControls({
     })
   }
 
+  const handleLineWidthChange = (lineWidth: number) => {
+    onSettingsChange({
+      ...settings,
+      canvasGrid: { ...settings.canvasGrid, lineWidth }
+    })
+  }
+
   const handleSizeChange = (size: number) => {
     onSettingsChange({
       ...settings,
@@ -119,6 +126,8 @@ export function AngleControls({
             onColorChange={handleColorChange}
             lineType={settings.canvasGrid.lineType}
             onLineTypeChange={handleLineTypeChange}
+            lineWidth={settings.canvasGrid.lineWidth}
+            onLineWidthChange={handleLineWidthChange}
             disabled={!settings.canvasGrid.enabled}
           />
           <GridDimensionsSelector

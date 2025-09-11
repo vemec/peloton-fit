@@ -20,6 +20,7 @@ export interface CanvasGridSettings {
   enabled: boolean
   color: string
   lineType: 'solid' | 'dashed' | 'dotted'
+  lineWidth: number
   size: number // e.g., 10 for 10x10
   position: { x: number; y: number }
   angle: number // degrees

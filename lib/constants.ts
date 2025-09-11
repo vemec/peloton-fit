@@ -44,6 +44,7 @@ export const DEFAULT_VISUAL_SETTINGS = {
   gridColor: '#cccccc',
   gridLineType: 'solid' as const,
   gridSize: 10,
+  gridLineWidth: 1,
   gridAngle: 0,
   gridStep: 5,
 } as const

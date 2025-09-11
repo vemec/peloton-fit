@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS: AngleToolSettings = {
     color: DEFAULT_VISUAL_SETTINGS.gridColor,
     lineType: DEFAULT_VISUAL_SETTINGS.gridLineType,
     size: DEFAULT_VISUAL_SETTINGS.gridSize,
+    lineWidth: DEFAULT_VISUAL_SETTINGS.gridLineWidth,
     position: { x: -400, y: -300 }, // Center the larger grid (assuming 800x600 canvas)
     angle: DEFAULT_VISUAL_SETTINGS.gridAngle
   },
@@ -61,35 +62,33 @@ export function AngleTool({ canvasWidth = 800, canvasHeight = 600 }: AngleToolPr
   }
 
   return (
-    <div className="flex gap-4 p-4">
-      <div className="flex-1">
-        {isCanvasActive ? (
-          <AngleCanvas
-            angles={angles}
-            onAnglesChange={setAngles}
-            settings={settings}
-            onSettingsChange={setSettings}
-            isShiftPressed={isShiftPressed}
-            canvasWidth={canvasWidth}
-            canvasHeight={canvasHeight}
-          />
-        ) : (
-          <div
-            className="border border-gray-300 rounded flex items-center justify-center text-gray-500"
-            style={{ width: canvasWidth, height: canvasHeight }}
-          >
-            Canvas Disabled
-          </div>
-        )}
-        <AngleControls
+    <div className="grid gap-4 absolute top-0">
+      {isCanvasActive ? (
+        <AngleCanvas
           angles={angles}
           onAnglesChange={setAngles}
           settings={settings}
           onSettingsChange={setSettings}
-          isCanvasActive={isCanvasActive}
-          onToggleCanvas={handleToggleCanvas}
+          isShiftPressed={isShiftPressed}
+          canvasWidth={canvasWidth}
+          canvasHeight={canvasHeight}
         />
-      </div>
+      ) : (
+        <div
+          className="border border-gray-300 rounded flex items-center justify-center text-gray-500"
+          style={{ width: canvasWidth, height: canvasHeight }}
+        >
+          Canvas Disabled
+        </div>
+      )}
+      <AngleControls
+        angles={angles}
+        onAnglesChange={setAngles}
+        settings={settings}
+        onSettingsChange={setSettings}
+        isCanvasActive={isCanvasActive}
+        onToggleCanvas={handleToggleCanvas}
+      />
     </div>
   )
 }

@@ -16,7 +16,7 @@ export class CanvasGrid {
   }: CanvasGridProps): void {
     if (!canvasGrid.enabled) return
 
-    const { color, lineType, size, position, angle } = canvasGrid
+    const { color, lineType, size, position, angle, lineWidth } = canvasGrid
     // Make grid 2x larger than canvas to handle rotation and movement
     const gridWidth = canvasWidth * 2
     const gridHeight = canvasHeight * 2
@@ -25,7 +25,7 @@ export class CanvasGrid {
 
     ctx.save()
     ctx.strokeStyle = color
-    ctx.lineWidth = 1
+    ctx.lineWidth = lineWidth
 
     // Set line style
     switch (lineType) {

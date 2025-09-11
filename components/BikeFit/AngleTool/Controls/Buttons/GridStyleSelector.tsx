@@ -1,6 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Slider } from '@/components/ui/slider'
 import { PaintBucket } from 'lucide-react'
 import { getBaseButtonClasses } from '@/lib/utils'
 
@@ -9,6 +10,8 @@ interface GridStyleSelectorProps {
   onColorChange: (color: string) => void
   lineType: 'solid' | 'dashed' | 'dotted'
   onLineTypeChange: (lineType: 'solid' | 'dashed' | 'dotted') => void
+  lineWidth: number
+  onLineWidthChange: (lineWidth: number) => void
   disabled?: boolean
 }
 
@@ -17,6 +20,8 @@ export function GridStyleSelector({
   onColorChange,
   lineType,
   onLineTypeChange,
+  lineWidth,
+  onLineWidthChange,
   disabled = false
 }: GridStyleSelectorProps) {
   return (
@@ -70,6 +75,19 @@ export function GridStyleSelector({
             </div>
           </div>
 
+          {/* Line Width Selector */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Line Width: {lineWidth}px</label>
+            <Slider
+              value={[lineWidth]}
+              onValueChange={(value) => onLineWidthChange(value[0])}
+              min={1}
+              max={10}
+              step={1}
+              className="w-full"
+            />
+          </div>
+
           {/* Preview */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Preview</label>
@@ -86,7 +104,7 @@ export function GridStyleSelector({
                       d={`M 20 0 L 0 0 0 20`}
                       fill="none"
                       stroke={color}
-                      strokeWidth="1"
+                      strokeWidth={lineWidth}
                       strokeDasharray={
                         lineType === 'dashed' ? '5,5' :
                         lineType === 'dotted' ? '2,4' : 'none'

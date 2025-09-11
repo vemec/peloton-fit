@@ -509,7 +509,7 @@ export function AngleCanvas({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
-      style={{ border: '1px solid #ccc', cursor: getCursorStyle() }}
+      style={{ cursor: getCursorStyle() }}
     />
   )
 }
