@@ -1,93 +1,59 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
+import StatusIndicator from '@/components/BikeFit/Video/StatusIndicator'
 import { AngleCanvas } from './AngleCanvas'
 import { AngleControls } from './Controls'
-import type { Angle, AngleToolSettings } from '@/types/angle-tool'
-import { DEFAULT_VISUAL_SETTINGS } from '@/lib/constants'
+import { useAngleTool } from './useAngleTool'
 
 interface AngleToolProps {
   canvasWidth?: number
   canvasHeight?: number
 }
 
-const DEFAULT_SETTINGS: AngleToolSettings = {
-  lineColor: DEFAULT_VISUAL_SETTINGS.lineColor,
-  pointColor: DEFAULT_VISUAL_SETTINGS.pointColor,
-  lineWidth: DEFAULT_VISUAL_SETTINGS.lineWidth,
-  pointRadius: DEFAULT_VISUAL_SETTINGS.pointRadius,
-  gridStep: DEFAULT_VISUAL_SETTINGS.gridStep,
-  canvasGrid: {
-    enabled: false,
-    color: DEFAULT_VISUAL_SETTINGS.gridColor,
-    lineType: DEFAULT_VISUAL_SETTINGS.gridLineType,
-    size: DEFAULT_VISUAL_SETTINGS.gridSize,
-    lineWidth: DEFAULT_VISUAL_SETTINGS.gridLineWidth,
-    position: { x: -400, y: -300 }, // Center the larger grid (assuming 800x600 canvas)
-    angle: DEFAULT_VISUAL_SETTINGS.gridAngle
-  },
-  isDragGridMode: false
-}
-
 export function AngleTool({ canvasWidth = 800, canvasHeight = 600 }: AngleToolProps) {
-  const [angles, setAngles] = useState<Angle[]>([])
-  const [settings, setSettings] = useState<AngleToolSettings>(DEFAULT_SETTINGS)
-  const [isCanvasActive, setIsCanvasActive] = useState(true)
-  const [isShiftPressed, setIsShiftPressed] = useState(false)
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Shift') {
-        setIsShiftPressed(true)
-      }
-    }
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === 'Shift') {
-        setIsShiftPressed(false)
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    window.addEventListener('keyup', handleKeyUp)
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-      window.removeEventListener('keyup', handleKeyUp)
-    }
-  }, [])
-
-  const handleToggleCanvas = () => {
-    setIsCanvasActive(!isCanvasActive)
-  }
+  const {
+    angles,
+    setAngles,
+    settings,
+    setSettings,
+    isCanvasActive,
+    toggleCanvas,
+    isShiftPressed
+  } = useAngleTool()
 
   return (
     <div className="grid gap-4 absolute top-0">
-      {isCanvasActive ? (
-        <AngleCanvas
-          angles={angles}
-          onAnglesChange={setAngles}
-          settings={settings}
-          onSettingsChange={setSettings}
-          isShiftPressed={isShiftPressed}
-          canvasWidth={canvasWidth}
-          canvasHeight={canvasHeight}
-        />
-      ) : (
-        <div
-          className="border border-gray-300 rounded flex items-center justify-center text-gray-500"
-          style={{ width: canvasWidth, height: canvasHeight }}
-        >
-          Canvas Disabled
+      <div className="relative" style={{ width: canvasWidth, height: canvasHeight }}>
+        {isCanvasActive && (
+          <AngleCanvas
+            angles={angles}
+            onAnglesChange={setAngles}
+            settings={settings}
+            onSettingsChange={setSettings}
+            isShiftPressed={isShiftPressed}
+            canvasWidth={canvasWidth}
+            canvasHeight={canvasHeight}
+          />
+        )}
+
+        <div className="absolute top-4 right-4">
+          <StatusIndicator
+            isActive={isCanvasActive}
+            activeLabel="Canvas On"
+            inactiveLabel="Canvas Off"
+            showPing={isCanvasActive}
+            labelClassName="text-white"
+          />
         </div>
-      )}
+      </div>
       <AngleControls
         angles={angles}
         onAnglesChange={setAngles}
         settings={settings}
         onSettingsChange={setSettings}
         isCanvasActive={isCanvasActive}
-        onToggleCanvas={handleToggleCanvas}
+        onToggleCanvas={toggleCanvas}
       />
     </div>
   )

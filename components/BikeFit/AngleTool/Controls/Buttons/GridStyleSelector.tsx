@@ -87,35 +87,6 @@ export function GridStyleSelector({
               className="w-full"
             />
           </div>
-
-          {/* Preview */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Preview</label>
-            <div className="border border-gray-300 rounded-md p-3 bg-gray-50">
-              <svg width="100%" height="40" className="w-full">
-                <defs>
-                  <pattern
-                    id="preview-grid"
-                    width="20"
-                    height="20"
-                    patternUnits="userSpaceOnUse"
-                  >
-                    <path
-                      d={`M 20 0 L 0 0 0 20`}
-                      fill="none"
-                      stroke={color}
-                      strokeWidth={lineWidth}
-                      strokeDasharray={
-                        lineType === 'dashed' ? '5,5' :
-                        lineType === 'dotted' ? '2,4' : 'none'
-                      }
-                    />
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#preview-grid)" />
-              </svg>
-            </div>
-          </div>
         </div>
       </PopoverContent>
     </Popover>
