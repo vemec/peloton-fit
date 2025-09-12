@@ -56,8 +56,8 @@ export default function CameraEmptyState({
                   </li>
                   <li className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/60 text-center">
                     <div className="mx-auto w-9 h-9 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mb-2">3</div>
-                    <div className="font-medium text-slate-700 text-sm">Iniciá el análisis</div>
-                    <p className="text-xs text-slate-500">Hacé clic en “Iniciar cámara”.</p>
+                    <div className="font-medium text-slate-700 text-sm">Start the analysis</div>
+                    <p className="text-xs text-slate-500">Click &quot;Start camera&quot;.</p>
                   </li>
                 </ol>
             </section>
