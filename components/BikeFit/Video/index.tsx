@@ -256,6 +256,7 @@ function BikeFitVideoPlayerContent({
     }
   }
 
+
   return (
     <>
       {/* Main content: Video and Angle Table */}
@@ -350,11 +351,7 @@ function BikeFitVideoPlayerContent({
           onCaptureScreenshot={handleCaptureScreenshot}
         />
 
-        {/* Angle Table - Below everything */}
-        <AngleTable
-          angles={angles}
-          bikeType={bikeType}
-        />
+        <AngleTable angles={angles} bikeType={bikeType} />
       </div>
     </>
   )
