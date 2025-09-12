@@ -256,6 +256,38 @@ function BikeFitVideoPlayerContent({
     }
   }
 
+  // When the user changes the selected camera device while the camera is active,
+  // restart the stream automatically so the new device takes effect.
+  useEffect(() => {
+    // If there's no device selected, stop the camera
+    if (!selectedDeviceId) {
+      if (isActive) {
+        stopCamera()
+        show.info('Camera disconnected', { description: 'No camera selected.' })
+      }
+      return
+    }
+
+    // If the camera is active, swap to the newly selected device
+    if (isActive) {
+      // Provide quick feedback
+      show.loading('Switching camera...', { id: 'camera-switch' })
+
+      // Stop then restart with a small delay to ensure tracks are released
+      stopCamera()
+      const t = window.setTimeout(() => {
+        startCamera(selectedDeviceId, selectedResolution)
+        show.success('Camera updated', { description: 'Now using the selected camera.' })
+        toast.dismiss('camera-switch')
+      }, 100)
+
+      return () => {
+        clearTimeout(t)
+      }
+    }
+    // If not active, do nothing (user can press play to start the selected device)
+  }, [selectedDeviceId, isActive, selectedResolution, startCamera, stopCamera])
+
 
   return (
     <>
