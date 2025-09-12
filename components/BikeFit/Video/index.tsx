@@ -4,14 +4,14 @@ import React, { useRef, useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import show from '@/lib/toast'
 import VideoControls from './Controls'
-import CameraEmptyState from './CameraEmptyState'
 import { useCameraDevices } from './hooks'
 import { useVideoStream } from './useVideoStream'
 import { useVideoRecording } from './useVideoRecording'
 import { usePoseDetectionRealTime } from '../Analysis/usePoseDetectionRealTime'
 import { usePoseVisualization } from './usePoseVisualization'
-import Indicators from './StatusIndicatorVariants'
+// CameraEmptyState and Indicators moved into VideoDisplay
 import { useAngles, AngleTable } from '../Analysis'
+import VideoDisplay from './VideoDisplay'
 import { FIXED_FPS, generateScreenshotFilename } from './constants'
 import { captureCanvasFrame } from './utils'
 import { SKELETON_MODES } from '../Drawing'
@@ -259,100 +259,58 @@ function BikeFitVideoPlayerContent({
 
   return (
     <>
-      {/* Main content: Video and Angle Table */}
-      <div className="grid gap-5">
-        {/* Video Display */}
-        <div
-          className="z-10 relative mx-auto bg-slate-50/30 border border-slate-200/50 rounded-3xl overflow-hidden backdrop-blur-sm"
-          style={{aspectRatio: `${aspectW} / ${aspectH}`, height: `min(80dvh, calc(100vw * ${aspectH} / ${aspectW}))`, maxWidth: '100%'}}
-        >
-          {/* Status indicators - Top corners - Only show when video is active */}
-          {isActive && (
-            <>
-              {/* Camera active - top left */}
-              <Indicators.Camera />
+      {/* Video Display */}
+      <VideoDisplay
+        videoRef={videoRef}
+        canvasRef={canvasRef}
+        isActive={isActive}
+        isVideoHidden={isVideoHidden}
+        isFlipped={isFlipped}
+        aspectW={aspectW}
+        aspectH={aspectH}
+        isRecording={isRecording}
+        poseDetectedSide={poseDetectedSide}
+        skeletonMode={skeletonMode}
+        bikeType={bikeType}
+        handleStartCamera={handleStartCamera}
+        selectedDeviceId={selectedDeviceId}
+        error={error as string}
+      />
 
-              {/* Recording status - top right */}
-              <Indicators.Recording isRecording={isRecording} />
+      {/* Media Bar */}
+      <MediaBarContainer />
 
-              {/* Bottom-left indicator: side detection or full skeleton */}
-              <Indicators.SkeletonMode skeletonMode={skeletonMode} poseDetectedSide={poseDetectedSide} />
+      {/* Video Controls - Below video */}
+      <VideoControls
+        devices={devices}
+        selectedDeviceId={selectedDeviceId}
+        selectedResolution={selectedResolution}
+        isActive={isActive}
+        error={error}
+        bikeType={bikeType}
+        isFlipped={isFlipped}
+        isVideoHidden={isVideoHidden}
+        visualSettings={visualSettings}
+        skeletonMode={skeletonMode}
+        detectedSide={detectedSide}
+        overlayVisibility={overlayVisibility}
+        onDeviceChange={setSelectedDeviceId}
+        onResolutionChange={handleResolutionChange}
+        onBikeTypeChange={onBikeTypeChange}
+        onFlipToggle={handleFlipToggle}
+        onToggleVideoBackground={handleToggleVideoBackground}
+        onVisualSettingsChange={onVisualSettingsChange}
+        onSkeletonModeChange={handleSkeletonModeChange}
+        onOverlayVisibilityChange={setOverlayVisibility}
+        onStartCamera={handleStartCamera}
+        onStopCamera={handleStopCamera}
+        isRecording={isRecording}
+        onStartRecording={handleStartRecording}
+        onStopRecording={handleStopRecording}
+        onCaptureScreenshot={handleCaptureScreenshot}
+      />
 
-              {/* Bottom-right indicator: selected bike type */}
-              <Indicators.BikeType bikeType={bikeType} />
-            </>
-          )}
-
-          {/* Video element */}
-          <video
-            ref={videoRef}
-            className="absolute inset-0 w-full h-full object-contain bg-slate-900/5"
-            playsInline
-            muted
-            style={{
-              // If video feed is hidden, keep element invisible while canvas still renders skeleton
-              opacity: isActive && !isVideoHidden ? 1 : 0,
-              transition: 'opacity 500ms',
-              transform: isFlipped ? 'scaleX(-1)' : 'scaleX(1)'
-            }}
-            preload="none"
-          />
-
-          {/* Canvas overlay for pose visualization */}
-          <canvas
-            ref={canvasRef}
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            style={{
-              opacity: isActive ? 1 : 0,
-              transition: 'opacity 500ms'
-            }}
-          />
-
-          {/* Empty State */}
-          {!isActive && (
-            <CameraEmptyState
-              onStartCamera={handleStartCamera}
-              hasSelectedDevice={!!selectedDeviceId}
-              error={error as string}
-            />
-          )}
-        </div>
-
-        {/* Media Bar */}
-        <MediaBarContainer />
-
-        {/* Video Controls - Below video */}
-        <VideoControls
-          devices={devices}
-          selectedDeviceId={selectedDeviceId}
-          selectedResolution={selectedResolution}
-          isActive={isActive}
-          error={error}
-          bikeType={bikeType}
-          isFlipped={isFlipped}
-          isVideoHidden={isVideoHidden}
-          visualSettings={visualSettings}
-          skeletonMode={skeletonMode}
-          detectedSide={detectedSide}
-          overlayVisibility={overlayVisibility}
-          onDeviceChange={setSelectedDeviceId}
-          onResolutionChange={handleResolutionChange}
-          onBikeTypeChange={onBikeTypeChange}
-          onFlipToggle={handleFlipToggle}
-          onToggleVideoBackground={handleToggleVideoBackground}
-          onVisualSettingsChange={onVisualSettingsChange}
-          onSkeletonModeChange={handleSkeletonModeChange}
-          onOverlayVisibilityChange={setOverlayVisibility}
-          onStartCamera={handleStartCamera}
-          onStopCamera={handleStopCamera}
-          isRecording={isRecording}
-          onStartRecording={handleStartRecording}
-          onStopRecording={handleStopRecording}
-          onCaptureScreenshot={handleCaptureScreenshot}
-        />
-
-        <AngleTable angles={angles} bikeType={bikeType} />
-      </div>
+      <AngleTable angles={angles} bikeType={bikeType} />
     </>
   )
 }
