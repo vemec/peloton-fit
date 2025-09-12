@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "BikeFit AI - Análisis de Postura en Tiempo Real",
+    default: "BikeFit AI - Real-time Posture Analysis",
     template: "%s | BikeFit AI"
   },
   description: "Web application for real-time posture analysis for cyclists and triathletes. Uses computer vision to detect body keypoints, calculate reference angles, and optimize your position on the bicycle.",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     "computer vision",
     "MediaPipe",
     "TensorFlow",
-    "análisis biomecánico",
+  "biomechanical analysis",
     "pose detection",
     "real time analysis",
     "cycling performance",
@@ -54,10 +54,10 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    locale: 'es_ES',
+    locale: 'en_US',
     url: 'https://bikefit-ai.vercel.app',
-    title: 'BikeFit AI - Análisis de Postura en Tiempo Real',
-    description: 'Optimiza tu posición en la bicicleta con análisis de postura en tiempo real usando IA y visión por computadora.',
+    title: 'BikeFit AI - Real-time Posture Analysis',
+    description: 'Optimize your position on the bicycle with real-time posture analysis using AI and computer vision.',
     siteName: 'BikeFit AI',
     images: [
       {
@@ -101,7 +101,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <meta name="theme-color" content="#8b5cf6" />
