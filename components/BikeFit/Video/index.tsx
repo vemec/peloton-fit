@@ -9,7 +9,6 @@ import { useVideoStream } from './useVideoStream'
 import { useVideoRecording } from './useVideoRecording'
 import { usePoseDetectionRealTime } from '../Analysis/usePoseDetectionRealTime'
 import { usePoseVisualization } from './usePoseVisualization'
-// CameraEmptyState and Indicators moved into VideoDisplay
 import { useAngles, AngleTable } from '../Analysis'
 import VideoDisplay from './VideoDisplay'
 import { FIXED_FPS, generateScreenshotFilename } from './constants'
@@ -258,35 +257,54 @@ function BikeFitVideoPlayerContent({
 
   // When the user changes the selected camera device while the camera is active,
   // restart the stream automatically so the new device takes effect.
+  // Note: startCamera already stops the previous stream, so we call it directly
+  // to avoid toggling `isActive` and retriggering this effect.
+  // ref to ignore the initial auto-selection performed on mount
+  const hasInitializedSelectionRef = useRef(false)
+  // ref to read latest isActive without making it a dependency
+  const isActiveRef = useRef(isActive)
+  useEffect(() => { isActiveRef.current = isActive }, [isActive])
+
   useEffect(() => {
-    // If there's no device selected, stop the camera
+    // Ignore the very first selection that happens on mount
+    if (!hasInitializedSelectionRef.current) {
+      hasInitializedSelectionRef.current = true
+      return
+    }
+
     if (!selectedDeviceId) {
-      if (isActive) {
+      if (isActiveRef.current) {
         stopCamera()
         show.info('Camera disconnected', { description: 'No camera selected.' })
       }
       return
     }
 
-    // If the camera is active, swap to the newly selected device
-    if (isActive) {
-      // Provide quick feedback
-      show.loading('Switching camera...', { id: 'camera-switch' })
+    // Only react when the camera is already active (user has pressed play);
+    // do not run when the camera is starting for the first time.
+    if (!isActiveRef.current) return
 
-      // Stop then restart with a small delay to ensure tracks are released
-      stopCamera()
-      const t = window.setTimeout(() => {
-        startCamera(selectedDeviceId, selectedResolution)
-        show.success('Camera updated', { description: 'Now using the selected camera.' })
-        toast.dismiss('camera-switch')
-      }, 100)
+    const toastId = 'camera-switch'
+    show.loading('Switching camera...', { id: toastId })
 
-      return () => {
-        clearTimeout(t)
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        await startCamera(selectedDeviceId, selectedResolution)
+        if (!cancelled) show.success('Camera updated', { description: 'Now using the selected camera.' })
+      } catch (error) {
+        if (!cancelled) show.error('Camera switch failed', { description: 'Could not switch camera.' })
+        console.error('Camera switch error', error)
+      } finally {
+        show.dismiss(toastId)
       }
+    })()
+
+    return () => {
+      cancelled = true
     }
-    // If not active, do nothing (user can press play to start the selected device)
-  }, [selectedDeviceId, isActive, selectedResolution, startCamera, stopCamera])
+  }, [selectedDeviceId, selectedResolution, startCamera, stopCamera])
 
 
   return (
