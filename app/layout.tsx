@@ -1,6 +1,6 @@
 import type { Viewport } from "next";
 import { DM_Sans, Geist_Mono } from "next/font/google";
-import { Toaster } from "@/components/ui/sonner";
+import ResponsiveToaster from "@/components/ui/ResponsiveToaster";
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css";
 import siteConfig from "@/lib/site-config";
@@ -47,8 +47,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${dmSans.variable} ${geistMono.variable} antialiased md:subpixel-antialiased`}>
-        {children}
-        <Toaster position="bottom-center" expand={true} richColors={true} />
+  {children}
+  <ResponsiveToaster />
         <Analytics />
       </body>
     </html>
