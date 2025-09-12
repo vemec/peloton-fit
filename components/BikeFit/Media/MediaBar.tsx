@@ -83,7 +83,7 @@ export default function MediaBar({
 
   return (
     <div className={cn(
-      'bg-black rounded-xl p-3 relative',
+      'bg-slate-800/90 rounded-xl p-3 relative',
       'animate-in slide-in-from-top-5 duration-300',
       'max-w-5xl mx-auto'
     )}>

@@ -327,9 +327,6 @@ function BikeFitVideoPlayerContent({
         error={error as string}
       />
 
-      {/* Media Bar */}
-      <MediaBarContainer />
-
       {/* Video Controls - Below video */}
       {
         isActive && (
@@ -364,8 +361,11 @@ function BikeFitVideoPlayerContent({
         )
       }
 
+      {/* Media Bar */}
+      <MediaBarContainer />
+
       {
-      isActive && (
+        isActive && (
           <AngleTable angles={angles} bikeType={bikeType} />
         )
       }
