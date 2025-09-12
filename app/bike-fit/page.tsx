@@ -14,7 +14,7 @@ export default function BikeFitPage() {
   })
 
   return (
-    <div className="w-full mx-auto flex flex-col gap-8 p-6">
+  <div className="w-full mx-auto p-0 xl:p-6">
       {/* Video Section */}
       <VideoPlayer
         bikeType={bikeType}

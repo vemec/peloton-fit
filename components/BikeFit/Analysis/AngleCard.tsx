@@ -7,34 +7,34 @@ import type { BikeType } from '@/types/bikefit'
 
 // Color utility functions
 const getColorClasses = {
-  indicator: (color: string, isDisabled: boolean) => cn(
-    "w-3 h-3 rounded-full",
-    isDisabled ? "bg-gray-300" :
-    color === 'blue' ? "bg-blue-500 shadow-blue-200 shadow-lg" :
-    color === 'green' ? "bg-green-500 shadow-green-200 shadow-lg" :
-    color === 'emerald' ? "bg-emerald-500 shadow-emerald-200 shadow-lg" :
-    color === 'amber' ? "bg-amber-500 shadow-amber-200 shadow-lg" :
-    "bg-red-500 shadow-red-200 shadow-lg"
-  ),
+  indicator: (color: string, isDisabled: boolean) => cn({
+    'w-3 h-3 rounded-full': true,
+    'bg-gray-300': isDisabled,
+    'bg-blue-500 shadow-blue-200 shadow-lg': !isDisabled && color === 'blue',
+    'bg-green-500 shadow-green-200 shadow-lg': !isDisabled && color === 'green',
+    'bg-emerald-500 shadow-emerald-200 shadow-lg': !isDisabled && color === 'emerald',
+    'bg-amber-500 shadow-amber-200 shadow-lg': !isDisabled && color === 'amber',
+    'bg-red-500 shadow-red-200 shadow-lg': !isDisabled && color !== 'blue' && color !== 'green' && color !== 'emerald' && color !== 'amber'
+  }),
 
-  value: (color: string, isDisabled: boolean) => cn(
-    "font-mono text-xl font-bold tracking-tight",
-    isDisabled ? "text-gray-400" :
-    color === 'blue' ? "text-blue-700" :
-    color === 'green' ? "text-green-700" :
-    color === 'emerald' ? "text-emerald-700" :
-    color === 'amber' ? "text-amber-700" :
-    "text-red-700"
-  ),
+  value: (color: string, isDisabled: boolean) => cn({
+    'font-mono text-xl font-bold tracking-tight': true,
+    'text-gray-400': isDisabled,
+    'text-blue-700': !isDisabled && color === 'blue',
+    'text-green-700': !isDisabled && color === 'green',
+    'text-emerald-700': !isDisabled && color === 'emerald',
+    'text-amber-700': !isDisabled && color === 'amber',
+    'text-red-700': !isDisabled && color !== 'blue' && color !== 'green' && color !== 'emerald' && color !== 'amber'
+  }),
 
-  badge: (color: string) => cn(
-    "text-xs font-medium px-3 py-1",
-    color === 'blue' && "bg-blue-100 text-blue-800 border-blue-200",
-    color === 'green' && "bg-green-100 text-green-800 border-green-200",
-    color === 'emerald' && "bg-emerald-100 text-emerald-800 border-emerald-200",
-    color === 'amber' && "bg-amber-100 text-amber-800 border-amber-200",
-    color === 'red' && "bg-red-100 text-red-800 border-red-200"
-  )
+  badge: (color: string) => cn({
+    'text-xs font-medium px-3 py-1': true,
+    'bg-blue-100 text-blue-800 border-blue-200': color === 'blue',
+    'bg-green-100 text-green-800 border-green-200': color === 'green',
+    'bg-emerald-100 text-emerald-800 border-emerald-200': color === 'emerald',
+    'bg-amber-100 text-amber-800 border-amber-200': color === 'amber',
+    'bg-red-100 text-red-800 border-red-200': color === 'red'
+  })
 }
 
 // Label mapping for different angle types
@@ -157,11 +157,14 @@ export default function AngleCard({
   }
 
   return (
-    <div className={cn("p-4 rounded-xl transition-all duration-300 grid gap-2", isDetected ? "bg-white border border-gray-200/80 shadow-sm hover:shadow-md" : "bg-gray-50 border border-gray-200/50")}>
+    <div className={cn(
+      'p-3 sm:p-4 rounded-xl transition-all duration-300 grid gap-2 bg-white border border-gray-200/80 shadow-sm hover:shadow-md',
+      {'bg-gray-50 border border-gray-200/50': !isDetected}
+    )}>
       {/* Header with name and status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h3 className={cn("text-base font-semibold", !isDetected ? "text-gray-500" : "text-gray-800")}>
+          <h3 className={cn('text-sm sm:text-base font-semibold text-gray-800', {'text-gray-500': !isDetected})}>
             {finalDisplayName}
           </h3>
           <div className="flex items-center gap-2">
@@ -171,7 +174,11 @@ export default function AngleCard({
             </div>
           </div>
         </div>
-        { getStatusBadge() }
+        {/* show full badge on sm+, otherwise a compact text on xs */}
+        <div>
+          <div className="hidden sm:block">{ getStatusBadge() }</div>
+          <div className="sm:hidden text-xs text-gray-600">{ !isDetected ? 'Not detected' : status.label }</div>
+        </div>
       </div>
 
       {/* Angle indicator */}

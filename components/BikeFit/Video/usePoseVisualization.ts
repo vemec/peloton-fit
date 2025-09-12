@@ -121,7 +121,7 @@ export function usePoseVisualization({
           ctx.restore()
         }
 
-  // Only draw pose overlay if we have valid keypoints
+        // Only draw pose overlay if we have valid keypoints
         if (hasValidKeypoints) {
           // Mirror keypoints horizontally if flipped to match the mirrored video
           const displayKeypoints: Keypoint[] = isFlipped
