@@ -40,6 +40,7 @@ export default function VideoDisplay({
 }: VideoDisplayProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait')
+  const [mediaStyle, setMediaStyle] = useState<React.CSSProperties>({ width: '100%', height: '100%' })
 
   useEffect(() => {
     const update = () => {
@@ -57,11 +58,45 @@ export default function VideoDisplay({
       window.removeEventListener('orientationchange', update)
     }
   }, [])
+
+  // Update video/canvas sizing to avoid cropping -- choose fit by width or height
+  useEffect(() => {
+    const updateMediaSizing = () => {
+      const videoEl = videoRef?.current
+      const cw = window.innerWidth
+      const ch = window.innerHeight
+
+      const vw = videoEl?.videoWidth || aspectW
+      const vh = videoEl?.videoHeight || aspectH
+      const videoAspect = (vw && vh) ? (vw / vh) : (aspectW / aspectH)
+      const containerAspect = cw / ch
+
+      // If video is wider than container, fit width; otherwise fit height
+      if (videoAspect > containerAspect) {
+        setMediaStyle({ width: '100%', height: 'auto' })
+      } else {
+        setMediaStyle({ width: 'auto', height: '100%' })
+      }
+    }
+
+    updateMediaSizing()
+    // Listen for metadata load (which gives videoWidth/videoHeight) and resize/orientation
+    const videoEl = videoRef?.current
+    videoEl?.addEventListener('loadedmetadata', updateMediaSizing)
+    window.addEventListener('resize', updateMediaSizing)
+    window.addEventListener('orientationchange', updateMediaSizing)
+
+    return () => {
+      videoEl?.removeEventListener('loadedmetadata', updateMediaSizing)
+      window.removeEventListener('resize', updateMediaSizing)
+      window.removeEventListener('orientationchange', updateMediaSizing)
+    }
+  }, [videoRef, aspectW, aspectH, isMobile, orientation, isActive])
   return (
     <div
       className={
         isMobile
-          ? "fixed inset-0 z-50 bg-black/95"
+          ? "fixed inset-0 z-10 bg-black/95"
           : "z-10 relative mx-auto bg-slate-50/30 border border-slate-200/50 rounded-3xl overflow-hidden backdrop-blur-sm"
       }
       style={
@@ -86,10 +121,10 @@ export default function VideoDisplay({
         playsInline
         muted
         style={{
+          ...mediaStyle,
           opacity: isActive && !isVideoHidden ? 1 : 0,
           transition: 'opacity 500ms',
-          transform: isFlipped ? 'scaleX(-1)' : 'scaleX(1)',
-          objectFit: isMobile ? 'cover' : 'contain'
+          transform: isFlipped ? 'scaleX(-1)' : 'scaleX(1)'
         }}
         preload="none"
       />
@@ -98,9 +133,9 @@ export default function VideoDisplay({
         ref={canvasRef}
         className="absolute inset-0 w-full h-full pointer-events-none"
         style={{
+          ...mediaStyle,
           opacity: isActive ? 1 : 0,
-          transition: 'opacity 500ms',
-          objectFit: isMobile ? 'cover' : 'contain'
+          transition: 'opacity 500ms'
         }}
       />
 

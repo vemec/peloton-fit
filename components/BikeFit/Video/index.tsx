@@ -281,36 +281,44 @@ function BikeFitVideoPlayerContent({
       <MediaBarContainer />
 
       {/* Video Controls - Below video */}
-      <VideoControls
-        devices={devices}
-        selectedDeviceId={selectedDeviceId}
-        selectedResolution={selectedResolution}
-        isActive={isActive}
-        error={error}
-        bikeType={bikeType}
-        isFlipped={isFlipped}
-        isVideoHidden={isVideoHidden}
-        visualSettings={visualSettings}
-        skeletonMode={skeletonMode}
-        detectedSide={detectedSide}
-        overlayVisibility={overlayVisibility}
-        onDeviceChange={setSelectedDeviceId}
-        onResolutionChange={handleResolutionChange}
-        onBikeTypeChange={onBikeTypeChange}
-        onFlipToggle={handleFlipToggle}
-        onToggleVideoBackground={handleToggleVideoBackground}
-        onVisualSettingsChange={onVisualSettingsChange}
-        onSkeletonModeChange={handleSkeletonModeChange}
-        onOverlayVisibilityChange={setOverlayVisibility}
-        onStartCamera={handleStartCamera}
-        onStopCamera={handleStopCamera}
-        isRecording={isRecording}
-        onStartRecording={handleStartRecording}
-        onStopRecording={handleStopRecording}
-        onCaptureScreenshot={handleCaptureScreenshot}
-      />
+      {
+        isActive && (
+          <VideoControls
+            devices={devices}
+            selectedDeviceId={selectedDeviceId}
+            selectedResolution={selectedResolution}
+            isActive={isActive}
+            error={error}
+            bikeType={bikeType}
+            isFlipped={isFlipped}
+            isVideoHidden={isVideoHidden}
+            visualSettings={visualSettings}
+            skeletonMode={skeletonMode}
+            detectedSide={detectedSide}
+            overlayVisibility={overlayVisibility}
+            onDeviceChange={setSelectedDeviceId}
+            onResolutionChange={handleResolutionChange}
+            onBikeTypeChange={onBikeTypeChange}
+            onFlipToggle={handleFlipToggle}
+            onToggleVideoBackground={handleToggleVideoBackground}
+            onVisualSettingsChange={onVisualSettingsChange}
+            onSkeletonModeChange={handleSkeletonModeChange}
+            onOverlayVisibilityChange={setOverlayVisibility}
+            onStartCamera={handleStartCamera}
+            onStopCamera={handleStopCamera}
+            isRecording={isRecording}
+            onStartRecording={handleStartRecording}
+            onStopRecording={handleStopRecording}
+            onCaptureScreenshot={handleCaptureScreenshot}
+          />
+        )
+      }
 
-      <AngleTable angles={angles} bikeType={bikeType} />
+      {
+      isActive && (
+          <AngleTable angles={angles} bikeType={bikeType} />
+        )
+      }
     </>
   )
 }

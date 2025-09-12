@@ -75,9 +75,9 @@ export default function VideoControls({
     <div className={cn('flex')}>
       <div
         className={cn(
-          'flex items-center bg-slate-400 rounded-full p-2 gap-2 w-auto',
+          'flex items-center bg-slate-800/80 rounded-full p-2 gap-2 w-auto mt-0 lg:mt-5',
           'overflow-x-auto max-w-[350px] sm:max-w-[480px] md:max-w-[600px] lg:max-w-none lg:overflow-visible lg:mx-auto',
-          'absolute bottom-2 z-10 left-1/2 transform -translate-x-1/2 lg:left-auto lg:transform-none lg:translate-x-0 lg:static'
+          'absolute bottom-2 z-20 left-1/2 transform -translate-x-1/2 lg:left-auto lg:transform-none lg:translate-x-0 lg:static'
         )}
       >
         <CameraSelectorButton

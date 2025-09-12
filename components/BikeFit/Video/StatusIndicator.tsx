@@ -36,7 +36,7 @@ export default function StatusIndicator({
         aria-live={ariaLive}
         aria-atomic="true"
         aria-label={ariaLabel || (isActive ? activeLabel : inactiveLabel)}
-        className="relative flex items-center gap-3 bg-black/90 backdrop-blur-md rounded-full px-4 py-2 border border-white/30 shadow-2xl"
+        className="relative flex items-center gap-3 bg-black/90 backdrop-blur-md rounded-full px-2 py-1 border border-white/30 shadow-2xl"
       >
         <div className="relative">
           <div className={`w-3 h-3 rounded-full shadow-lg transition-all duration-300 ${isActive ? dotActiveClasses : dotInactiveClasses}`}></div>

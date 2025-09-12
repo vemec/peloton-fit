@@ -79,7 +79,7 @@ export default function AngleTable({ angles, bikeType }: AngleTableProps) {
     <>
       {/* Desktop / tablet: show inline */}
       <div className="hidden md:block">
-        <div className='w-full max-w-7xl mx-auto grid gap-3'>
+        <div className='w-full max-w-7xl mx-auto grid gap-3 mt-10'>
           <AngleTableTitle detectedCount={detectedCount} total={allAngles.length} />
           {tableContent}
         </div>
