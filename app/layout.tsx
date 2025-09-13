@@ -4,6 +4,7 @@ import ResponsiveToaster from "@/components/ui/ResponsiveToaster";
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css";
 import siteConfig from "@/lib/site-config";
+import { ThemeProvider } from "@/components/theme-provider"
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -47,8 +48,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${dmSans.variable} ${geistMono.variable} antialiased md:subpixel-antialiased`}>
-  {children}
-  <ResponsiveToaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+        <ResponsiveToaster />
         <Analytics />
       </body>
     </html>
