@@ -21,7 +21,6 @@ BikeFit AI is a Next.js web application for real-time cyclist posture analysis u
 
 ### Advanced UI/UX
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Dark/Light Theme**: Automatic theme detection with manual override options
 - **Accessible Components**: Built with shadcn/ui for WCAG compliance
 - **Performance Optimized**: Uses Turbopack for fast development and optimized builds
 
@@ -33,7 +32,6 @@ BikeFit AI is a Next.js web application for real-time cyclist posture analysis u
 - **UI Components**: shadcn/ui with Radix UI primitives
 - **Computer Vision**: MediaPipe Pose & TensorFlow.js
 - **Icons**: Lucide React
-- **Theme Management**: next-themes
 - **Build Tool**: Turbopack
 - **Package Manager**: npm
 
@@ -114,16 +112,7 @@ npm run lint              # ESLint
 ## 🔧 Configuration
 
 ### Theme Settings
-The app defaults to light theme. You can change this in `app/layout.tsx`:
-
-```typescript
-<ThemeProvider
-  attribute="class"
-  defaultTheme="light"  // Change to "dark" or "system"
-  enableSystem
-  disableTransitionOnChange
->
-```
+The app uses a light theme by default. Theme switching functionality has been removed for simplicity.
 
 ### Camera Permissions
 The app requires camera access for pose detection. Make sure to:
@@ -144,7 +133,6 @@ The app requires camera access for pose detection. Make sure to:
 - `tailwindcss`: ^4.1.18
 - `@radix-ui/react-*`: Accessible UI primitives
 - `lucide-react`: Icon library
-- `next-themes`: Theme management
 
 ### Development
 - `typescript`: ^5.9.3
