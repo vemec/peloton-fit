@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import type { Angle, AngleToolSettings } from '@/types/angle-tool'
+import type { Angle, AngleToolSettings, BackgroundImage } from '@/types/angle-tool'
 import { DEFAULT_VISUAL_SETTINGS } from '@/lib/constants'
 
 const DEFAULT_SETTINGS: AngleToolSettings = {
@@ -30,6 +30,7 @@ export function useAngleTool(initialSettings?: Partial<AngleToolSettings>) {
   })
   const [isCanvasActive, setIsCanvasActive] = useState(true)
   const [isShiftPressed, setIsShiftPressed] = useState(false)
+  const [backgroundImage, setBackgroundImage] = useState<BackgroundImage | null>(null)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -51,6 +52,38 @@ export function useAngleTool(initialSettings?: Partial<AngleToolSettings>) {
 
   const toggleCanvas = useCallback(() => setIsCanvasActive(v => !v), [])
 
+  const handleImageDrop = useCallback((file: File) => {
+    return new Promise<void>((resolve, reject) => {
+      if (!file.type.startsWith('image/')) {
+        reject(new Error('Please drop an image file'))
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const backgroundImage: BackgroundImage = {
+            url: e.target?.result as string,
+            width: img.width,
+            height: img.height,
+            file
+          }
+          setBackgroundImage(backgroundImage)
+          resolve()
+        }
+        img.onerror = () => reject(new Error('Failed to load image'))
+        img.src = e.target?.result as string
+      }
+      reader.onerror = () => reject(new Error('Failed to read file'))
+      reader.readAsDataURL(file)
+    })
+  }, [])
+
+  const clearBackgroundImage = useCallback(() => {
+    setBackgroundImage(null)
+  }, [])
+
   return {
     angles,
     setAngles,
@@ -58,6 +91,9 @@ export function useAngleTool(initialSettings?: Partial<AngleToolSettings>) {
     setSettings,
     isCanvasActive,
     toggleCanvas,
-    isShiftPressed
+    isShiftPressed,
+    backgroundImage,
+    handleImageDrop,
+    clearBackgroundImage
   } as const
 }

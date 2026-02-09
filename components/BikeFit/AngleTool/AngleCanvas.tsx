@@ -11,7 +11,7 @@ import {
   isPointInArcArea,
   generateUniqueId,
 } from '@/lib/angle-tool-utils'
-import type { AnglePoint, Angle, AngleToolSettings } from '@/types/angle-tool'
+import type { AnglePoint, Angle, AngleToolSettings, BackgroundImage } from '@/types/angle-tool'
 import type { VisualSettings } from '@/types/bikefit'
 import { DEFAULT_VISUAL_SETTINGS } from '@/lib/constants'
 import { DRAWING_CONFIG } from '@/components/BikeFit/Drawing/constants'
@@ -24,6 +24,7 @@ interface AngleCanvasProps {
   isShiftPressed: boolean
   canvasWidth: number
   canvasHeight: number
+  backgroundImage?: BackgroundImage | null
 }
 
 export function AngleCanvas({
@@ -33,7 +34,8 @@ export function AngleCanvas({
   onSettingsChange,
   isShiftPressed,
   canvasWidth,
-  canvasHeight
+  canvasHeight,
+  backgroundImage
 }: AngleCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [currentPoints, setCurrentPoints] = useState<AnglePoint[]>([])
@@ -128,69 +130,159 @@ export function AngleCanvas({
 
     clearCanvas(ctx, canvasWidth, canvasHeight)
 
-    // Find the vertex of the angle being dragged for grid centering
-    let draggedVertex: AnglePoint | undefined
-    if (draggedPoint) {
-      const draggedAngleObj = angles.find(a => a.id === draggedPoint.angleId)
-      if (draggedAngleObj) {
-        draggedVertex = draggedAngleObj.vertex
+    // Draw background image if available
+    if (backgroundImage) {
+      const img = new Image()
+      img.onload = () => {
+        // Calculate scaling to fit the image within the canvas while maintaining aspect ratio
+        const scaleX = canvasWidth / backgroundImage.width
+        const scaleY = canvasHeight / backgroundImage.height
+        const scale = Math.min(scaleX, scaleY)
+
+        const scaledWidth = backgroundImage.width * scale
+        const scaledHeight = backgroundImage.height * scale
+
+        // Center the image
+        const offsetX = (canvasWidth - scaledWidth) / 2
+        const offsetY = (canvasHeight - scaledHeight) / 2
+
+        ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight)
+
+        // Continue with the rest of the drawing after image loads
+        drawAfterImage()
       }
-    } else if (draggedAngle) {
-      const angleObj = angles.find(a => a.id === draggedAngle)
-      if (angleObj) {
-        draggedVertex = angleObj.vertex
+      img.src = backgroundImage.url
+
+      const drawAfterImage = () => {
+        // Find the vertex of the angle being dragged for grid centering
+        let draggedVertex: AnglePoint | undefined
+        if (draggedPoint) {
+          const draggedAngleObj = angles.find(a => a.id === draggedPoint.angleId)
+          if (draggedAngleObj) {
+            draggedVertex = draggedAngleObj.vertex
+          }
+        } else if (draggedAngle) {
+          const angleObj = angles.find(a => a.id === draggedAngle)
+          if (angleObj) {
+            draggedVertex = angleObj.vertex
+          }
+        }
+
+        drawRadialGrid(ctx, draggedVertex)
+        drawCanvasGrid(ctx)
+        drawAngles(ctx)
+
+        // Draw current points being placed
+        if (currentPoints.length > 0) {
+          ctx.save()
+          ctx.fillStyle = settings.pointColor
+          ctx.strokeStyle = settings.lineColor
+          ctx.lineWidth = settings.lineWidth
+
+          currentPoints.forEach((point, index) => {
+            ctx.beginPath()
+            ctx.arc(point.x, point.y, settings.pointRadius, 0, Math.PI * 2)
+            ctx.fill()
+
+            // Draw line to next point if applicable
+            if (index === 0 && currentPoints.length > 1) {
+              ctx.beginPath()
+              ctx.moveTo(point.x, point.y)
+              ctx.lineTo(currentPoints[1].x, currentPoints[1].y)
+              ctx.stroke()
+            }
+            if (index === 0 && currentPoints.length > 2) {
+              ctx.beginPath()
+              ctx.moveTo(point.x, point.y)
+              ctx.lineTo(currentPoints[2].x, currentPoints[2].y)
+              ctx.stroke()
+            }
+          })
+
+          // Draw dotted line from first point (vertex) to mouse position when creating new angle
+          if (mousePosition && currentPoints.length > 0 && currentPoints.length < 3) {
+            const firstPoint = currentPoints[0] // Always use the first point (vertex)
+            ctx.setLineDash([5, 5]) // Dotted line pattern
+            ctx.strokeStyle = settings.lineColor
+            ctx.lineWidth = settings.lineWidth
+            ctx.globalAlpha = 0.7 // Make it slightly transparent
+            ctx.beginPath()
+            ctx.moveTo(firstPoint.x, firstPoint.y)
+            ctx.lineTo(mousePosition.x, mousePosition.y)
+            ctx.stroke()
+            ctx.setLineDash([]) // Reset to solid line
+            ctx.globalAlpha = 1.0 // Reset opacity
+          }
+
+          ctx.restore()
+        }
       }
-    }
-
-    drawRadialGrid(ctx, draggedVertex)
-    drawCanvasGrid(ctx)
-    drawAngles(ctx)
-
-    // Draw current points being placed
-    if (currentPoints.length > 0) {
-      ctx.save()
-      ctx.fillStyle = settings.pointColor
-      ctx.strokeStyle = settings.lineColor
-      ctx.lineWidth = settings.lineWidth
-
-      currentPoints.forEach((point, index) => {
-        ctx.beginPath()
-        ctx.arc(point.x, point.y, settings.pointRadius, 0, Math.PI * 2)
-        ctx.fill()
-
-        // Draw line to next point if applicable
-        if (index === 0 && currentPoints.length > 1) {
-          ctx.beginPath()
-          ctx.moveTo(point.x, point.y)
-          ctx.lineTo(currentPoints[1].x, currentPoints[1].y)
-          ctx.stroke()
+    } else {
+      // No background image, draw normally
+      // Find the vertex of the angle being dragged for grid centering
+      let draggedVertex: AnglePoint | undefined
+      if (draggedPoint) {
+        const draggedAngleObj = angles.find(a => a.id === draggedPoint.angleId)
+        if (draggedAngleObj) {
+          draggedVertex = draggedAngleObj.vertex
         }
-        if (index === 0 && currentPoints.length > 2) {
-          ctx.beginPath()
-          ctx.moveTo(point.x, point.y)
-          ctx.lineTo(currentPoints[2].x, currentPoints[2].y)
-          ctx.stroke()
+      } else if (draggedAngle) {
+        const angleObj = angles.find(a => a.id === draggedAngle)
+        if (angleObj) {
+          draggedVertex = angleObj.vertex
         }
-      })
+      }
 
-      // Draw dotted line from first point (vertex) to mouse position when creating new angle
-      if (mousePosition && currentPoints.length > 0 && currentPoints.length < 3) {
-        const firstPoint = currentPoints[0] // Always use the first point (vertex)
-        ctx.setLineDash([5, 5]) // Dotted line pattern
+      drawRadialGrid(ctx, draggedVertex)
+      drawCanvasGrid(ctx)
+      drawAngles(ctx)
+
+      // Draw current points being placed
+      if (currentPoints.length > 0) {
+        ctx.save()
+        ctx.fillStyle = settings.pointColor
         ctx.strokeStyle = settings.lineColor
         ctx.lineWidth = settings.lineWidth
-        ctx.globalAlpha = 0.7 // Make it slightly transparent
-        ctx.beginPath()
-        ctx.moveTo(firstPoint.x, firstPoint.y)
-        ctx.lineTo(mousePosition.x, mousePosition.y)
-        ctx.stroke()
-        ctx.setLineDash([]) // Reset to solid line
-        ctx.globalAlpha = 1.0 // Reset opacity
-      }
 
-      ctx.restore()
+        currentPoints.forEach((point, index) => {
+          ctx.beginPath()
+          ctx.arc(point.x, point.y, settings.pointRadius, 0, Math.PI * 2)
+          ctx.fill()
+
+          // Draw line to next point if applicable
+          if (index === 0 && currentPoints.length > 1) {
+            ctx.beginPath()
+            ctx.moveTo(point.x, point.y)
+            ctx.lineTo(currentPoints[1].x, currentPoints[1].y)
+            ctx.stroke()
+          }
+          if (index === 0 && currentPoints.length > 2) {
+            ctx.beginPath()
+            ctx.moveTo(point.x, point.y)
+            ctx.lineTo(currentPoints[2].x, currentPoints[2].y)
+            ctx.stroke()
+          }
+        })
+
+        // Draw dotted line from first point (vertex) to mouse position when creating new angle
+        if (mousePosition && currentPoints.length > 0 && currentPoints.length < 3) {
+          const firstPoint = currentPoints[0] // Always use the first point (vertex)
+          ctx.setLineDash([5, 5]) // Dotted line pattern
+          ctx.strokeStyle = settings.lineColor
+          ctx.lineWidth = settings.lineWidth
+          ctx.globalAlpha = 0.7 // Make it slightly transparent
+          ctx.beginPath()
+          ctx.moveTo(firstPoint.x, firstPoint.y)
+          ctx.lineTo(mousePosition.x, mousePosition.y)
+          ctx.stroke()
+          ctx.setLineDash([]) // Reset to solid line
+          ctx.globalAlpha = 1.0 // Reset opacity
+        }
+
+        ctx.restore()
+      }
     }
-  }, [drawRadialGrid, drawAngles, drawCanvasGrid, canvasWidth, canvasHeight, draggedPoint, draggedAngle, angles, currentPoints, settings, mousePosition])
+  }, [drawRadialGrid, drawAngles, drawCanvasGrid, canvasWidth, canvasHeight, draggedPoint, draggedAngle, angles, currentPoints, settings, mousePosition, backgroundImage])
 
   useEffect(() => {
     redraw()

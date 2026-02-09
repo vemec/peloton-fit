@@ -1,60 +1,171 @@
 # 🚴 BikeFit AI - Real-time Posture Analysis
 
-BikeFit AI is a web application developed with **Next.js + TypeScript** that allows cyclists and triathletes to analyze their posture in real time while pedaling.
-
-Using the device's camera and computer vision models, the app detects key body points (wrist, elbow, shoulder, hip, knee, ankle, toe, and heel), calculates reference angles, and displays them on screen to help optimize position.
-
----
+BikeFit AI is a Next.js web application for real-time cyclist posture analysis using computer vision. It captures video from the user's camera, detects body keypoints using MediaPipe/TensorFlow.js, and visualizes bike fit measurements with angle calculations.
 
 ## ✨ Features
-- Real-time detection of body keypoints
-- Calculation of knee, hip, and shoulder angles
-- On-screen visualization with skeleton overlay
-- Clean UI with **Tailwind**, **shadcn/ui**, and **lucide-react**
-- Session history (pending implementation)
 
----
+### Real-time Bike Fit Analysis
+- **Live Pose Detection**: Uses MediaPipe Pose to detect 33 body keypoints in real-time
+- **Angle Calculations**: Automatically calculates knee, hip, shoulder, and elbow angles
+- **Visual Feedback**: Overlays skeleton and angle measurements on video feed
+- **Bike Type Selection**: Supports road bike, mountain bike, and triathlon bike configurations
+- **Customizable Visualization**: Adjustable colors, grid overlays, and measurement displays
 
-## 🛠️ Main Technologies
-- [Next.js](https://nextjs.org/) (App Router)
-- [TypeScript](https://www.typescriptlang.org/)
-- [TailwindCSS](https://tailwindcss.com/)
-- [shadcn/ui](https://ui.shadcn.com/)
-- [lucide-react](https://lucide.dev/)
-- [TensorFlow.js](https://www.tensorflow.org/js) or [MediaPipe Pose](https://developers.google.com/mediapipe/solutions/vision/pose) for pose detection
+### Interactive Angle Measurement Tool
+- **Canvas-based Drawing**: Interactive 1200x800 canvas for precise angle measurements
+- **Multiple Grid Systems**: Radial and Cartesian grid options with customizable dimensions
+- **Drag & Drop Interface**: Intuitive controls for creating and adjusting angle measurements
+- **Image Upload**: Drag and drop images directly onto the canvas for angle measurement on photos
+- **Real-time Calculations**: Instant angle updates as you draw and modify lines
+- **Export Capabilities**: Save and share measurement results
 
+### Advanced UI/UX
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Dark/Light Theme**: Automatic theme detection with manual override options
+- **Accessible Components**: Built with shadcn/ui for WCAG compliance
+- **Performance Optimized**: Uses Turbopack for fast development and optimized builds
 
-## Getting Started
+## 🛠️ Technology Stack
 
-First, run the development server:
+- **Framework**: Next.js 16.1.6 (App Router)
+- **Language**: TypeScript 5.9.3
+- **Styling**: Tailwind CSS 4.1.18
+- **UI Components**: shadcn/ui with Radix UI primitives
+- **Computer Vision**: MediaPipe Pose & TensorFlow.js
+- **Icons**: Lucide React
+- **Theme Management**: next-themes
+- **Build Tool**: Turbopack
+- **Package Manager**: npm
 
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- Webcam access (for pose detection features)
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd peloton-fit
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Start the development server:
+```bash
+npm run dev --turbopack
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Learn More
+### Available Scripts
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run dev --turbopack    # Development with Turbopack
+npm run build --turbopack  # Production build
+npm run lint              # ESLint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📁 Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+├── app/                    # Next.js App Router
+│   ├── globals.css        # Global styles
+│   ├── layout.tsx         # Root layout with theme provider
+│   ├── page.tsx           # Home page with navigation
+│   ├── bike-fit/          # Bike fit analysis tool
+│   └── angle-tool/        # Angle measurement tool
+├── components/            # React components
+│   ├── ui/               # shadcn/ui components
+│   └── BikeFit/          # Feature-specific components
+│       ├── Analysis/     # Pose detection & angle calculations
+│       ├── AngleTool/    # Interactive angle measurement
+│       ├── Drawing/      # Canvas utilities
+│       ├── Media/        # Video/camera management
+│       └── Video/        # Video display & controls
+├── lib/                  # Utility functions
+├── types/                # TypeScript type definitions
+└── public/               # Static assets
+```
 
-## Deploy on Vercel
+## 🎯 Usage
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Bike Fit Analysis
+1. Navigate to `/bike-fit`
+2. Grant camera permissions
+3. Select your bike type (road, mountain, or triathlon)
+4. Start pedaling while the app analyzes your posture
+5. View real-time angle measurements and skeleton overlay
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Angle Measurement Tool
+1. Navigate to `/angle-tool`
+2. **Upload an image**: Drag and drop an image file onto the canvas, or click to browse and select an image
+3. Use the canvas to draw lines and create angles on your uploaded image
+4. Adjust grid settings and visualization options
+5. View real-time angle calculations
+6. Save or export your measurements
+
+## 🔧 Configuration
+
+### Theme Settings
+The app defaults to light theme. You can change this in `app/layout.tsx`:
+
+```typescript
+<ThemeProvider
+  attribute="class"
+  defaultTheme="light"  // Change to "dark" or "system"
+  enableSystem
+  disableTransitionOnChange
+>
+```
+
+### Camera Permissions
+The app requires camera access for pose detection. Make sure to:
+- Use HTTPS in production (required for camera access)
+- Grant camera permissions when prompted
+- Test in a modern browser with WebRTC support
+
+## 📦 Dependencies
+
+### Core Dependencies
+- `next`: ^16.1.6
+- `react`: ^19.2.4
+- `react-dom`: ^19.2.4
+- `@mediapipe/pose`: Computer vision pose detection
+- `@tensorflow/tfjs`: Machine learning framework
+
+### UI & Styling
+- `tailwindcss`: ^4.1.18
+- `@radix-ui/react-*`: Accessible UI primitives
+- `lucide-react`: Icon library
+- `next-themes`: Theme management
+
+### Development
+- `typescript`: ^5.9.3
+- `eslint`: Code linting
+- `@types/*`: Type definitions
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit changes: `git commit -am 'Add new feature'`
+4. Push to branch: `git push origin feature/your-feature`
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [MediaPipe](https://developers.google.com/mediapipe) for pose detection
+- [TensorFlow.js](https://www.tensorflow.org/js) for ML capabilities
+- [shadcn/ui](https://ui.shadcn.com) for the component library
+- [Vercel](https://vercel.com) for hosting and deployment

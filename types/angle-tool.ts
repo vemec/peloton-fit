@@ -26,6 +26,13 @@ export interface CanvasGridSettings {
   angle: number // degrees
 }
 
+export interface BackgroundImage {
+  url: string
+  width: number
+  height: number
+  file: File
+}
+
 export interface AngleToolSettings {
   lineColor: string
   pointColor: string
