@@ -50,7 +50,7 @@ export default function RootLayout({
       <body className={`${dmSans.variable} ${geistMono.variable} antialiased md:subpixel-antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >

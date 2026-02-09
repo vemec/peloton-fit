@@ -11,7 +11,7 @@ interface AngleToolProps {
   canvasHeight?: number
 }
 
-export function AngleTool({ canvasWidth = 800, canvasHeight = 600 }: AngleToolProps) {
+export function AngleTool({ canvasWidth = 1200, canvasHeight = 800 }: AngleToolProps) {
   const {
     angles,
     setAngles,
@@ -23,28 +23,30 @@ export function AngleTool({ canvasWidth = 800, canvasHeight = 600 }: AngleToolPr
   } = useAngleTool()
 
   return (
-    <div className="grid gap-4 absolute top-0">
-      <div className="relative" style={{ width: canvasWidth, height: canvasHeight }}>
-        {isCanvasActive && (
-          <AngleCanvas
-            angles={angles}
-            onAnglesChange={setAngles}
-            settings={settings}
-            onSettingsChange={setSettings}
-            isShiftPressed={isShiftPressed}
-            canvasWidth={canvasWidth}
-            canvasHeight={canvasHeight}
-          />
-        )}
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="bg-white border-2 border-gray-300 rounded-lg shadow-lg p-4 mb-4">
+        <div className="relative" style={{ width: canvasWidth, height: canvasHeight }}>
+          {isCanvasActive && (
+            <AngleCanvas
+              angles={angles}
+              onAnglesChange={setAngles}
+              settings={settings}
+              onSettingsChange={setSettings}
+              isShiftPressed={isShiftPressed}
+              canvasWidth={canvasWidth}
+              canvasHeight={canvasHeight}
+            />
+          )}
 
-        <div className="absolute top-4 right-4">
-          <StatusIndicator
-            isActive={isCanvasActive}
-            activeLabel="Canvas On"
-            inactiveLabel="Canvas Off"
-            showPing={isCanvasActive}
-            labelClassName="text-white"
-          />
+          <div className="absolute top-4 right-4">
+            <StatusIndicator
+              isActive={isCanvasActive}
+              activeLabel="Canvas On"
+              inactiveLabel="Canvas Off"
+              showPing={isCanvasActive}
+              labelClassName="text-white"
+            />
+          </div>
         </div>
       </div>
       <AngleControls
